@@ -1,0 +1,343 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * THE AD COMPANY — "Urban Print & Canvas" design system.
+ * Warm ivory paper, charcoal ink, electric orange, acid lime.
+ * Sharp corners, hairline rules, hard offset shadows. All colours oklch.
+ */
+
+@theme inline {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+
+  --font-display: "Syne", "Arial Black", sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Brand palette */
+  --color-ivory: var(--ivory);
+  --color-paper: var(--paper);
+  --color-sand: var(--sand);
+  --color-sand-deep: var(--sand-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-orange: var(--orange);
+  --color-signal: var(--signal);
+  --color-lime: var(--lime);
+  --color-lime-deep: var(--lime-deep);
+
+  --shadow-hard-xs: 2px 2px 0 0 var(--ink);
+  --shadow-hard-sm: 3px 3px 0 0 var(--ink);
+  --shadow-hard: 4px 4px 0 0 var(--ink);
+  --shadow-hard-md: 6px 6px 0 0 var(--ink);
+  --shadow-hard-lg: 8px 8px 0 0 var(--ink);
+  --shadow-hard-ivory: 4px 4px 0 0 var(--ivory);
+}
+
+:root {
+  --radius: 0px;
+
+  --ivory: oklch(0.959 0.013 86.8);
+  --paper: oklch(0.98 0.01 87.5);
+  --sand: oklch(0.94 0.014 88.7);
+  --sand-deep: oklch(0.913 0.013 86.8);
+  --ink: oklch(0.243 0.004 106.7);
+  --ink-soft: oklch(0.284 0.004 106.6);
+  --orange: oklch(0.667 0.196 35.6);
+  --signal: oklch(0.494 0.174 34.9);
+  --lime: oklch(0.903 0.163 117.4);
+  --lime-deep: oklch(0.478 0.112 118.7);
+
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--orange);
+  --primary-foreground: var(--ink);
+  --secondary: var(--sand);
+  --secondary-foreground: var(--ink);
+  --muted: var(--sand);
+  --muted-foreground: oklch(0.475 0.005 91.5);
+  --accent: var(--lime);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.506 0.193 27.7);
+  --destructive-foreground: var(--paper);
+  --border: color-mix(in oklab, var(--ink) 16%, transparent);
+  --input: var(--ink);
+  --ring: var(--orange);
+
+  --header-h: 4.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--lime);
+    color: var(--ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: anywhere;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------- Typography ---------- */
+
+@utility text-display-xl {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2.65rem, 5vw, 4.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+@utility text-display-lg {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2.35rem, 1.2rem + 4.4vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+/* Used where a display heading shares a row with media (About, Contact). */
+@utility text-display-md {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.8rem, 3.3vw, 3.1rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+@utility text-headline-md {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 0.9vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+@utility text-headline-sm {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.375rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+@utility text-label-index {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility text-label-tag {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Layout ---------- */
+
+@utility container-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (min-width: 768px) {
+    padding-inline: 2rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility section-y {
+  padding-block: 4.5rem;
+  @media (min-width: 1024px) {
+    padding-block: 7rem;
+  }
+}
+
+@utility hairline {
+  border-color: color-mix(in oklab, var(--ink) 15%, transparent);
+}
+
+@utility hairline-ivory {
+  border-color: color-mix(in oklab, var(--ivory) 20%, transparent);
+}
+
+/* Diagonal hatch for "photo to be added" placeholders */
+@utility hatch-dark {
+  background-color: var(--ink-soft);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--ivory) 6%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+
+@utility hatch-light {
+  background-color: var(--sand);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--ink) 7%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+
+/* ---------- Motion safety ---------- */
+
+/*
+ * The hero is pre-hidden only when JS has flagged the document (inline head
+ * script). If animation never starts, this fail-safe reveals everything.
+ */
+@keyframes motion-failsafe {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.motion-pending [data-hero-item] {
+  opacity: 0;
+  animation: motion-failsafe 0.01s linear 2.5s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Completed editorial sections, built on the retained Lovable design tokens. */
+.work-grid { display:grid; grid-template-columns:1.3fr 1fr; gap:24px; }
+.work-card { border:1px solid #f5f1e83d; background:var(--ink-soft); transition:border-color .2s; cursor:pointer; min-width:0; }
+.work-card:hover { border-color:var(--lime); }
+.work-featured { grid-row:span 2; }
+.work-image { position:relative; overflow:hidden; aspect-ratio:2.2; }
+.work-featured .work-image { aspect-ratio:1.04; }
+.work-image img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+.work-card:hover img { transform:scale(1.035); }
+.work-stamp { position:absolute; left:12px; top:12px; padding:5px 8px; font:600 9px var(--font-mono); text-transform:uppercase; background:var(--orange); color:var(--ink); }
+.work-arrow { position:absolute; right:14px; bottom:14px; display:grid; place-items:center; width:40px; height:40px; background:var(--lime); color:var(--ink); transition:transform .2s; }
+.work-card:hover .work-arrow { transform:rotate(45deg); }
+.project-dialog { position:fixed; inset:0; margin:auto; width:min(680px,calc(100% - 32px)); max-height:90svh; overflow:auto; background:var(--paper); color:var(--ink); border:2px solid var(--ink); padding:0; }
+.project-dialog::backdrop { background:#151513c9; backdrop-filter:blur(5px); }
+.dialog-close { position:absolute; top:12px; right:12px; padding:10px; background:var(--paper); border:1px solid var(--ink); cursor:pointer; z-index:2; }
+.about-poster { position:relative; min-height:450px; overflow:hidden; padding:24px; border:2px solid var(--ink); background:var(--lime); box-shadow:7px 7px 0 var(--ink); }
+.about-poster blockquote { margin-top:38px; }
+.about-poster > div:first-child { position:relative; z-index:1; gap:20px; }
+.poster-city { position:absolute; right:0; bottom:0; display:flex; align-items:flex-end; gap:8px; transform:skewY(-13deg) translate(50px,20px); }
+.poster-city span { width:55px; height:230px; background:repeating-linear-gradient(0deg,transparent 0 15px,#20201e22 16px 18px),var(--paper); border:1px solid #20201e44; }
+.poster-city span:nth-child(2n) { height:160px; background-color:var(--orange); }
+.poster-city span:nth-child(3n) { height:310px; }
+.process-card { position:relative; overflow:hidden; border:1px solid #20201e33; padding:24px; background:var(--paper); }
+.process-number { position:absolute; right:10px; top:10px; font:800 90px/.9 var(--font-display); color:#20201e0a; }
+.location-card { min-width:0; border:1px solid #20201e40; background:var(--ivory); padding:20px; text-align:left; transition:background .2s,box-shadow .2s; cursor:pointer; }
+.location-card:hover { background:var(--sand); }
+.location-card.selected { background:var(--lime); box-shadow:3px 3px 0 var(--ink); border-color:var(--ink); }
+.coverage-panel { position:relative; border:1px solid #20201e55; background:var(--sand); padding:24px; display:flex; flex-direction:column; align-items:flex-start; }
+.coverage-panel > div:first-child { align-self:stretch; }
+.coverage-target { position:relative; width:200px; height:200px; margin:30px auto; display:grid; place-items:center; }
+.coverage-target div { position:absolute; border:1px solid #20201e30; width:100%; height:100%; border-radius:50%; }
+.coverage-target div:nth-child(2) { width:65%; height:65%; border-style:dashed; }
+.coverage-target div:nth-child(3) { width:30%; height:30%; background:var(--lime); border-color:var(--ink); }
+.coverage-target span { z-index:1; font:40px var(--font-mono); }
+.team-card { border:1px solid #20201e45; background:var(--paper); overflow:hidden; }
+.team-art { position:relative; height:220px; display:flex; align-items:flex-end; justify-content:space-between; overflow:hidden; padding:22px; background:var(--sand-deep); }
+.team-art span { font:800 110px/.8 var(--font-display); color:var(--ink); letter-spacing:-.1em; }
+.team-art b { font:normal 100px/.8 var(--font-display); color:var(--signal); transform:translateY(0); transition:transform .4s; }
+.team-art-1 { background:var(--lime); }
+.team-art-2 { background:var(--ink); }
+.team-art-2 span { color:var(--paper); }
+.team-art-2 b { color:var(--lime); }
+.team-card:hover b { transform:translate(6px,-8px); }
+.contact-form label { display:block; margin-bottom:8px; font:600 10px/1.5 var(--font-mono); letter-spacing:.05em; text-transform:uppercase; }
+.contact-form label span { color:#60605b; font-weight:400; }
+.contact-form input,.contact-form select,.contact-form textarea { width:100%; min-width:0; border:1px solid #20201e70; background:var(--ivory); padding:12px; font:14px/1.5 var(--font-sans); border-radius:0; }
+.contact-form textarea { resize:vertical; }
+.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus { outline:2px solid var(--ink); outline-offset:2px; }
+.contact-form [aria-invalid=true] { border-color:var(--signal); }
+.field-error { margin-top:6px; font-size:12px; color:var(--signal); }
+@media (max-width:767px) {
+  .text-display-lg { font-size:clamp(1.75rem,6.9vw,2.35rem); }
+  .grid > * { min-width:0; }
+  .section-y .flex > div { min-width:0; max-width:100%; }
+  .work-grid { grid-template-columns:1fr; }
+  .work-featured { grid-row:auto; }
+  .work-image,.work-featured .work-image { aspect-ratio:1.4; }
+  .about-poster { min-height:390px; }
+  .coverage-target { width:150px; height:150px; }
+  .team-art { height:190px; }
+}
