@@ -108,7 +108,7 @@ export function ClientStrip() {
             trigger: section,
             start: "top bottom-=30", // begins slowly enlarging as soon as scroll starts
             end: "top 18%",          // fully enlarged and normalized at comfortable viewing height
-            scrub: 0.3,
+            scrub: 0.1,
           },
         });
       } else {

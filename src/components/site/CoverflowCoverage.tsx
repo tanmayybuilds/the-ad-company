@@ -11,7 +11,7 @@ const classificationBadge = (loc: (typeof coverage.locations)[0]) =>
   loc.kind.toUpperCase() === "STATE / REGION" ? "STATE / REGION" : "CITY";
 
 /* ── 3D Card transform matrix based on relative offset d ── */
-function getCardStyle(d: number, tilt: { x: number; y: number } | null, isFocused: boolean): React.CSSProperties {
+function getCardStyle(d: number, isFocused: boolean): React.CSSProperties {
   const abs = Math.abs(d);
   if (abs > 2) {
     return {
@@ -24,7 +24,7 @@ function getCardStyle(d: number, tilt: { x: number; y: number } | null, isFocuse
     };
   }
 
-  // Exact coordinates from user specification:
+  // Exact coordinates from user specification with fast interpolation:
   // -2: translateX(-115%), translateZ(-280px), rotateY(+42deg), scale(0.72), opacity: 0.35, blur(2px), z: 10
   // -1: translateX(-68%),  translateZ(-140px), rotateY(+34deg), scale(0.85), opacity: 0.82, blur(0.5px), z: 20
   //  0: translateX(0%),    translateZ(+40px),  rotateY(0deg),   scale(1.00), opacity: 1.00, blur(0px), z: 30
@@ -73,16 +73,15 @@ function getCardStyle(d: number, tilt: { x: number; y: number } | null, isFocuse
     z = 10;
   }
 
-  // If active center card is in hover/focus expansion state
+  // Active center card in hover/focus state
   if (d === 0) {
     if (isFocused) {
       s = 1.14;
       tz = 110;
-      ry = tilt ? tilt.y : -6;
-      rx = tilt ? tilt.x : 2;
+      // ry and rx are driven at 120fps by CSS variables --tilt-ry and --tilt-rx with 0ms React latency
     }
   } else if (isFocused) {
-    // Flanking cards recede when center card is expanded
+    // Flanking cards push back smoothly
     tx = d < 0 ? -95 : 95;
     tz = -240;
     o = 0.15;
@@ -106,7 +105,6 @@ export function CoverflowCoverage() {
 
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const [tilt, setTilt] = useState<{ x: number; y: number } | null>(null);
 
   const prevName = useRef(coverage.locations[0].name);
   const [displayName, setDisplayName] = useState(coverage.locations[0].name);
@@ -125,7 +123,7 @@ export function CoverflowCoverage() {
     }
   }, [active]);
 
-  // Navigate to an index and sync scroll position
+  // Navigate to an index and sync scroll position with snappy response
   const scrollToCard = useCallback(
     (index: number) => {
       const target = clamp(index, 0, TOTAL - 1);
@@ -149,7 +147,6 @@ export function CoverflowCoverage() {
     const onKey = (e: KeyboardEvent) => {
       if (!root.current) return;
       const rect = root.current.getBoundingClientRect();
-      // Only react if within the coverage section's scroll range
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
@@ -164,21 +161,29 @@ export function CoverflowCoverage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [prev, next]);
 
-  // Dynamic cursor-tracking parallax for center card focus state
-  const handlePointerMove = (e: PointerEvent<HTMLButtonElement>) => {
-    if (!hovered) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const xRatio = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const yRatio = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-    setTilt({
-      x: clamp(-yRatio * 6, -6, 6),
-      y: clamp(xRatio * 6, -6, 6),
-    });
+  // Zero-latency dynamic cursor parallax via direct CSS variables
+  const handlePointerEnter = (e: PointerEvent<HTMLButtonElement>) => {
+    setHovered(true);
+    e.currentTarget.style.setProperty("--tilt-active", "1");
   };
 
-  const handlePointerLeave = () => {
+  const handlePointerMove = (e: PointerEvent<HTMLButtonElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const xRatio = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    const yRatio = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+    const rx = clamp(-yRatio * 8, -8, 8);
+    const ry = clamp(xRatio * 8, -8, 8);
+    el.style.setProperty("--tilt-rx", `${rx.toFixed(2)}deg`);
+    el.style.setProperty("--tilt-ry", `${ry.toFixed(2)}deg`);
+  };
+
+  const handlePointerLeave = (e: PointerEvent<HTMLButtonElement>) => {
     setHovered(false);
-    setTilt(null);
+    const el = e.currentTarget;
+    el.style.removeProperty("--tilt-active");
+    el.style.removeProperty("--tilt-rx");
+    el.style.removeProperty("--tilt-ry");
   };
 
   // Mobile Touch handlers
@@ -189,14 +194,14 @@ export function CoverflowCoverage() {
   const handleTouchEnd = (e: TouchEvent) => {
     if (touchStartX.current === null) return;
     const diff = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(diff) > 40) {
+    if (Math.abs(diff) > 30) {
       if (diff > 0) prev();
       else next();
     }
     touchStartX.current = null;
   };
 
-  // GSAP scroll-driven scrubbing
+  // GSAP scroll-driven scrubbing — calibrated for instant responsiveness and low latency
   useGSAP(
     () => {
       const section = root.current;
@@ -214,16 +219,16 @@ export function CoverflowCoverage() {
           end: "bottom bottom",
           pin: stageEl,
           pinSpacing: false,
-          scrub: 0.6,
+          scrub: 0.1, // Ultra-fast responsive scrubbing
           snap: {
             snapTo: 1 / (TOTAL - 1),
-            duration: { min: 0.25, max: 0.45 },
-            delay: 0.08,
+            duration: { min: 0.15, max: 0.28 },
+            delay: 0.02,
             ease: "power2.out",
           },
           onUpdate: (self) => {
             const idx = Math.round(self.progress * (TOTAL - 1));
-            setActive(clamp(idx, 0, TOTAL - 1));
+            setActive((prevIdx) => (prevIdx !== idx ? clamp(idx, 0, TOTAL - 1) : prevIdx));
           },
         });
 
@@ -294,7 +299,7 @@ export function CoverflowCoverage() {
               const d = i - active;
               const isActive = d === 0;
               const badge = classificationBadge(location);
-              const style = getCardStyle(d, isActive ? tilt : null, hovered);
+              const style = getCardStyle(d, hovered);
 
               return (
                 <button
@@ -307,11 +312,9 @@ export function CoverflowCoverage() {
                   onClick={() => {
                     if (!isActive) scrollToCard(i);
                   }}
-                  onPointerEnter={() => {
-                    if (isActive) setHovered(true);
-                  }}
+                  onPointerEnter={isActive ? handlePointerEnter : undefined}
                   onPointerMove={isActive ? handlePointerMove : undefined}
-                  onPointerLeave={handlePointerLeave}
+                  onPointerLeave={isActive ? handlePointerLeave : undefined}
                   onFocus={() => {
                     if (isActive) setHovered(true);
                   }}

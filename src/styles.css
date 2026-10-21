@@ -140,7 +140,7 @@
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
@@ -817,10 +817,10 @@
    COVERFLOW COVERAGE SECTION — 3D perspective carousel
    ──────────────────────────────────────────────────────── */
 
-/* Scroll wrapper — tall to allow scroll-scrubbing across 7 locations */
+/* Scroll wrapper — calibrated for energetic, low-latency scrolling */
 .cov-scroll-wrapper {
   position: relative;
-  height: 420vh;
+  height: 250vh;
 }
 
 /* Sticky inner stage — 100vh pinned viewport */
@@ -854,11 +854,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: cov-glow-pulse 5s ease-in-out infinite alternate;
+  animation: cov-glow-pulse 3.5s ease-in-out infinite alternate;
 }
 @keyframes cov-glow-pulse {
-  from { opacity: 0.7; transform: translate(-50%, -50%) scale(0.96); }
-  to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.04); }
+  from { opacity: 0.75; transform: translate(-50%, -50%) scale(0.97); }
+  to   { opacity: 1;    transform: translate(-50%, -50%) scale(1.03); }
 }
 
 .cov-rings {
@@ -868,10 +868,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: cov-rings-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: cov-rings-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes cov-rings-enter {
-  from { transform: translate(-50%, -50%) scale(0.96) rotate(-45deg); opacity: 0.3; }
+  from { transform: translate(-50%, -50%) scale(0.97) rotate(-20deg); opacity: 0.35; }
   to   { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
 }
 .cov-ring {
@@ -910,13 +910,13 @@
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--ink);
-  opacity: 0.06;
+  opacity: 0.07;
   white-space: nowrap;
-  animation: cov-watermark-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: cov-watermark-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes cov-watermark-in {
-  from { opacity: 0; transform: translateY(-18px) scale(0.96); filter: blur(8px); }
-  to   { opacity: 0.06; transform: translateY(0) scale(1); filter: blur(0); }
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); filter: blur(4px); }
+  to   { opacity: 0.07; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
 /* ── Layer 2: Section Header ── */
@@ -924,10 +924,10 @@
   position: relative;
   z-index: 3;
   padding: max(1.5rem, calc(var(--header-h) + 1.5rem)) 0 0;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
 }
 .cov-header-recede {
-  transform: translateY(-12px);
+  transform: translateY(-8px);
   opacity: 0.85;
 }
 .cov-eyebrow {
@@ -1000,10 +1000,10 @@
   cursor: pointer;
   transform-style: preserve-3d;
   transition:
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.45s ease;
-  will-change: transform, opacity, filter;
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.18s ease,
+    filter 0.18s ease;
+  will-change: transform, opacity;
   color: var(--ink);
   text-align: left;
 }
@@ -1024,7 +1024,7 @@
     inset 0 -12px 24px rgba(0, 0, 0, 0.06),
     0 20px 50px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  transition: border-color 0.18s, box-shadow 0.18s;
   overflow: hidden;
 }
 
@@ -1054,7 +1054,14 @@
     0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Focus/hover expansion state (climax mechanic) */
+/* Instant-response hover expansion state with live 120fps cursor parallax */
+.cov-card-active.cov-card-focused {
+  transform: translateX(0%) translateZ(110px) rotateY(var(--tilt-ry, 0deg)) rotateX(var(--tilt-rx, 0deg)) scale(1.14) !important;
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.15s,
+    border-color 0.15s !important;
+}
 .cov-card-focused .cov-card-bezel {
   border-color: #D2F055;
   box-shadow:
@@ -1429,7 +1436,7 @@
   border: 1.5px solid var(--ink);
   box-shadow: 0 0 8px rgba(210, 240, 85, 0.5);
   transform: translateY(-50%);
-  transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: top 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Responsive ── */
@@ -1439,7 +1446,7 @@
   .cov-card { width: clamp(260px, 48vw, 360px); }
 }
 @media (max-width: 767px) {
-  .cov-scroll-wrapper { height: 350vh; }
+  .cov-scroll-wrapper { height: 200vh; }
   .cov-glow { width: 280px; height: 280px; }
   .cov-rings { width: 240px; height: 240px; display: none; }
   .cov-watermark-text { font-size: clamp(3rem, 18vw, 6rem); }
