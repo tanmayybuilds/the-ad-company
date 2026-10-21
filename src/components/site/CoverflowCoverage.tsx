@@ -92,12 +92,11 @@ export function CoverflowCoverage() {
             }
           },
           onEnterBack: () => {
-            if (!isStepAnimating.current) {
-              activeRef.current = TOTAL - 1;
-              setActive(TOTAL - 1);
-              position.value = TOTAL - 1;
-              renderPosition(TOTAL - 1);
-            }
+            // When coming up, keep resting at city 0 without playing reverse animation
+            activeRef.current = 0;
+            setActive(0);
+            position.value = 0;
+            renderPosition(0);
           },
           onLeave: () => {
             activeRef.current = TOTAL - 1;
@@ -113,15 +112,12 @@ export function CoverflowCoverage() {
           },
           onRefresh: self => {
             if (self.isActive && !isStepAnimating.current) {
-              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
-              activeRef.current = nearest;
-              setActive(nearest);
-              position.value = nearest;
-              renderPosition(nearest);
+              renderPosition(activeRef.current);
             }
           },
           onUpdate: self => {
-            if (!stepTween && !isStepAnimating.current && self.isActive) {
+            // Only update on drag when scrolling downward
+            if (!stepTween && !isStepAnimating.current && self.isActive && self.direction > 0) {
               const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
               if (nearest !== activeRef.current) {
                 position.value = nearest;
@@ -190,15 +186,44 @@ export function CoverflowCoverage() {
         if (!isPinned) return;
 
         const direction = delta > 0 ? 1 : -1;
-        const current = activeRef.current;
 
-        // Allow natural exit scrolling down when at the last city (Gujarat)
-        if (direction > 0 && current >= TOTAL - 1) {
+        // 1. SCROLLING UP:
+        // When coming up, animation does not play in reverse and scrolling proceeds normally to #about
+        if (direction < 0) {
+          cancelTravel();
+          if (activeRef.current !== 0) {
+            activeRef.current = 0;
+            setActive(0);
+            position.value = 0;
+            renderPosition(0);
+          }
+          if (scrollY > trigger.start) {
+            event.preventDefault();
+            const now = Date.now();
+            if (now - lastStepTime.current > 320) {
+              lastStepTime.current = now;
+              isStepAnimating.current = true;
+              const scrollObj = { y: window.scrollY };
+              stepTween = gsap.to(scrollObj, {
+                y: trigger.start - 10,
+                duration: 0.45,
+                ease: "power2.out",
+                onUpdate: () => window.scrollTo({ top: scrollObj.y, behavior: "instant" }),
+                onComplete: () => {
+                  isStepAnimating.current = false;
+                  stepTween = undefined;
+                },
+              });
+            }
+          }
           return;
         }
 
-        // Allow natural exit scrolling up when at the first city (Mumbai)
-        if (direction < 0 && current <= 0) {
+        // 2. SCROLLING DOWN:
+        const current = activeRef.current;
+
+        // Allow natural exit scrolling down when at the last city (Gujarat)
+        if (current >= TOTAL - 1) {
           return;
         }
 
@@ -220,8 +245,8 @@ export function CoverflowCoverage() {
           (reversedDirection || timeSinceLastWheel > 140 || timeSinceLastStep > 850);
 
         if (canStep) {
-          const nextIndex = current + direction;
-          if (nextIndex >= 0 && nextIndex < TOTAL) {
+          const nextIndex = current + 1;
+          if (nextIndex < TOTAL) {
             lastStepTime.current = now;
             navigate.current(nextIndex);
           }
