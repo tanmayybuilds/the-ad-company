@@ -813,6 +813,655 @@
   );
 }
 
+/* ────────────────────────────────────────────────────────
+   COVERFLOW COVERAGE SECTION — 3D perspective carousel
+   ──────────────────────────────────────────────────────── */
+
+/* Scroll wrapper — tall to allow scroll-scrubbing across 7 locations */
+.cov-scroll-wrapper {
+  position: relative;
+  height: 420vh;
+}
+
+/* Sticky inner stage — 100vh pinned viewport */
+.cov-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+/* ── Layer 0: Ambient Glow & Concentric Radar Rings ── */
+.cov-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+.cov-glow {
+  position: absolute;
+  width: 580px;
+  height: 580px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(215, 237, 100, 0.16) 0%, rgba(215, 237, 100, 0.06) 35%, transparent 70%);
+  filter: blur(80px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: cov-glow-pulse 5s ease-in-out infinite alternate;
+}
+@keyframes cov-glow-pulse {
+  from { opacity: 0.7; transform: translate(-50%, -50%) scale(0.96); }
+  to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.04); }
+}
+
+.cov-rings {
+  position: absolute;
+  width: 460px;
+  height: 460px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: cov-rings-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes cov-rings-enter {
+  from { transform: translate(-50%, -50%) scale(0.96) rotate(-45deg); opacity: 0.3; }
+  to   { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+}
+.cov-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+}
+.cov-ring-mid {
+  inset: 18%;
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--ink) 10%, transparent);
+}
+.cov-ring-inner {
+  inset: 38%;
+  border: none;
+  background: radial-gradient(circle, rgba(215, 237, 100, 0.12) 0%, transparent 70%);
+}
+
+/* ── Layer 1: Giant Background Watermark ── */
+.cov-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+.cov-watermark-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(5.5rem, 15vw, 14rem);
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.06;
+  white-space: nowrap;
+  animation: cov-watermark-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cov-watermark-in {
+  from { opacity: 0; transform: translateY(-18px) scale(0.96); filter: blur(8px); }
+  to   { opacity: 0.06; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* ── Layer 2: Section Header ── */
+.cov-header {
+  position: relative;
+  z-index: 3;
+  padding: max(1.5rem, calc(var(--header-h) + 1.5rem)) 0 0;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s;
+}
+.cov-header-recede {
+  transform: translateY(-12px);
+  opacity: 0.85;
+}
+.cov-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #B84A24;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.cov-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 1.2rem + 4.8vw, 4.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.cov-subtitle {
+  margin-top: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+}
+
+/* ── Layer 3: 3D Coverflow Card Stage ── */
+.cov-cards-stage {
+  position: relative;
+  z-index: 4;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cov-stage-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
+  padding-top: 1rem;
+  padding-bottom: 0.75rem;
+}
+
+.cov-cards-perspective {
+  position: relative;
+  flex: 1;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Individual 3D card */
+.cov-card {
+  position: absolute;
+  width: clamp(320px, 34vw, 460px);
+  aspect-ratio: 1 / 1.08;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.45s ease;
+  will-change: transform, opacity, filter;
+  color: var(--ink);
+  text-align: left;
+}
+
+.cov-card-bezel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  border-radius: 24px;
+  border: 1.5px solid color-mix(in oklab, var(--ink) 18%, transparent);
+  background: rgba(236, 234, 226, 0.72);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.06),
+    0 20px 50px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  overflow: hidden;
+}
+
+/* Simulated 3D Edge Extrusion for Flanking Cards */
+.cov-card-slot-left .cov-card-bezel {
+  box-shadow:
+    10px 0 20px rgba(0, 0, 0, 0.14),
+    inset -2px 0 2px rgba(255, 255, 255, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.06);
+}
+.cov-card-slot-right .cov-card-bezel {
+  box-shadow:
+    -10px 0 20px rgba(0, 0, 0, 0.14),
+    inset 2px 0 2px rgba(255, 255, 255, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Active card highlight border and elevation */
+.cov-card-active .cov-card-bezel {
+  border-color: color-mix(in oklab, var(--ink) 35%, transparent);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -14px 28px rgba(0, 0, 0, 0.09),
+    0 32px 72px rgba(0, 0, 0, 0.2),
+    0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Focus/hover expansion state (climax mechanic) */
+.cov-card-focused .cov-card-bezel {
+  border-color: #D2F055;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 0 45px rgba(210, 240, 85, 0.3),
+    0 40px 90px rgba(0, 0, 0, 0.25);
+}
+.cov-card-focused .cov-card-cta {
+  background: #D2F055;
+  color: var(--ink);
+  transform: translate(-2px, -2px) scale(1.04);
+  box-shadow: 4px 4px 0 0 #141413;
+}
+
+/* ── Top Metadata Row ── */
+.cov-card-meta-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+}
+.cov-card-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cov-card-code {
+  color: var(--ink);
+  font-weight: 700;
+}
+.cov-card-bezel-tag {
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
+  font-size: 0.5625rem;
+}
+.cov-card-badge {
+  padding: 2px 7px;
+  border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  border-radius: 2px;
+  font-size: 0.5625rem;
+  white-space: nowrap;
+}
+
+/* ── Active Center Viewport: Recessed Inner Showcase ── */
+.cov-card-viewport-active {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 0;
+  gap: 12px;
+  min-height: 0;
+}
+
+.cov-inner-showcase {
+  flex: 1;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+  background: rgba(245, 241, 232, 0.5);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Concentric Radar Rings & Crosshair */
+.cov-radar-box {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 2px;
+}
+.cov-radar-ring-out {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+}
+.cov-radar-ring-mid {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in oklab, var(--ink) 15%, transparent);
+}
+.cov-radar-ring-in {
+  position: absolute;
+  inset: 44%;
+  border-radius: 50%;
+  background: #D2F055;
+  border: 1px solid var(--ink);
+  box-shadow: 0 0 12px rgba(210, 240, 85, 0.5);
+}
+.cov-radar-plus {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--ink);
+  line-height: 1;
+}
+
+/* Status Pill */
+.cov-active-status {
+  position: relative;
+  z-index: 1;
+}
+.cov-status-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a7516;
+  padding: 2px 8px;
+  border: 1px solid rgba(74, 117, 22, 0.3);
+  background: rgba(210, 240, 85, 0.16);
+  border-radius: 2px;
+}
+
+/* Identity inside active card */
+.cov-location-info {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.cov-explore-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #B84A24;
+}
+.cov-city-heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+}
+.cov-state-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+}
+
+/* Active Card Footer */
+.cov-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+.cov-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: transparent;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 0 var(--ink);
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.cov-card-cta:hover {
+  background: #D2F055;
+  color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--ink);
+}
+.cov-active-counter {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.cov-counter-curr {
+  color: var(--ink);
+  font-weight: 700;
+}
+.cov-counter-slash {
+  opacity: 0.5;
+}
+
+/* ── Flanking Card Viewport: Minimal Summary Face ── */
+.cov-card-viewport-flank {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 16px 0;
+}
+.cov-flank-radar-watermark {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in oklab, var(--ink) 14%, transparent);
+  pointer-events: none;
+}
+.cov-flank-identity {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.cov-flank-city {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+}
+.cov-flank-state {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+}
+.cov-flank-footer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+.cov-flank-arrow {
+  font-size: 1.25rem;
+  color: color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+/* ── Layer 4: HUD, Progress Bar, Navigation ── */
+.cov-hud {
+  position: relative;
+  z-index: 5;
+  padding-bottom: 1.5rem;
+}
+
+.cov-progress {
+  display: flex;
+  gap: 6px;
+  height: 4px;
+  margin-bottom: 1rem;
+}
+.cov-progress-seg {
+  flex: 1;
+  height: 100%;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ink) 12%, transparent);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.25s, transform 0.15s;
+}
+.cov-progress-seg:hover {
+  background: color-mix(in oklab, var(--ink) 25%, transparent);
+  transform: scaleY(1.5);
+}
+.cov-progress-active {
+  background: #D2F055;
+  box-shadow: 0 0 6px rgba(210, 240, 85, 0.5);
+}
+
+.cov-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cov-nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+.cov-nav-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid color-mix(in oklab, var(--ink) 25%, transparent);
+  border-radius: 50%;
+  background: rgba(236, 234, 226, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
+  padding: 0;
+}
+.cov-nav-btn:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  transform: scale(1.06);
+}
+.cov-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.cov-footnote {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: #6E6D68;
+}
+
+/* Right-edge vertical scroll progress pill */
+.cov-scroll-pill {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 4px;
+  height: 120px;
+  display: none;
+}
+@media (min-width: 1024px) {
+  .cov-scroll-pill { display: block; }
+}
+.cov-scroll-pill-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in oklab, var(--ink) 10%, transparent);
+  border-radius: 999px;
+}
+.cov-scroll-pill-thumb {
+  position: absolute;
+  left: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #D2F055;
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 0 8px rgba(210, 240, 85, 0.5);
+  transform: translateY(-50%);
+  transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+  .cov-glow { width: 400px; height: 400px; }
+  .cov-rings { width: 320px; height: 320px; }
+  .cov-card { width: clamp(260px, 48vw, 360px); }
+}
+@media (max-width: 767px) {
+  .cov-scroll-wrapper { height: 350vh; }
+  .cov-glow { width: 280px; height: 280px; }
+  .cov-rings { width: 240px; height: 240px; display: none; }
+  .cov-watermark-text { font-size: clamp(3rem, 18vw, 6rem); }
+  .cov-display { font-size: clamp(1.8rem, 8vw, 2.8rem); }
+  .cov-card { width: clamp(240px, 72vw, 320px); }
+  .cov-stage-meta { font-size: 0.5625rem; }
+  .cov-card-bezel { padding: 14px 16px; border-radius: 14px; }
+  .cov-card-cta { font-size: 0.5625rem; padding: 6px 12px; }
+  .cov-card-city { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .cov-nav-btn { width: 34px; height: 34px; font-size: 1rem; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .cov-scroll-wrapper { height: auto; }
+  .cov-stage { position: relative; height: auto; min-height: 100vh; }
+  .cov-card { transition-duration: 0.01ms !important; }
+  .cov-watermark-text { animation: none; }
+  .cov-glow { animation: none; }
+  .cov-rings { animation: none; }
+}
+
 /* ---------- Motion safety ---------- */
 
 /*
