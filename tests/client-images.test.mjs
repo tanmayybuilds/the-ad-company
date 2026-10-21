@@ -15,6 +15,9 @@ test('client logos resolve to real assets when hosted under the GitHub Pages pat
     const { ClientStrip } = await server.ssrLoadModule('/src/components/site/ClientStrip.tsx');
     const { clients } = await server.ssrLoadModule('/src/content/site.ts');
     const markup = renderToStaticMarkup(createElement(ClientStrip));
+    assert.match(markup, /data-boulevard-stage/, 'The client showcase should include the boulevard stage');
+    assert.equal([...markup.matchAll(/data-client-sign=/g)].length, clients.items.length, 'Every client needs a readable billboard');
+    assert.doesNotMatch(markup, /<(?:canvas|video)\b|tabindex=/i, 'Logos must remain accessible without a renderer or decorative focus stops');
     const sources = [...markup.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)].map(match => match[1]);
     assert.equal(sources.length, clients.items.length);
     for (const source of sources) {

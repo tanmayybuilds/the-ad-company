@@ -4,6 +4,139 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Client logos stay in the document while their advertising district assembles. */
+.boulevard-world { perspective: 1600px; padding: 32px 12px 20px 0; }
+.boulevard-stage {
+  position: relative;
+  padding: 28px 32px 72px;
+  border: 1px solid var(--ink);
+  background: var(--sand);
+  box-shadow: 12px 16px 0 var(--sand-deep), 13px 17px 0 var(--ink);
+  transform: rotateX(5deg);
+  transform-origin: center;
+  transform-style: preserve-3d;
+}
+.boulevard-blocks {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 24px;
+  transform-style: preserve-3d;
+}
+.boulevard-lot { --building-height: 32px; position: relative; height: 170px; transform-style: preserve-3d; }
+.boulevard-lot:nth-child(4n + 2) { --building-height: 54px; }
+.boulevard-lot:nth-child(4n + 3) { --building-height: 40px; }
+.boulevard-lot:nth-child(4n) { --building-height: 22px; }
+.boulevard-building {
+  position: absolute;
+  bottom: 0;
+  left: 22px;
+  right: 30px;
+  height: var(--building-height);
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  transform: translateZ(2px);
+}
+.boulevard-building::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  left: 4px;
+  right: -6px;
+  height: 10px;
+  border: 1px solid var(--ink);
+  background: var(--sand-deep);
+  transform: skewX(-40deg);
+}
+.boulevard-building::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: -11px;
+  width: 10px;
+  height: 100%;
+  border: 1px solid var(--ink);
+  background: var(--ink-soft);
+  transform: skewY(-45deg);
+}
+.boulevard-building > span {
+  position: absolute;
+  inset: 8px 12px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 7px, transparent 7px 18px);
+  opacity: .5;
+}
+.boulevard-lot:nth-child(4n + 2) .boulevard-building { background: var(--orange); }
+.boulevard-lot:nth-child(4n + 3) .boulevard-building { background: var(--lime); }
+.boulevard-sign {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--building-height) + 22px);
+  transform-style: preserve-3d;
+}
+.boulevard-sign::before, .boulevard-sign::after {
+  content: "";
+  position: absolute;
+  bottom: -26px;
+  width: 4px;
+  height: 30px;
+  background: var(--ink);
+}
+.boulevard-sign::before { left: 24%; }
+.boulevard-sign::after { right: 24%; }
+.boulevard-face {
+  position: relative;
+  display: flex;
+  min-height: 96px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 6px 6px 0 var(--ink);
+  transform: translateZ(12px);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.boulevard-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-top: 3px solid var(--orange);
+  border-bottom: 3px solid var(--orange);
+  background: var(--ink);
+  color: var(--ivory);
+}
+.boulevard-road span { font-family: var(--font-mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+.boulevard-road i { width: 10px; height: 10px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px color-mix(in srgb, var(--lime) 20%, transparent); }
+.boulevard-tree { position: absolute; bottom: 55px; width: 7px; height: 36px; background: var(--ink); transform: translateZ(18px); }
+.boulevard-tree::before { content: ""; position: absolute; top: -20px; left: -13px; width: 34px; height: 40px; border: 1px solid var(--ink); border-radius: 45% 45% 35% 35%; background: var(--lime); box-shadow: 5px 3px 0 var(--ink-soft); }
+.boulevard-tree-left { left: 10px; }
+.boulevard-tree-right { right: 14px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .boulevard-lot:hover .boulevard-face { transform: translate3d(0, -6px, 24px); box-shadow: 8px 10px 0 var(--ink); }
+}
+@media (max-width: 767px) {
+  .boulevard-world { padding-top: 24px; padding-right: 8px; }
+  .boulevard-stage { padding: 20px 16px 64px; transform: none; box-shadow: 7px 10px 0 var(--sand-deep), 8px 11px 0 var(--ink); }
+  .boulevard-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+  .boulevard-lot { height: 156px; }
+  .boulevard-face { min-height: 88px; padding: 10px; }
+  .boulevard-building { left: 14px; right: 20px; }
+  .boulevard-road { padding-inline: 16px; }
+  .boulevard-road span { font-size: 8px; letter-spacing: .04em; }
+  .boulevard-tree { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boulevard-stage { transform: none; }
+  .boulevard-face { transition: none; }
+}
+
 /*
  * THE AD COMPANY — "Urban Print & Canvas" design system.
  * Warm ivory paper, charcoal ink, electric orange, acid lime.
