@@ -40,7 +40,7 @@
 |---|---|---|---|
 | **1. Navigation** | `src/components/site/Header.tsx` |  Implemented | Sticky header, brand wordmark, anchor links (`#services`, `#work`, `#about`, `#coverage`, `#team`), "Let's talk" CTA, accessible mobile drawer with keyboard focus trap. |
 | **2. Hero** | `src/components/site/Hero.tsx`<br/>`HeroArt.tsx`, `HeroCity3D.tsx` |  Implemented | Split layout (55% text / 45% visual). Staggered entrance, tagline highlight, dual CTAs. Live 3D micro-city with interactive tilt on desktop + static fallback on mobile. |
-| **3. Client Logos** | `src/components/site/ClientStrip.tsx` |  Implemented (Logos Pending) | Displays confirmed client names (Toyota India, Maruti Suzuki, Milkbasket, Truemeds, Apollo Diagnostics, Suburban Diagnostics, Nova IVF, Decathlon India). Awaiting official vector SVG assets. |
+| **3. Client Logos** | `src/components/site/ClientStrip.tsx` |  Implemented | Displays eight confirmed client logos, downloaded from official websites into `public/clients/`. Sources and native dimensions are recorded in `docs/client-logos.md`. |
 | **4. Services** | `src/components/site/Services.tsx` |  Implemented | 5 categories: (1) Residential & community (primary focus), (2) Corporate & coworking, (3) Outdoor & transit, (4) Cinema, airports & in-flight, (5) Delivery & in-app. Interactive tabbed preview with persistent format lists and illustrations. |
 | **5. Selected Work** | `src/components/site/Sections.tsx` (`Work`) |  Implemented (Pack Pending) | Featured layout with accessible `<dialog>` detail modal. Currently uses illustrative format previews. Real execution photographs and verified metrics pending client handoff. |
 | **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The city is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
@@ -60,7 +60,7 @@ Before public deployment, the following assets and approvals are required:
    - Confirmed phone and WhatsApp: `+91 77150 01514` (link format `917715001514`).
    - Physical office address and verified Google Maps link.
 3. **Client & Work Assets:**
-   - Vector logos for approved client brands.
+   - Official client logos are installed; see `docs/client-logos.md` for sources and native formats.
    - Real campaign execution photography and approved case study metrics.
 4. **Team Roster:** 6 confirmed names, roles, descriptions, and high-resolution portraits.
 5. **Enquiry Destination:**

@@ -79,16 +79,15 @@ export const hero = {
 
 export const clients = {
   heading: "Brands we’ve worked with",
-  note: "Logos to be added",
-  names: [
-    "Toyota India",
-    "Maruti Suzuki India",
-    "Milkbasket",
-    "Truemeds",
-    "Apollo Diagnostics",
-    "Suburban Diagnostics",
-    "Nova IVF Fertility",
-    "Decathlon India",
+  items: [
+    { name: "Toyota India", logo: "/clients/toyota.svg", width: 136, height: 24 },
+    { name: "Maruti Suzuki India", logo: "/clients/maruti-suzuki.svg", width: 1398, height: 156 },
+    { name: "Milkbasket", logo: "/clients/milkbasket.png", width: 800, height: 300 },
+    { name: "Truemeds", logo: "/clients/truemeds.svg", width: 202, height: 48 },
+    { name: "Apollo Diagnostics", logo: "/clients/apollo-diagnostics.png", width: 1920, height: 1080 },
+    { name: "Suburban Diagnostics", logo: "/clients/suburban-diagnostics.webp", width: 226, height: 63 },
+    { name: "Nova IVF Fertility", logo: "/clients/nova-ivf.webp", width: 350, height: 54 },
+    { name: "Decathlon India", logo: "/clients/decathlon.svg", width: 188, height: 28 },
   ],
 };
 

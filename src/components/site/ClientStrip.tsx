@@ -30,18 +30,23 @@ export function ClientStrip() {
           <h2 id="clients-title" className="text-label-index tracking-widest text-ink/70">
             {clients.heading}
           </h2>
-          <span className="text-label-index text-[0.6875rem] text-ink/50">{clients.note}</span>
         </div>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
-          {clients.names.map((name) => (
+          {clients.items.map(({ name, logo, width, height }) => (
             <li
               key={name}
               data-client
-              className="flex min-h-20 items-center justify-center border border-ink/20 bg-paper px-3 py-4 text-center transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-hard-xs"
+              className="flex min-h-28 items-center justify-center border border-ink/20 bg-paper px-3 py-4 text-center transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-hard-xs"
             >
-              <span className="font-display text-[0.95rem] font-bold uppercase leading-tight tracking-tight text-ink sm:text-base lg:text-lg">
-                {name}
-              </span>
+              <img
+                src={logo}
+                alt={name}
+                width={width}
+                height={height}
+                loading="lazy"
+                decoding="async"
+                className="h-16 w-full max-w-44 object-contain"
+              />
             </li>
           ))}
         </ul>
