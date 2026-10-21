@@ -46,7 +46,7 @@
 | **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The city is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
 | **7. Geographic Coverage** | `src/components/site/Sections.tsx` (`Coverage`) |  Implemented | Interactive selector for 7 regions: Mumbai, Pune, Bengaluru, Hyderabad, Dharashiv, Latur, and Gujarat (Region). No invented claims or inaccurate map pins. |
 | **8. Team** | `src/components/site/Sections.tsx` (`Team`) |  Implemented (Roster Pending) | 6-card grid with numbered graphic badges ("The brief", "The plan", "The places", etc.). Real portraits, names, and roles to be inserted once approved. |
-| **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Offline Mode) | Accessible form with validation (Name, Phone, Company, Email, Service, Brief). Currently prepares client-side brief file for download with clear disclaimer. Google Sheet API & WhatsApp link to be connected once credentials arrive. |
+| **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Offline Mode) | Accessible form with validation (Name, Phone, Company, Email, Service, Brief). Currently prepares client-side brief file for download with clear disclaimer. Email, call and WhatsApp links use confirmed details from src/content/site.ts. Automatic form delivery still needs a secure destination. |
 | **10. Footer** | `src/components/site/Sections.tsx` (`Footer`) |  Implemented | Brand wordmark, tagline, navigation anchors, enquiry CTA, privacy notice modal link, and copyright notice. |
 
 ---
@@ -56,8 +56,8 @@
 Before public deployment, the following assets and approvals are required:
 1. **Brand Assets:** Vector SVG / transparent PNG logo and approved brand guidelines.
 2. **Contact Coordinates:**
-   - Business email address (resolve discrepancy: `ad@theadcompany.in` vs `add@theadcompany.in`).
-   - Official WhatsApp number with country code.
+   - Confirmed business email: `ad@theadcompany.com`.
+   - Confirmed phone and WhatsApp: `+91 77150 01514` (link format `917715001514`).
    - Physical office address and verified Google Maps link.
 3. **Client & Work Assets:**
    - Vector logos for approved client brands.

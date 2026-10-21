@@ -47,13 +47,12 @@ export const company = {
   wordmark: "THE AD COMPANY",
   tagline: "Committed to commitments.",
   concept: "The city is our canvas.",
-  /** Confirmed contact details have not been supplied yet. */
   contact: {
-    email: null as string | null,
-    phone: null as string | null,
+    email: "ad@theadcompany.com",
+    phone: "+91 77150 01514",
     address: null as string | null,
-    /** International format without "+" or spaces, e.g. "91XXXXXXXXXX". Unconfirmed — keep null. */
-    whatsapp: null as string | null,
+    /** International format without "+" or spaces. */
+    whatsapp: "917715001514",
   },
   social: {
     instagram: null as string | null,
@@ -217,10 +216,14 @@ export const contact = {
   copy: "Tell us what you have in mind. Let’s talk about where your brand could show up next.",
   submitLabel: "Request a callback",
   whatsappLabel: "Chat on WhatsApp",
+  briefNote: "Prepare your campaign brief here, then share it by email or WhatsApp. You can also call us directly.",
+  downloadStatus: "Your brief is ready to download. Nothing has been sent yet. Share the file using the email or WhatsApp links on this page.",
+  privacyNote: "Your form details remain in this browser tab until you leave or refresh. Downloading creates a text file on your device; no form data is sent to a server or saved in browser storage. Email, phone and WhatsApp links open their respective apps, where you choose what to send. This site loads its typefaces from Google Fonts. Automatic enquiry delivery and a full business privacy notice are pending.",
   privacy:
     "Development version: this form is not connected to a destination yet. Details you submit are checked and then discarded — they are not stored, forwarded or shared. A full privacy notice will be added before launch.",
 };
 
 export const footer = {
   copyright: "© 2026 The Ad Company.",
+  buildNote: "First website build. Campaign portfolio and team profiles are awaiting confirmation.",
 };
