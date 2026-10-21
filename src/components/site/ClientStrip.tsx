@@ -40,7 +40,7 @@ export function ClientStrip() {
               className="flex min-h-28 items-center justify-center border border-ink/20 bg-paper px-3 py-4 text-center transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-hard-xs"
             >
               <img
-                src={logo}
+                src={`${import.meta.env.BASE_URL}${logo.slice(1)}`}
                 alt={name}
                 width={width}
                 height={height}
