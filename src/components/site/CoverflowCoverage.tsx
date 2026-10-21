@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { coverage } from "@/content/site";
 import { gsap, MQ, useGSAP } from "@/lib/motion";
-import { coveragePose } from "@/lib/coverage-motion.mjs";
+import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
 
 const TOTAL = coverage.locations.length;
 
@@ -23,20 +23,30 @@ export function CoverflowCoverage() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const cards = useRef<(HTMLButtonElement | null)[]>([]);
+  const titles = useRef<(HTMLSpanElement | null)[]>([]);
   const activeRef = useRef(0);
   const [active, setActive] = useState(0);
   const navigate = useRef<(index: number, focusCard?: boolean) => void>(() => {});
   const keyboardTarget = useRef<number | null>(null);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
 
-  const renderPosition = useCallback((position: number) => {
+  const renderPosition = useCallback((progress: number) => {
+    const frame = coverageFrame(progress);
+    const position = frame.position;
+    titles.current.forEach((title, index) => {
+      if (!title) return;
+      const opacity = index === frame.title ? frame.opacity : 0;
+      title.style.opacity = String(opacity);
+      title.style.transform = `translateY(${(1 - opacity) * 18}px)`;
+    });
     cards.current.forEach((card, index) => {
       if (!card) return;
-      const pose = coveragePose(index - position);
+      const distance = coverageDistance(index, position, TOTAL);
+      const pose = coveragePose(distance);
       card.style.transform = `translateX(${pose.x}%) translateZ(${pose.z}px) rotateY(${pose.rotation}deg) scale(${pose.scale})`;
       card.style.opacity = String(pose.opacity);
       card.style.visibility = pose.opacity > .02 ? "visible" : "hidden";
-      card.style.zIndex = String(20 - Math.round(Math.abs(index - position) * 4));
+      card.style.zIndex = String(20 - Math.round(Math.abs(distance) * 4));
     });
     const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(position)));
     if (nearest !== activeRef.current) { activeRef.current = nearest; setActive(nearest); }
@@ -65,6 +75,7 @@ export function CoverflowCoverage() {
           scrollTrigger: {
             trigger: section, start: "top top+=80", end: () => `+=${window.innerHeight * 2.1}`,
             pin: scene, scrub: .55, invalidateOnRefresh: true,
+            snap: { snapTo: 1 / (TOTAL - 1), directional: false, delay: .18, duration: { min: .18, max: .4 }, ease: "power2.out" },
           },
         });
       }
@@ -141,7 +152,9 @@ export function CoverflowCoverage() {
         if (Math.abs(x) > 45 && Math.abs(x) > Math.abs(y) * 1.4) navigate.current(activeRef.current + (x < 0 ? 1 : -1));
       }}>
         <div className="cov-horizon" aria-hidden="true" />
-        <div className="cov-watermark" aria-hidden="true">{coverage.locations[active].name}</div>
+        <div className="cov-watermark" aria-hidden="true">
+          {coverage.locations.map((location, index) => <span key={location.name} ref={element => { titles.current[index] = element; }} style={{ opacity: index === 0 ? 1 : 0 }}>{location.name}</span>)}
+        </div>
         <div className="cov-cards-perspective">
           {coverage.locations.map((location, index) => <button key={location.name} type="button"
             ref={element => { cards.current[index] = element; }}
