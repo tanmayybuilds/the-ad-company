@@ -20,6 +20,9 @@ export type Service = {
 
 export type Project = {
   id: string;
+  title?: string;
+  deliverables?: string[];
+  video?: { src: string; poster?: string; alt: string };
   featured?: boolean;
   client: string | null;
   service: string | null;
@@ -79,6 +82,11 @@ export const hero = {
 
 export const clients = {
   heading: "Brands we’ve worked with",
+  interactionHint: "Hover, tap or focus a brand to explore.",
+  pending: "Campaign showcase coming soon",
+  pause: "Pause brand animation",
+  resume: "Resume brand animation",
+  preview: "Preview",
   items: [
     { name: "Malabar Gold and Diamonds", logo: "/clients/malabar-gold-diamonds.svg", width: 255, height: 52, background: "#20201E" },
     { name: "TDF Diamonds & Gold", logo: "/clients/tdf-diamonds-gold.webp", width: 152, height: 152 },
@@ -168,7 +176,7 @@ export const work = {
     { id: "p1", featured: true, client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
     { id: "p2", client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
     { id: "p3", client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
-  ] satisfies Project[],
+  ] as Project[],
 };
 
 export const about = {

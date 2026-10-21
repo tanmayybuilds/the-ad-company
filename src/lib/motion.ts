@@ -16,7 +16,7 @@ export const MOTION = {
     y: 18,
   },
   reveal: { duration: 0.7, y: 24, yMobile: 12, start: "top 88%" },
-  clients: { road: 0.6, building: 0.7, sign: 0.65, stagger: 0.035, tilt: 2.5, settle: 0.7 },
+  clients: { degreesPerSecond: 22.5, pixelsPerSecond: 32 },
   services: { indicator: 0.45, image: 0.6 },
   work: { wipe: 0.9, stagger: 0.18 },
   process: { line: 1.0, step: 0.55, stagger: 0.28 },

@@ -1,87 +1,194 @@
-import { useRef } from "react";
-import { clients, company } from "@/content/site";
+import { useEffect, useRef, useState } from "react";
+import { clients, work, type Project } from "@/content/site";
 import { gsap, MOTION, MQ, useGSAP } from "@/lib/motion";
+import { cardAngle, loopOffset } from "@/lib/brand-motion.mjs";
+
+const asset = (src: string) => src.startsWith("/") ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
+
+function CampaignPreview({ projects, active, motion }: { projects: Project[]; active: boolean; motion: boolean }) {
+  const [slide, setSlide] = useState(0);
+  const photos = projects.flatMap(project => project.photos);
+  const video = projects.find(project => project.video)?.video;
+  useEffect(() => {
+    if (!active || !motion || photos.length < 2) return;
+    const timer = setInterval(() => setSlide(value => (value + 1) % photos.length), 3000);
+    return () => clearInterval(timer);
+  }, [active, motion, photos.length]);
+  const photo = photos[slide % photos.length];
+  return <>
+    {active && motion && video ? <video src={asset(video.src)} poster={video.poster ? asset(video.poster) : undefined} aria-label={video.alt} autoPlay muted loop playsInline preload="none" />
+      : video?.poster ? <img src={asset(video.poster)} alt={video.alt} loading="lazy" />
+      : photo ? <img src={asset(photo.src)} alt={photo.alt} loading="lazy" /> : null}
+    <span className="brand-project-copy">
+      {projects.length ? projects.map(project => <span key={project.id} className="brand-project">
+        {(project.title || project.service) && <strong>{project.title || project.service}</strong>}
+        {project.description && <span>{project.description}</span>}
+        {project.deliverables?.length ? <span className="brand-tags">{project.deliverables.map(tag => <span key={tag}>{tag}</span>)}</span> : null}
+      </span>) : <span>{clients.pending}</span>}
+    </span>
+  </>;
+}
 
 export function ClientStrip() {
   const root = useRef<HTMLElement>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [focused, setFocused] = useState<number | null>(null);
+  const [pinned, setPinned] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [motion, setMotion] = useState(false);
+  const active = pinned ?? focused ?? hovered;
+  const control = useRef({ active, paused });
+  const focusCard = useRef<(index: number) => void>(() => {});
+  const touchStart = useRef<{ id: number; x: number; y: number } | null>(null);
+  useEffect(() => { control.current = { active, paused }; }, [active, paused]);
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add({ motion: MQ.motion, fine: MQ.finePointer, desktop: MQ.desktop }, (context) => {
-        if (!context.conditions?.motion) return;
-
-        const timing = MOTION.clients;
-        gsap.timeline({
-          defaults: { ease: MOTION.ease },
-          scrollTrigger: { trigger: root.current, start: "top 82%", once: true },
-        })
-          .from("[data-boulevard-road]", { scaleX: 0, transformOrigin: "left center", duration: timing.road }, 0)
-          .from("[data-client-building]", { scaleY: 0.2, y: 18, opacity: 0, transformOrigin: "center bottom", duration: timing.building, stagger: timing.stagger }, 0.15)
-          .from("[data-client-sign]", { rotationX: -65, y: 24, opacity: 0, transformOrigin: "center bottom", duration: timing.sign, stagger: timing.stagger }, 0.55)
-          .from("[data-boulevard-beacon]", { scale: 0, opacity: 0, duration: 0.3 }, 1.7);
-
-        if (!context.conditions.fine || !context.conditions.desktop) return;
-        const stage = root.current?.querySelector<HTMLElement>("[data-boulevard-stage]");
-        const world = stage?.parentElement;
-        if (!stage || !world) return;
-        const rotateX = gsap.quickTo(stage, "rotationX", { duration: timing.settle, ease: MOTION.ease });
-        const rotateY = gsap.quickTo(stage, "rotationY", { duration: timing.settle, ease: MOTION.ease });
-        const move = (event: PointerEvent) => {
-          const rect = world.getBoundingClientRect();
-          const x = gsap.utils.clamp(-1, 1, (event.clientX - rect.left) / Math.max(rect.width, 1) * 2 - 1);
-          const y = gsap.utils.clamp(-1, 1, (event.clientY - rect.top) / Math.max(rect.height, 1) * 2 - 1);
-          rotateX(5 - y * timing.tilt);
-          rotateY(x * timing.tilt);
-        };
-        const reset = () => { rotateX(5); rotateY(0); };
-        world.addEventListener("pointermove", move);
-        world.addEventListener("pointerleave", reset);
-        return () => {
-          world.removeEventListener("pointermove", move);
-          world.removeEventListener("pointerleave", reset);
-        };
+  useGSAP(() => {
+    const section = root.current!;
+    const track = section.querySelector<HTMLElement>("[data-brand-track]")!;
+    const group = track.firstElementChild as HTMLElement;
+    const cards = [...section.querySelectorAll<HTMLElement>("[data-brand-card]")];
+    const spins = cards.map(card => card.querySelector<HTMLElement>(".brand-spin")!);
+    const mm = gsap.matchMedia();
+    mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
+      const motion = !!context.conditions?.motion;
+      setMotion(motion);
+      let global = 0;
+      let offset = 0;
+      let width = group.getBoundingClientRect().width;
+      let visible = false;
+      let listening = false;
+      const angles = cards.map(() => 0);
+      let previousSelected: number | null = null;
+      section.dataset.motion = String(motion);
+      if (motion) gsap.fromTo(section, { "--brand-expansion": 0 }, {
+        "--brand-expansion": 1, ease: "none",
+        scrollTrigger: { trigger: section, start: "top bottom", end: "top 40%", scrub: 0.6 },
       });
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+      else section.style.setProperty("--brand-expansion", "1");
 
-  return (
-    <section ref={root} aria-labelledby="clients-title" className="client-boulevard section-y border-b hairline bg-ivory">
-      <div className="container-page">
-        <h2 id="clients-title" className="text-display-md max-w-3xl">{clients.heading}</h2>
-        <div className="boulevard-world">
-          <div className="boulevard-stage" data-boulevard-stage>
-            <div className="boulevard-road" data-boulevard-road aria-hidden="true">
-              <span>{company.concept}</span>
-              <i data-boulevard-beacon />
-            </div>
-            <ul className="boulevard-blocks">
-              {clients.items.map(({ name, logo, width, height, background }) => (
-                <li key={name} data-client className="boulevard-lot">
-                  <div className="boulevard-building" data-client-building aria-hidden="true"><span /></div>
-                  <div className="boulevard-sign" data-client-sign>
-                    <div className="boulevard-face" style={{ backgroundColor: background }}>
-                      <img
-                        src={`${import.meta.env.BASE_URL}${logo.slice(1)}`}
-                        alt={name}
-                        width={width}
-                        height={height}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-16 w-full max-w-44 object-scale-down"
-                      />
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="boulevard-tree boulevard-tree-left" aria-hidden="true" />
-            <div className="boulevard-tree boulevard-tree-right" aria-hidden="true" />
-          </div>
-        </div>
+      const resize = new ResizeObserver(() => {
+        const next = group.getBoundingClientRect().width;
+        offset = width ? offset / width * next : 0;
+        width = next;
+      });
+      resize.observe(group);
+      focusCard.current = index => {
+        if (!motion) return;
+        const pitch = width / clients.items.length;
+        offset = index * pitch - window.innerWidth / 2 + pitch / 2;
+        track.style.transform = `translate3d(${-offset}px,0,0)`;
+      };
+      const tick = (_time: number, delta: number) => {
+        const { active: selected, paused: stopped } = control.current;
+        const dt = Math.min(delta / 1000, 0.05);
+        const advance = motion && !stopped ? MOTION.clients.degreesPerSecond * dt : 0;
+        global += advance;
+        if (motion && !stopped && selected === null) {
+          offset = loopOffset(offset + MOTION.clients.pixelsPerSecond * dt, width);
+          track.style.transform = `translate3d(${-offset}px,0,0)`;
+        }
+        cards.forEach((card, index) => {
+          const selectedCard = selected === index;
+          const angle = motion ? cardAngle(angles[index] - (selectedCard ? advance : 0), global, selectedCard, dt) : selectedCard ? 180 : 0;
+          angles[index] = angle - global;
+          const transform = `rotateY(${angle}deg)`;
+          if (spins[index].style.transform !== transform) spins[index].style.transform = transform;
+          if (previousSelected !== selected) card.classList.toggle("is-active", selectedCard);
+        });
+        if (selected !== null && selected !== previousSelected) {
+          const card = cards[selected];
+          const rect = card.getBoundingClientRect();
+          const half = (card.firstElementChild as HTMLElement).offsetWidth * .9;
+          const center = rect.left + rect.width / 2;
+          const shift = Math.max(half + 12, Math.min(window.innerWidth - half - 12, center)) - center;
+          card.style.setProperty("--brand-shift", `${shift}px`);
+        }
+        previousSelected = selected;
+      };
+      const visibility = () => {
+        const run = visible && !document.hidden;
+        setPlaying(run);
+        if (run && !listening) { gsap.ticker.add(tick); listening = true; }
+        if (!run && listening) { gsap.ticker.remove(tick); listening = false; }
+      };
+      const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; visibility(); });
+      observer.observe(section);
+      document.addEventListener("visibilitychange", visibility);
+      return () => {
+        gsap.ticker.remove(tick);
+        observer.disconnect(); resize.disconnect();
+        document.removeEventListener("visibilitychange", visibility);
+        track.style.transform = "";
+        spins.forEach(spin => { spin.style.transform = ""; });
+        cards.forEach(card => card.classList.remove("is-active"));
+        focusCard.current = () => {};
+      };
+    });
+    return () => mm.revert();
+  }, { scope: root });
+
+  const dismiss = () => { setPinned(null); setHovered(null); setFocused(null); };
+  const selectedClient = active === null ? null : clients.items[active % clients.items.length];
+  const selectedProjects = selectedClient ? work.projects.filter(project => project.client === selectedClient.name) : [];
+  return <section ref={root} className="brand-marquee section-y" aria-labelledby="clients-title" data-preview={active !== null} data-paused={paused} data-playing={playing}
+    onKeyDown={event => { if (event.key === "Escape") { dismiss(); (document.activeElement as HTMLElement)?.blur(); } }}>
+    <div className="brand-dust" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+    <div className="container-page brand-heading">
+      <h2 id="clients-title" className="text-display-md max-w-3xl">{clients.heading}</h2>
+      <button type="button" className="brand-pause" aria-label={paused ? clients.resume : clients.pause} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>
+    </div>
+    <p className="container-page brand-hint">{clients.interactionHint}</p>
+    <div className="brand-stage">
+      <div className="brand-track" data-brand-track>
+        {[0, 1].map(copy => <div className="brand-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>
+          {clients.items.map((client, index) => {
+            const id = copy * clients.items.length + index;
+            const projects = work.projects.filter(project => project.client === client.name);
+            const Tag = copy ? "div" : "button";
+            return <div className="brand-slot" key={client.name} data-brand-card
+              onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }}
+              onPointerLeave={() => setHovered(null)}>
+              <Tag className="brand-lift" type={copy ? undefined : "button"} aria-label={copy ? undefined : `${clients.preview} ${client.name}`}
+                aria-expanded={copy ? undefined : active === id}
+                aria-describedby={!copy && active === id ? "brand-preview-description" : undefined}
+                onFocus={copy ? undefined : event => {
+                  if (event.currentTarget.matches(":focus-visible")) { setFocused(id); focusCard.current(index); }
+                }}
+                onBlur={copy ? undefined : () => { setFocused(null); setPinned(null); }}
+                onPointerDown={event => {
+                  // Pointer previews must not acquire keyboard focus and remain stuck after mouseleave.
+                  if (event.pointerType === "mouse") event.preventDefault();
+                  else touchStart.current = { id, x: event.clientX, y: event.clientY };
+                }}
+                onPointerCancel={() => { touchStart.current = null; }}
+                onPointerUp={event => {
+                  const start = touchStart.current;
+                  touchStart.current = null;
+                  if (start?.id === id && Math.hypot(event.clientX - start.x, event.clientY - start.y) < 8) {
+                    event.preventDefault();
+                    setPinned(value => value === id ? null : id);
+                  }
+                }}>
+                <span className="brand-spin">
+                  <span className="brand-face brand-front">
+                    <span className="brand-logo" style={{ backgroundColor: client.background || "#f5f1e8" }}>
+                      <img src={asset(client.logo)} alt={client.name} width={client.width} height={client.height} loading="lazy" decoding="async" />
+                    </span>
+                  </span>
+                  <span className="brand-face brand-back">
+                    <strong className="brand-name">{client.name}</strong>
+                    <CampaignPreview projects={projects} active={active === id && !paused && playing} motion={motion} />
+                  </span>
+                </span>
+              </Tag>
+            </div>;
+          })}
+        </div>)}
       </div>
-    </section>
-  );
+    </div>
+    <div id="brand-preview-description" className="sr-only" role="status">
+      {selectedClient && <>{selectedClient.name}. {selectedProjects.length ? selectedProjects.map(project => [project.title, project.description, project.deliverables?.join(", ")].filter(Boolean).join(". ")).join(". ") : clients.pending}</>}
+    </div>
+  </section>;
 }
