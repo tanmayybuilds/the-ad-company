@@ -33,6 +33,7 @@ export function CoverflowCoverage() {
   const lastStepTime = useRef(0);
   const lastWheelTime = useRef(0);
   const lastWheelDelta = useRef(0);
+  const skipToTeam = useRef<() => void>(() => {});
 
   const renderPosition = useCallback((progress: number) => {
     const frame = coverageFrame(progress);
@@ -236,6 +237,16 @@ export function CoverflowCoverage() {
         keyboardTarget.current = null;
       };
 
+      skipToTeam.current = () => {
+        cancelTravel();
+        const trigger = triggerInstance;
+        if (trigger && isTallDesktop) {
+          window.scrollTo({ top: trigger.end + 24, behavior: "smooth" });
+        } else {
+          document.getElementById("team")?.scrollIntoView({ behavior: "smooth" });
+        }
+      };
+
       const keyTravel = (event: KeyboardEvent) => {
         if (["PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
       };
@@ -282,6 +293,9 @@ export function CoverflowCoverage() {
         navigate.current((keyboardTarget.current ?? activeRef.current) + (event.key === "ArrowRight" ? 1 : -1), fromCard);
       }
     }}>
+      <a href="#team" className="cov-skip-btn" onClick={event => { event.preventDefault(); skipToTeam.current(); }} aria-label="Skip where we work section">
+        SKIP <span>↓</span>
+      </a>
       <header className="cov-header container-page">
         <div><p className="cov-eyebrow">{coverage.label}</p><h2 id="coverage-title">{coverage.heading}</h2></div>
         <p className="cov-intro">{coverage.intro}</p>

@@ -868,6 +868,10 @@
 .cov-arrows button:disabled { opacity: .35; cursor: default; }
 .cov-footnote { max-width: 380px; color: #c1ccb6; font-size: 11px; line-height: 1.45; }
 .cov-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 11px 16px; border-radius: 6px; background: #d7ed64; color: #20251f; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.cov-skip-btn { position: absolute; top: clamp(14px, 2.2vw, 24px); right: clamp(16px, 3vw, 40px); z-index: 12; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; font: 600 10px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; color: #9baa8b; background: rgba(43, 56, 45, 0.68); border: 1px solid rgba(124, 143, 113, 0.38); border-radius: 999px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); transition: color .2s, background .2s, border-color .2s, transform .2s; cursor: pointer; }
+.cov-skip-btn span { font-size: 11px; line-height: 1; color: #7d8f71; transition: transform .2s, color .2s; }
+.cov-skip-btn:hover { color: #d7ed64; background: rgba(53, 67, 54, 0.95); border-color: rgba(215, 237, 100, 0.5); transform: translateY(1px); }
+.cov-skip-btn:hover span { color: #d7ed64; transform: translateY(2px); }
 .cov-stage button:focus-visible, .cov-stage a:focus-visible { outline: 3px solid #f45b32; outline-offset: 5px; }
 @media (max-width: 1023px) {
   .cov-card { width: 50vw; }
