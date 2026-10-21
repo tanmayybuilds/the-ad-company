@@ -205,6 +205,13 @@ export const about = {
 export const coverage = {
   heading: "Where we work.",
   label: "Cities and regions",
+  intro: "Pan-India possibilities. Local presence.",
+  explore: "Explore a campaign in",
+  visualNote: "Illustrative city scene · campaign photographs to follow",
+  interactionHint: "Scroll to travel. Select a city to explore.",
+  cta: "Discuss availability",
+  previous: "Previous location",
+  next: "Next location",
   pendingNote: "Provisional list — final coverage confirmation pending.",
   locations: [
     { name: "Mumbai", kind: "City", state: "Maharashtra" },
