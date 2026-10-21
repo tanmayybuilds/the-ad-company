@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cardAngle, loopOffset } from '../src/lib/brand-motion.mjs';
+import { brandRotation, cardAngle, loopOffset } from '../src/lib/brand-motion.mjs';
 
 test('all resting cards use the exact shared angle, including wraparound', () => {
   for (const global of [0, 75, 359.9, 360, 720.5]) {
@@ -46,4 +46,18 @@ test('hover stays on the same face when the master clock passes a full revolutio
   }
   for (let frame = 0; frame < 180; frame++) offset = cardAngle(offset, 1080, false, 1 / 60) - 1080;
   assert.equal(offset, 0);
+});
+
+test('the shared flip cycle spends most of its time on fully readable faces', () => {
+  let readable = 0;
+  let previous = 0;
+  for (let step = 0; step <= 520; step++) {
+    const angle = brandRotation(step / 100, 5.2);
+    if (angle % 180 === 0) readable++;
+    assert.ok(angle >= previous, 'Flip direction must remain continuous');
+    previous = angle;
+  }
+  assert.ok(readable / 521 > .8);
+  assert.equal(brandRotation(5.2, 5.2), 360);
+  assert.equal(brandRotation(10.4, 5.2), 720);
 });

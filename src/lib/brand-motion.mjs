@@ -10,3 +10,13 @@ export function cardAngle(offset, global, active, dt) {
 export function loopOffset(offset, width) {
   return width > 0 ? ((offset % width) + width) % width : 0;
 }
+
+/** Dwell on readable faces; pass quickly through the edge-on angles. */
+export function brandRotation(seconds, cycleSeconds) {
+  const turn = seconds / cycleSeconds;
+  const phase = turn - Math.floor(turn);
+  const ease = value => value * value * (3 - 2 * value);
+  const angle = phase < .58 ? 0 : phase < .66 ? 180 * ease((phase - .58) / .08)
+    : phase < .90 ? 180 : phase < .98 ? 180 + 180 * ease((phase - .90) / .08) : 360;
+  return Math.floor(turn) * 360 + angle;
+}

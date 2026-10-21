@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { clients, work, type Project } from "@/content/site";
+import { clients, work } from "@/content/site";
 import { gsap, MOTION, MQ, useGSAP } from "@/lib/motion";
-import { cardAngle, loopOffset } from "@/lib/brand-motion.mjs";
+import { loopOffset } from "@/lib/brand-motion.mjs";
 
 const asset = (src: string) => src.startsWith("/") ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
 
-function CampaignPreview({ projects, active, motion }: { projects: Project[]; active: boolean; motion: boolean }) {
+export function CampaignPreview({ clientName, active, motion }: { clientName: string; active: boolean; motion: boolean }) {
+  const projects = work.projects.filter(project => project.client === clientName);
   const [slide, setSlide] = useState(0);
   const photos = projects.flatMap(project => project.photos);
   const video = projects.find(project => project.video)?.video;
@@ -33,162 +34,362 @@ export function ClientStrip() {
   const root = useRef<HTMLElement>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [focused, setFocused] = useState<number | null>(null);
-  const [pinned, setPinned] = useState<number | null>(null);
+  const [preview, setPreview] = useState<number | null>(null);
+  const [pinned, setPinned] = useState(false);
   const [paused, setPaused] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [motion, setMotion] = useState(false);
-  const active = pinned ?? focused ?? hovered;
+
+  const active = preview ?? focused ?? hovered;
   const control = useRef({ active, paused });
   const focusCard = useRef<(index: number) => void>(() => {});
-  const touchStart = useRef<{ id: number; x: number; y: number } | null>(null);
-  useEffect(() => { control.current = { active, paused }; }, [active, paused]);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    control.current = { active, paused };
+  }, [active, paused]);
+
+  const clearCloseTimer = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  const scheduleClose = () => {
+    clearCloseTimer();
+    closeTimer.current = setTimeout(() => {
+      setPreview(null);
+      setPinned(false);
+    }, 220);
+  };
+
+  const closePreview = () => {
+    clearCloseTimer();
+    const keyboard = root.current?.querySelector(".brand-popover")?.contains(document.activeElement);
+    const lastPreview = preview;
+    setPreview(null);
+    setPinned(false);
+    setHovered(null);
+    if (keyboard && lastPreview !== null) {
+      root.current?.querySelectorAll<HTMLButtonElement>("button.brand-lift")[lastPreview % clients.items.length]?.focus({ preventScroll: true });
+    }
+  };
+
+  const openPreview = (id: number, pin = false) => {
+    clearCloseTimer();
+    setPreview(id);
+    if (pin) setPinned(true);
+  };
+
+  useEffect(() => {
+    if (preview === null) return;
+    const outside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) {
+        closePreview();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [preview]);
 
   useGSAP(() => {
     const section = root.current!;
     const track = section.querySelector<HTMLElement>("[data-brand-track]")!;
     const group = track.firstElementChild as HTMLElement;
     const cards = [...section.querySelectorAll<HTMLElement>("[data-brand-card]")];
-    const spins = cards.map(card => card.querySelector<HTMLElement>(".brand-spin")!);
     const mm = gsap.matchMedia();
+
     mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
-      const motion = !!context.conditions?.motion;
-      setMotion(motion);
-      let global = 0;
+      const isMotion = !!context.conditions?.motion;
+      setMotion(isMotion);
       let offset = 0;
       let width = group.getBoundingClientRect().width;
       let visible = false;
       let listening = false;
-      const angles = cards.map(() => 0);
       let previousSelected: number | null = null;
-      section.dataset.motion = String(motion);
-      if (motion) gsap.fromTo(section, { "--brand-expansion": 0 }, {
-        "--brand-expansion": 1, ease: "none",
-        scrollTrigger: { trigger: section, start: "top bottom", end: "top 40%", scrub: 0.6 },
-      });
-      else section.style.setProperty("--brand-expansion", "1");
+      section.dataset.motion = String(isMotion);
+
+      if (isMotion) {
+        // Scrub smoothly from compact (0) to fully normalized (1) as user scrolls into the section
+        gsap.fromTo(section, { "--brand-expansion": 0 }, {
+          "--brand-expansion": 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 95%",
+            end: "top 25%",
+            scrub: 0.15,
+          },
+        });
+      } else {
+        section.style.setProperty("--brand-expansion", "1");
+      }
 
       const resize = new ResizeObserver(() => {
         const next = group.getBoundingClientRect().width;
-        offset = width ? offset / width * next : 0;
-        width = next;
+        if (next > 0) {
+          offset = width > 0 ? (offset / width) * next : 0;
+          width = next;
+        }
       });
       resize.observe(group);
+
       focusCard.current = index => {
-        if (!motion) return;
-        const pitch = width / clients.items.length;
+        if (!isMotion) return;
+        const currentWidth = group.offsetWidth || width;
+        const pitch = currentWidth / clients.items.length;
         offset = index * pitch - window.innerWidth / 2 + pitch / 2;
         track.style.transform = `translate3d(${-offset}px,0,0)`;
       };
+
       const tick = (_time: number, delta: number) => {
         const { active: selected, paused: stopped } = control.current;
         const dt = Math.min(delta / 1000, 0.05);
-        const advance = motion && !stopped ? MOTION.clients.degreesPerSecond * dt : 0;
-        global += advance;
-        if (motion && !stopped && selected === null) {
+
+        // Keep track offset synchronized with dynamic scroll expansion
+        const currentWidth = group.offsetWidth;
+        if (currentWidth > 0 && Math.abs(currentWidth - width) > 0.5) {
+          offset = width > 0 ? (offset / width) * currentWidth : offset;
+          width = currentWidth;
+        }
+
+        // Advance marquee smoothly when not paused and no card is hovered/interacted
+        if (isMotion && !stopped && selected === null && width > 0) {
           offset = loopOffset(offset + MOTION.clients.pixelsPerSecond * dt, width);
           track.style.transform = `translate3d(${-offset}px,0,0)`;
         }
-        cards.forEach((card, index) => {
-          const selectedCard = selected === index;
-          const angle = motion ? cardAngle(angles[index] - (selectedCard ? advance : 0), global, selectedCard, dt) : selectedCard ? 180 : 0;
-          angles[index] = angle - global;
-          const transform = `rotateY(${angle}deg)`;
-          if (spins[index].style.transform !== transform) spins[index].style.transform = transform;
-          if (previousSelected !== selected) card.classList.toggle("is-active", selectedCard);
-        });
-        if (selected !== null && selected !== previousSelected) {
-          const card = cards[selected];
-          const rect = card.getBoundingClientRect();
-          const half = (card.firstElementChild as HTMLElement).offsetWidth * .9;
-          const center = rect.left + rect.width / 2;
-          const shift = Math.max(half + 12, Math.min(window.innerWidth - half - 12, center)) - center;
-          card.style.setProperty("--brand-shift", `${shift}px`);
+
+        // Toggle active states for cards
+        if (previousSelected !== selected) {
+          cards.forEach((card, index) => {
+            const isCardActive = selected === index;
+            card.classList.toggle("is-active", isCardActive);
+          });
+          previousSelected = selected;
         }
-        previousSelected = selected;
       };
+
       const visibility = () => {
         const run = visible && !document.hidden;
         setPlaying(run);
         if (run && !listening) { gsap.ticker.add(tick); listening = true; }
         if (!run && listening) { gsap.ticker.remove(tick); listening = false; }
       };
-      const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; visibility(); });
+
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        visibility();
+      });
       observer.observe(section);
       document.addEventListener("visibilitychange", visibility);
+
       return () => {
         gsap.ticker.remove(tick);
-        observer.disconnect(); resize.disconnect();
+        observer.disconnect();
+        resize.disconnect();
         document.removeEventListener("visibilitychange", visibility);
         track.style.transform = "";
-        spins.forEach(spin => { spin.style.transform = ""; });
         cards.forEach(card => card.classList.remove("is-active"));
         focusCard.current = () => {};
       };
     });
+
     return () => mm.revert();
   }, { scope: root });
 
-  const dismiss = () => { setPinned(null); setHovered(null); setFocused(null); };
-  const selectedClient = active === null ? null : clients.items[active % clients.items.length];
-  const selectedProjects = selectedClient ? work.projects.filter(project => project.client === selectedClient.name) : [];
-  return <section ref={root} className="brand-marquee section-y" aria-labelledby="clients-title" data-preview={active !== null} data-paused={paused} data-playing={playing}
-    onKeyDown={event => { if (event.key === "Escape") { dismiss(); (document.activeElement as HTMLElement)?.blur(); } }}>
-    <div className="brand-dust" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
-    <div className="container-page brand-heading">
-      <h2 id="clients-title" className="text-display-md max-w-3xl">{clients.heading}</h2>
-      <button type="button" className="brand-pause" aria-label={paused ? clients.resume : clients.pause} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>
-    </div>
-    <p className="container-page brand-hint">{clients.interactionHint}</p>
-    <div className="brand-stage">
-      <div className="brand-track" data-brand-track>
-        {[0, 1].map(copy => <div className="brand-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>
-          {clients.items.map((client, index) => {
-            const id = copy * clients.items.length + index;
-            const projects = work.projects.filter(project => project.client === client.name);
-            const Tag = copy ? "div" : "button";
-            return <div className="brand-slot" key={client.name} data-brand-card
-              onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }}
-              onPointerLeave={() => setHovered(null)}>
-              <Tag className="brand-lift" type={copy ? undefined : "button"} aria-label={copy ? undefined : `${clients.preview} ${client.name}`}
-                aria-expanded={copy ? undefined : active === id}
-                aria-describedby={!copy && active === id ? "brand-preview-description" : undefined}
-                onFocus={copy ? undefined : event => {
-                  if (event.currentTarget.matches(":focus-visible")) { setFocused(id); focusCard.current(index); }
-                }}
-                onBlur={copy ? undefined : () => { setFocused(null); setPinned(null); }}
-                onPointerDown={event => {
-                  // Pointer previews must not acquire keyboard focus and remain stuck after mouseleave.
-                  if (event.pointerType === "mouse") event.preventDefault();
-                  else touchStart.current = { id, x: event.clientX, y: event.clientY };
-                }}
-                onPointerCancel={() => { touchStart.current = null; }}
-                onPointerUp={event => {
-                  const start = touchStart.current;
-                  touchStart.current = null;
-                  if (start?.id === id && Math.hypot(event.clientX - start.x, event.clientY - start.y) < 8) {
-                    event.preventDefault();
-                    setPinned(value => value === id ? null : id);
-                  }
-                }}>
-                <span className="brand-spin">
-                  <span className="brand-face brand-front">
-                    <span className="brand-logo" style={{ backgroundColor: client.background || "#f5f1e8" }}>
-                      <img src={asset(client.logo)} alt={client.name} width={client.width} height={client.height} loading="lazy" decoding="async" />
-                    </span>
-                  </span>
-                  <span className="brand-face brand-back">
-                    <strong className="brand-name">{client.name}</strong>
-                    <CampaignPreview projects={projects} active={active === id && !paused && playing} motion={motion} />
-                  </span>
-                </span>
-              </Tag>
-            </div>;
-          })}
-        </div>)}
+  const selectedClient = preview === null ? null : clients.items[preview % clients.items.length];
+
+  return (
+    <section
+      ref={root}
+      className="brand-marquee"
+      aria-labelledby="clients-title"
+      data-preview={preview !== null}
+      data-paused={paused}
+      data-playing={playing}
+      onPointerLeave={() => {
+        if (focused === null && !pinned) scheduleClose();
+      }}
+      onKeyDown={event => {
+        if (event.key === "Escape") {
+          closePreview();
+        }
+      }}
+    >
+      <div className="brand-dust" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+      <div className="container-page brand-heading">
+        <div className="brand-heading-left">
+          <span className="text-label-index brand-index">[02 // BRANDS]</span>
+          <h2 id="clients-title" className="brand-heading-title">{clients.heading}</h2>
+        </div>
+        <div className="brand-heading-right">
+          <p className="brand-hint">{clients.interactionHint}</p>
+          <button
+            type="button"
+            className="brand-pause"
+            aria-label={paused ? clients.resume : clients.pause}
+            aria-pressed={paused}
+            onClick={() => setPaused(value => !value)}
+          >
+            {paused ? "▶" : "Ⅱ"}
+          </button>
+        </div>
       </div>
-    </div>
-    <div id="brand-preview-description" className="sr-only" role="status">
-      {selectedClient && <>{selectedClient.name}. {selectedProjects.length ? selectedProjects.map(project => [project.title, project.description, project.deliverables?.join(", ")].filter(Boolean).join(". ")).join(". ") : clients.pending}</>}
-    </div>
-  </section>;
+
+      <div className="brand-stage">
+        <div className="brand-track" data-brand-track>
+          {[0, 1].map(copy => (
+            <div className="brand-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>
+              {clients.items.map((client, index) => {
+                const id = copy * clients.items.length + index;
+                const Tag = copy ? "div" : "button";
+                const isSelected = active === id;
+                return (
+                  <div
+                    className={`brand-slot${isSelected ? " is-active" : ""}`}
+                    key={client.name}
+                    data-brand-card=""
+                    onPointerEnter={event => {
+                      if (event.pointerType === "mouse") {
+                        clearCloseTimer();
+                        setHovered(id);
+                      }
+                    }}
+                    onPointerLeave={event => {
+                      if (event.pointerType === "mouse") {
+                        setHovered(null);
+                        if (!pinned) scheduleClose();
+                      }
+                    }}
+                  >
+                    <Tag
+                      className="brand-lift"
+                      type={copy ? undefined : "button"}
+                      aria-label={copy ? undefined : `${clients.preview} ${client.name}`}
+                      aria-expanded={copy ? undefined : preview === id}
+                      aria-controls={!copy && preview === id ? "brand-preview" : undefined}
+                      onFocus={copy ? undefined : event => {
+                        if (event.currentTarget.matches(":focus-visible")) {
+                          setFocused(id);
+                          focusCard.current(index);
+                        }
+                      }}
+                      onBlur={copy ? undefined : () => setFocused(null)}
+                      onPointerDown={event => {
+                        if (event.pointerType === "mouse") event.preventDefault();
+                      }}
+                      onClick={() => {
+                        if (preview === id) {
+                          closePreview();
+                        } else {
+                          openPreview(id, true);
+                        }
+                      }}
+                    >
+                      <span className="brand-spin">
+                        {/* FRONT FACE: Logo */}
+                        <span className="brand-face brand-front">
+                          <span className="brand-logo" style={{ backgroundColor: client.background || "#f5f1e8" }}>
+                            <img
+                              src={asset(client.logo)}
+                              alt={client.name}
+                              width={client.width}
+                              height={client.height}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </span>
+                        </span>
+                        {/* BACK FACE: View More */}
+                        <span className="brand-face brand-back">
+                          <span className="brand-back-name">{client.name}</span>
+                          <span
+                            className="brand-view-more"
+                            onPointerEnter={event => {
+                              if (event.pointerType === "mouse") openPreview(id);
+                            }}
+                            onClick={event => {
+                              event.stopPropagation();
+                              openPreview(id, true);
+                            }}
+                          >
+                            <span>{clients.viewMore}</span>
+                            <span aria-hidden="true">↗</span>
+                          </span>
+                        </span>
+                      </span>
+                    </Tag>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* BRAND PREVIEW POPOVER MODAL */}
+        {selectedClient && (
+          <>
+            <div
+              className="brand-popover-backdrop is-open"
+              aria-hidden="true"
+              onClick={closePreview}
+            />
+            <aside
+              id="brand-preview"
+              className="brand-popover is-open"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="brand-preview-title"
+              onPointerEnter={clearCloseTimer}
+              onPointerLeave={() => {
+                if (!pinned) scheduleClose();
+              }}
+            >
+              <div className="brand-popover-header">
+                <div className="brand-popover-brand">
+                  <div className="brand-preview-logo" style={{ backgroundColor: selectedClient.background || "#f5f1e8" }}>
+                    <img
+                      src={asset(selectedClient.logo)}
+                      alt=""
+                      width={selectedClient.width}
+                      height={selectedClient.height}
+                    />
+                  </div>
+                  <div className="brand-popover-meta">
+                    <span className="brand-popover-tag">[BRAND CAMPAIGN]</span>
+                    <h3 id="brand-preview-title">{selectedClient.name}</h3>
+                  </div>
+                </div>
+                <button
+                  className="brand-close"
+                  type="button"
+                  aria-label={clients.closePreview}
+                  onClick={closePreview}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="brand-popover-body">
+                <CampaignPreview
+                  key={selectedClient.name}
+                  clientName={selectedClient.name}
+                  active={!paused && playing}
+                  motion={motion}
+                />
+              </div>
+
+              <div className="brand-popover-footer">
+                <a href="#contact" className="brand-popover-cta" onClick={closePreview}>
+                  <span>Discuss campaign like this</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            </aside>
+          </>
+        )}
+      </div>
+    </section>
+  );
 }

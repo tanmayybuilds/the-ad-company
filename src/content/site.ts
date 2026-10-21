@@ -82,7 +82,9 @@ export const hero = {
 
 export const clients = {
   heading: "Brands we’ve worked with",
-  interactionHint: "Hover, tap or focus a brand to explore.",
+  interactionHint: "Flip a card. Explore the work.",
+  viewMore: "View more",
+  closePreview: "Close brand preview",
   pending: "Campaign showcase coming soon",
   pause: "Pause brand animation",
   resume: "Resume brand animation",
