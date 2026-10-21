@@ -817,10 +817,10 @@
    COVERFLOW COVERAGE SECTION — 3D perspective carousel
    ──────────────────────────────────────────────────────── */
 
-/* Scroll wrapper — calibrated for energetic, low-latency scrolling */
+/* Scroll wrapper — calibrated for controlled, synchronized pacing */
 .cov-scroll-wrapper {
   position: relative;
-  height: 250vh;
+  height: 350vh;
 }
 
 /* Sticky inner stage — 100vh pinned viewport */
@@ -854,7 +854,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: cov-glow-pulse 3.5s ease-in-out infinite alternate;
+  animation: cov-glow-pulse 4s ease-in-out infinite alternate;
 }
 @keyframes cov-glow-pulse {
   from { opacity: 0.75; transform: translate(-50%, -50%) scale(0.97); }
@@ -868,10 +868,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: cov-rings-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: cov-rings-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes cov-rings-enter {
-  from { transform: translate(-50%, -50%) scale(0.97) rotate(-20deg); opacity: 0.35; }
+  from { transform: translate(-50%, -50%) scale(0.96) rotate(-30deg); opacity: 0.3; }
   to   { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
 }
 .cov-ring {
@@ -912,10 +912,10 @@
   color: var(--ink);
   opacity: 0.07;
   white-space: nowrap;
-  animation: cov-watermark-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: cov-watermark-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes cov-watermark-in {
-  from { opacity: 0; transform: translateY(-10px) scale(0.97); filter: blur(4px); }
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); filter: blur(6px); }
   to   { opacity: 0.07; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
@@ -924,7 +924,7 @@
   position: relative;
   z-index: 3;
   padding: max(1.5rem, calc(var(--header-h) + 1.5rem)) 0 0;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s;
 }
 .cov-header-recede {
   transform: translateY(-8px);
@@ -989,7 +989,7 @@
   justify-content: center;
 }
 
-/* Individual 3D card */
+/* Individual 3D card — continuously scrubbed via GPU matrix with zero transition delay */
 .cov-card {
   position: absolute;
   width: clamp(320px, 34vw, 460px);
@@ -999,10 +999,6 @@
   background: transparent;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition:
-    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.18s ease,
-    filter 0.18s ease;
   will-change: transform, opacity;
   color: var(--ink);
   text-align: left;
@@ -1024,7 +1020,7 @@
     inset 0 -12px 24px rgba(0, 0, 0, 0.06),
     0 20px 50px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: border-color 0.18s, box-shadow 0.18s;
+  transition: border-color 0.25s, box-shadow 0.25s;
   overflow: hidden;
 }
 
@@ -1054,13 +1050,13 @@
     0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Instant-response hover expansion state with live 120fps cursor parallax */
+/* Hover expansion state with dynamic cursor parallax */
 .cov-card-active.cov-card-focused {
   transform: translateX(0%) translateZ(110px) rotateY(var(--tilt-ry, 0deg)) rotateX(var(--tilt-rx, 0deg)) scale(1.14) !important;
   transition:
-    transform 0.08s ease-out,
-    box-shadow 0.15s,
-    border-color 0.15s !important;
+    transform 0.12s ease-out,
+    box-shadow 0.2s,
+    border-color 0.2s !important;
 }
 .cov-card-focused .cov-card-bezel {
   border-color: #D2F055;

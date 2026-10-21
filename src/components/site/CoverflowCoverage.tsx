@@ -10,91 +10,112 @@ const subLabel = (loc: (typeof coverage.locations)[0]) =>
 const classificationBadge = (loc: (typeof coverage.locations)[0]) =>
   loc.kind.toUpperCase() === "STATE / REGION" ? "STATE / REGION" : "CITY";
 
-/* ── 3D Card transform matrix based on relative offset d ── */
-function getCardStyle(d: number, isFocused: boolean): React.CSSProperties {
+/* ── Continuous 3D Transform Computation based on fractional offset d = i - pos ── */
+function computeContinuousTransform(d: number, isHoveredCenter: boolean) {
   const abs = Math.abs(d);
-  if (abs > 2) {
+  const sign = d < 0 ? -1 : 1;
+
+  if (abs >= 2.85) {
     return {
-      transform: `translateX(${d < 0 ? -150 : 150}%) translateZ(-420px) rotateY(${d < 0 ? 48 : -48}deg) scale(0.6)`,
-      opacity: 0,
+      transform: `translateX(${sign * 160}%) translateZ(-450px) rotateY(${-sign * 48}deg) scale(0.6)`,
+      opacity: "0",
       filter: "blur(4px)",
-      zIndex: 1,
-      pointerEvents: "none",
-      visibility: "hidden",
+      zIndex: "1",
+      visibility: "hidden" as const,
+      pointerEvents: "none" as const,
     };
   }
 
-  // Exact coordinates from user specification with fast interpolation:
-  // -2: translateX(-115%), translateZ(-280px), rotateY(+42deg), scale(0.72), opacity: 0.35, blur(2px), z: 10
-  // -1: translateX(-68%),  translateZ(-140px), rotateY(+34deg), scale(0.85), opacity: 0.82, blur(0.5px), z: 20
-  //  0: translateX(0%),    translateZ(+40px),  rotateY(0deg),   scale(1.00), opacity: 1.00, blur(0px), z: 30
-  // +1: translateX(+68%),  translateZ(-140px), rotateY(-34deg), scale(0.85), opacity: 0.82, blur(0.5px), z: 20
-  // +2: translateX(+115%), translateZ(-280px), rotateY(-42deg), scale(0.72), opacity: 0.35, blur(2px), z: 10
+  // Piecewise smooth interpolation for translateX:
+  // At 0: 0%, at 1: ±68%, at 2: ±115%
   let tx = 0;
-  let tz = 40;
+  if (abs <= 1) {
+    tx = d * 68;
+  } else if (abs <= 2) {
+    tx = sign * (68 + (abs - 1) * 47);
+  } else {
+    tx = sign * (115 + (abs - 2) * 38);
+  }
+
+  // Piecewise smooth interpolation for translateZ:
+  // At 0: +40px, at 1: -140px, at 2: -280px
+  let tz = 0;
+  if (abs <= 1) {
+    tz = 40 - abs * 180;
+  } else if (abs <= 2) {
+    tz = -140 - (abs - 1) * 140;
+  } else {
+    tz = -280 - (abs - 2) * 140;
+  }
+
+  // Piecewise smooth interpolation for rotateY:
+  // At 0: 0deg, at 1: -sign * 34deg, at 2: -sign * 42deg
   let ry = 0;
-  let rx = 0;
-  let s = 1.0;
-  let o = 1.0;
-  let bl = 0;
-  let z = 30;
-
-  if (d === -2) {
-    tx = -115;
-    tz = -280;
-    ry = 42;
-    s = 0.72;
-    o = 0.35;
-    bl = 2;
-    z = 10;
-  } else if (d === -1) {
-    tx = -68;
-    tz = -140;
-    ry = 34;
-    s = 0.85;
-    o = 0.82;
-    bl = 0.5;
-    z = 20;
-  } else if (d === 1) {
-    tx = 68;
-    tz = -140;
-    ry = -34;
-    s = 0.85;
-    o = 0.82;
-    bl = 0.5;
-    z = 20;
-  } else if (d === 2) {
-    tx = 115;
-    tz = -280;
-    ry = -42;
-    s = 0.72;
-    o = 0.35;
-    bl = 2;
-    z = 10;
+  if (abs <= 1) {
+    ry = -d * 34;
+  } else if (abs <= 2) {
+    ry = -sign * (34 + (abs - 1) * 8);
+  } else {
+    ry = -sign * (42 + (abs - 2) * 5);
   }
 
-  // Active center card in hover/focus state
-  if (d === 0) {
-    if (isFocused) {
-      s = 1.14;
+  // Piecewise smooth interpolation for scale:
+  // At 0: 1.0, at 1: 0.85, at 2: 0.72
+  let scale = 1.0;
+  if (abs <= 1) {
+    scale = 1.0 - abs * 0.15;
+  } else if (abs <= 2) {
+    scale = 0.85 - (abs - 1) * 0.13;
+  } else {
+    scale = Math.max(0.55, 0.72 - (abs - 2) * 0.14);
+  }
+
+  // Piecewise smooth interpolation for opacity:
+  // At 0: 1.0, at 1: 0.82, at 2: 0.35, fades to 0 by 2.8
+  let opacity = 1.0;
+  if (abs <= 1) {
+    opacity = 1.0 - abs * 0.18;
+  } else if (abs <= 2) {
+    opacity = 0.82 - (abs - 1) * 0.47;
+  } else {
+    opacity = Math.max(0, 0.35 - (abs - 2) * 0.42);
+  }
+
+  // Soft depth blur:
+  // At 0: 0px, at 1: 0.5px, at 2: 2px
+  let blur = 0;
+  if (abs <= 1) {
+    blur = abs * 0.5;
+  } else if (abs <= 2) {
+    blur = 0.5 + (abs - 1) * 1.5;
+  } else {
+    blur = 2.0 + (abs - 2) * 1.5;
+  }
+
+  // Hover expansion override for center card
+  if (isHoveredCenter) {
+    if (abs < 0.45) {
+      scale = 1.14;
       tz = 110;
-      // ry and rx are driven at 120fps by CSS variables --tilt-ry and --tilt-rx with 0ms React latency
+      opacity = 1.0;
+      blur = 0;
+    } else {
+      tx = sign * Math.max(Math.abs(tx), 95);
+      tz = -240;
+      opacity = 0.15;
+      blur = 4;
     }
-  } else if (isFocused) {
-    // Flanking cards push back smoothly
-    tx = d < 0 ? -95 : 95;
-    tz = -240;
-    o = 0.15;
-    bl = 4;
   }
+
+  const zIndex = String(Math.round(30 - Math.min(25, abs * 10)));
 
   return {
-    transform: `translateX(${tx}%) translateZ(${tz}px) rotateY(${ry}deg) rotateX(${rx}deg) scale(${s})`,
-    opacity: o,
-    filter: bl > 0 ? `blur(${bl}px)` : "none",
-    zIndex: z,
-    pointerEvents: "auto",
-    visibility: "visible",
+    transform: `translateX(${tx.toFixed(2)}%) translateZ(${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) scale(${scale.toFixed(3)})`,
+    opacity: opacity.toFixed(3),
+    filter: blur > 0.15 ? `blur(${blur.toFixed(1)}px)` : "none",
+    zIndex,
+    visibility: opacity > 0.01 ? ("visible" as const) : ("hidden" as const),
+    pointerEvents: abs <= 2 && opacity > 0.1 ? ("auto" as const) : ("none" as const),
   };
 }
 
@@ -102,9 +123,15 @@ export function CoverflowCoverage() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const pillThumbRef = useRef<HTMLDivElement | null>(null);
 
   const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
   const [hovered, setHovered] = useState(false);
+  const hoveredRef = useRef(false);
+
+  const currentPosRef = useRef(0);
 
   const prevName = useRef(coverage.locations[0].name);
   const [displayName, setDisplayName] = useState(coverage.locations[0].name);
@@ -113,7 +140,7 @@ export function CoverflowCoverage() {
   // Touch tracking for mobile swipe
   const touchStartX = useRef<number | null>(null);
 
-  // Sync giant background watermark text with transition animation
+  // Sync giant background watermark text with smooth animation key
   useEffect(() => {
     const next = coverage.locations[active].name;
     if (next !== prevName.current) {
@@ -123,24 +150,57 @@ export function CoverflowCoverage() {
     }
   }, [active]);
 
-  // Navigate to an index and sync scroll position with snappy response
+  // Synchronously render cards at any fractional position pos
+  const renderCardsAtPos = useCallback((pos: number, isHovered: boolean) => {
+    currentPosRef.current = pos;
+    for (let i = 0; i < TOTAL; i++) {
+      const card = cardRefs.current[i];
+      if (!card) continue;
+      const d = i - pos;
+      const styles = computeContinuousTransform(d, isHovered);
+      card.style.transform = styles.transform;
+      card.style.opacity = styles.opacity;
+      card.style.filter = styles.filter;
+      card.style.zIndex = styles.zIndex;
+      card.style.visibility = styles.visibility;
+      card.style.pointerEvents = styles.pointerEvents;
+    }
+
+    if (pillThumbRef.current) {
+      const pct = (pos / (TOTAL - 1)) * 100;
+      pillThumbRef.current.style.top = `${clamp(pct, 0, 100)}%`;
+    }
+  }, []);
+
+  // Smooth controlled animated navigation to an index
   const scrollToCard = useCallback(
     (index: number) => {
       const target = clamp(index, 0, TOTAL - 1);
-      setActive(target);
-
-      if (scrollTriggerRef.current) {
-        const st = scrollTriggerRef.current;
-        const progress = target / (TOTAL - 1);
-        const scrollY = st.start + progress * (st.end - st.start);
-        window.scrollTo({ top: scrollY, behavior: "smooth" });
+      const st = scrollTriggerRef.current;
+      if (!st) {
+        setActive(target);
+        activeRef.current = target;
+        renderCardsAtPos(target, hoveredRef.current);
+        return;
       }
+
+      const targetProgress = target / (TOTAL - 1);
+      const targetScroll = st.start + targetProgress * (st.end - st.start);
+
+      // Smooth, deliberate, controlled glide (0.65s with power2.out)
+      const proxy = { y: window.scrollY };
+      gsap.to(proxy, {
+        y: targetScroll,
+        duration: 0.65,
+        ease: "power2.out",
+        onUpdate: () => window.scrollTo(0, proxy.y),
+      });
     },
-    [],
+    [renderCardsAtPos],
   );
 
-  const prev = useCallback(() => scrollToCard(active - 1), [active, scrollToCard]);
-  const next = useCallback(() => scrollToCard(active + 1), [active, scrollToCard]);
+  const prev = useCallback(() => scrollToCard(activeRef.current - 1), [scrollToCard]);
+  const next = useCallback(() => scrollToCard(activeRef.current + 1), [scrollToCard]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -161,10 +221,12 @@ export function CoverflowCoverage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [prev, next]);
 
-  // Zero-latency dynamic cursor parallax via direct CSS variables
+  // Hover and Dynamic pointer tracking parallax for center card
   const handlePointerEnter = (e: PointerEvent<HTMLButtonElement>) => {
     setHovered(true);
+    hoveredRef.current = true;
     e.currentTarget.style.setProperty("--tilt-active", "1");
+    renderCardsAtPos(currentPosRef.current, true);
   };
 
   const handlePointerMove = (e: PointerEvent<HTMLButtonElement>) => {
@@ -180,10 +242,12 @@ export function CoverflowCoverage() {
 
   const handlePointerLeave = (e: PointerEvent<HTMLButtonElement>) => {
     setHovered(false);
+    hoveredRef.current = false;
     const el = e.currentTarget;
     el.style.removeProperty("--tilt-active");
     el.style.removeProperty("--tilt-rx");
     el.style.removeProperty("--tilt-ry");
+    renderCardsAtPos(currentPosRef.current, false);
   };
 
   // Mobile Touch handlers
@@ -194,14 +258,14 @@ export function CoverflowCoverage() {
   const handleTouchEnd = (e: TouchEvent) => {
     if (touchStartX.current === null) return;
     const diff = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(diff) > 30) {
+    if (Math.abs(diff) > 35) {
       if (diff > 0) prev();
       else next();
     }
     touchStartX.current = null;
   };
 
-  // GSAP scroll-driven scrubbing — calibrated for instant responsiveness and low latency
+  // GSAP ScrollTrigger: Continuous 1:1 scroll-scrubbed physics with controlled pacing
   useGSAP(
     () => {
       const section = root.current;
@@ -212,6 +276,9 @@ export function CoverflowCoverage() {
       mm.add({ motion: MQ.motion }, (ctx) => {
         if (!ctx.conditions?.motion) return;
 
+        // Render initial resting state at position 0
+        renderCardsAtPos(0, false);
+
         const st = ScrollTrigger.create({
           id: "coverage-trigger",
           trigger: section,
@@ -219,16 +286,22 @@ export function CoverflowCoverage() {
           end: "bottom bottom",
           pin: stageEl,
           pinSpacing: false,
-          scrub: 0.1, // Ultra-fast responsive scrubbing
+          scrub: 0.6, // Silky smooth damping that glides in sync with scroll
           snap: {
             snapTo: 1 / (TOTAL - 1),
-            duration: { min: 0.15, max: 0.28 },
-            delay: 0.02,
+            duration: { min: 0.35, max: 0.6 }, // Slower, calmer, graceful settling
+            delay: 0.1,
             ease: "power2.out",
           },
           onUpdate: (self) => {
-            const idx = Math.round(self.progress * (TOTAL - 1));
-            setActive((prevIdx) => (prevIdx !== idx ? clamp(idx, 0, TOTAL - 1) : prevIdx));
+            const continuousPos = self.progress * (TOTAL - 1);
+            renderCardsAtPos(continuousPos, hoveredRef.current);
+
+            const nearest = clamp(Math.round(continuousPos), 0, TOTAL - 1);
+            if (nearest !== activeRef.current) {
+              activeRef.current = nearest;
+              setActive(nearest);
+            }
           },
         });
 
@@ -240,7 +313,7 @@ export function CoverflowCoverage() {
         mm.revert();
       };
     },
-    { scope: root },
+    { scope: root, dependencies: [renderCardsAtPos] },
   );
 
   return (
@@ -296,19 +369,19 @@ export function CoverflowCoverage() {
 
           <div className="cov-cards-perspective">
             {coverage.locations.map((location, i) => {
-              const d = i - active;
-              const isActive = d === 0;
+              const isActive = i === active;
               const badge = classificationBadge(location);
-              const style = getCardStyle(d, hovered);
 
               return (
                 <button
                   key={location.name}
+                  ref={(el) => {
+                    cardRefs.current[i] = el;
+                  }}
                   type="button"
-                  className={`cov-card cov-card-slot-${d < 0 ? "left" : d > 0 ? "right" : "center"}${
+                  className={`cov-card cov-card-slot-${i < active ? "left" : i > active ? "right" : "center"}${
                     isActive ? " cov-card-active" : ""
                   }${hovered && isActive ? " cov-card-focused" : ""}`}
-                  style={style}
                   onClick={() => {
                     if (!isActive) scrollToCard(i);
                   }}
@@ -316,9 +389,17 @@ export function CoverflowCoverage() {
                   onPointerMove={isActive ? handlePointerMove : undefined}
                   onPointerLeave={isActive ? handlePointerLeave : undefined}
                   onFocus={() => {
-                    if (isActive) setHovered(true);
+                    if (isActive) {
+                      setHovered(true);
+                      hoveredRef.current = true;
+                      renderCardsAtPos(currentPosRef.current, true);
+                    }
                   }}
-                  onBlur={() => setHovered(false)}
+                  onBlur={() => {
+                    setHovered(false);
+                    hoveredRef.current = false;
+                    renderCardsAtPos(currentPosRef.current, false);
+                  }}
                   aria-label={`${location.name} — ${isActive ? "Active location" : "Switch to location"}`}
                   aria-current={isActive ? "true" : undefined}
                   tabIndex={isActive ? 0 : -1}
@@ -453,6 +534,7 @@ export function CoverflowCoverage() {
         <div className="cov-scroll-pill" aria-hidden="true">
           <div className="cov-scroll-pill-track">
             <div
+              ref={pillThumbRef}
               className="cov-scroll-pill-thumb"
               style={{ top: `${(active / (TOTAL - 1)) * 100}%` }}
             />
