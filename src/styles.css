@@ -525,28 +525,22 @@
   background: var(--ink-soft);
 }
 
-/* Background floating dust particles */
-.brand-dust { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.brand-dust i { position: absolute; top: 35%; left: 8%; width: 3px; height: 3px; border-radius: 50%; background: #d7ed64; box-shadow: 0 0 14px #d7ed6460; opacity: .4; animation: brand-drift 12s ease-in-out infinite alternate; }
-.brand-dust i:nth-child(2) { left: 25%; top: 78%; animation-delay: -5s; }
-.brand-dust i:nth-child(3) { left: 45%; top: 23%; animation-delay: -8s; background: #f45b32; }
-.brand-dust i:nth-child(4) { left: 60%; top: 85%; animation-delay: -2s; }
-.brand-dust i:nth-child(5) { left: 78%; top: 35%; animation-delay: -9s; }
-.brand-dust i:nth-child(6) { left: 94%; top: 65%; animation-delay: -6s; background: #f45b32; }
-.brand-marquee[data-paused=true] .brand-dust i, .brand-marquee[data-playing=false] .brand-dust i { animation-play-state: paused; }
-@keyframes brand-drift { to { transform: translate3d(24px,-36px,0); opacity: .1; } }
-
 @media (max-width: 767px) {
   .brand-marquee {
     --brand-w: calc(90px + var(--brand-expansion) * 55px);      /* 90px -> 145px */
     --brand-h: calc(58px + var(--brand-expansion) * 38px);      /* 58px -> 96px */
     --brand-pitch: calc(102px + var(--brand-expansion) * 63px); /* 102px -> 165px */
     --brand-stage-h: calc(72px + var(--brand-expansion) * 48px);/* 72px -> 120px */
-    --brand-pad-top: calc(1rem + var(--brand-expansion) * 1.5rem);
-    --brand-pad-bottom: calc(1.25rem + var(--brand-expansion) * 2rem);
+    --brand-pad-top: calc(1rem + var(--brand-expansion) * 0.5rem);
+    --brand-pad-bottom: calc(1rem + var(--brand-expansion) * 0.75rem);
   }
-  .brand-logo { padding: 4px 6px; }
-  .brand-face { border-radius: 6px; }
+  .brand-heading-title { font-size: calc(1rem + var(--brand-expansion) * 0.35rem); }
+  .brand-logo { padding: 10px 12px; }
+  .brand-modal-content { padding: 20px; }
+  .brand-modal-brand { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .brand-modal-cta { width: 100%; padding-inline: 12px; }
+  .brand-modal-note { line-height: 1.7; }
+  .brand-modal-meta h3 { overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -557,7 +551,6 @@
   .brand-group[aria-hidden=true] { display: none; }
   .brand-slot { width: 100%; height: auto; }
   .brand-lift { width: 100%; height: 100px; }
-  .brand-dust { display: none; }
   .brand-pause { display: none; }
 }
 @media (prefers-reduced-motion: reduce) and (max-width: 767px) {
