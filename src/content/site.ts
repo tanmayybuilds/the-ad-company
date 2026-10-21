@@ -80,6 +80,14 @@ export const hero = {
 export const clients = {
   heading: "Brands we’ve worked with",
   items: [
+    { name: "Malabar Gold and Diamonds", logo: "/clients/malabar-gold-diamonds.svg", width: 255, height: 52, background: "#20201E" },
+    { name: "TDF Diamonds & Gold", logo: "/clients/tdf-diamonds-gold.webp", width: 152, height: 152 },
+    { name: "Vihan Modular", logo: "/clients/vihan-modular.png", width: 200, height: 48 },
+    { name: "Jagannath Gangaram Pednekar Jewellers", logo: "/clients/jg-pednekar.png", width: 632, height: 395 },
+    { name: "Michelin", logo: "/clients/michelin.svg", width: 534, height: 120 },
+    { name: "TyresNmore", logo: "/clients/tyresnmore.png", width: 1854, height: 314 },
+    { name: "State Bank of India (SBI)", logo: "/clients/sbi.png", width: 125, height: 43 },
+    { name: "Wockhardt Hospitals", logo: "/clients/wockhardt-hospitals.webp", width: 276, height: 49 },
     { name: "Toyota India", logo: "/clients/toyota.svg", width: 136, height: 24 },
     { name: "Maruti Suzuki India", logo: "/clients/maruti-suzuki.svg", width: 1398, height: 156 },
     { name: "Milkbasket", logo: "/clients/milkbasket.png", width: 800, height: 300 },
@@ -87,7 +95,7 @@ export const clients = {
     { name: "Apollo Diagnostics", logo: "/clients/apollo-diagnostics.png", width: 1920, height: 1080 },
     { name: "Suburban Diagnostics", logo: "/clients/suburban-diagnostics.webp", width: 226, height: 63 },
     { name: "Nova IVF Fertility", logo: "/clients/nova-ivf.webp", width: 350, height: 54 },
-    { name: "Decathlon India", logo: "/clients/decathlon.svg", width: 188, height: 28 },
+    { name: "Decathlon Sports India", logo: "/clients/decathlon.svg", width: 188, height: 28 },
   ],
 };
 

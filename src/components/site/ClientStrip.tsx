@@ -32,10 +32,11 @@ export function ClientStrip() {
           </h2>
         </div>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
-          {clients.items.map(({ name, logo, width, height }) => (
+          {clients.items.map(({ name, logo, width, height, background }) => (
             <li
               key={name}
               data-client
+              style={{ backgroundColor: background }}
               className="flex min-h-28 items-center justify-center border border-ink/20 bg-paper px-3 py-4 text-center transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-hard-xs"
             >
               <img
@@ -45,7 +46,7 @@ export function ClientStrip() {
                 height={height}
                 loading="lazy"
                 decoding="async"
-                className="h-16 w-full max-w-44 object-contain"
+                className="h-16 w-full max-w-44 object-scale-down"
               />
             </li>
           ))}
