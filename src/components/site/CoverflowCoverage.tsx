@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { coverage } from "@/content/site";
-import { gsap, MQ, useGSAP } from "@/lib/motion";
+import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
 
 const TOTAL = coverage.locations.length;
@@ -29,6 +29,10 @@ export function CoverflowCoverage() {
   const navigate = useRef<(index: number, focusCard?: boolean) => void>(() => {});
   const keyboardTarget = useRef<number | null>(null);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const isStepAnimating = useRef(false);
+  const lastStepTime = useRef(0);
+  const lastWheelTime = useRef(0);
+  const lastWheelDelta = useRef(0);
 
   const renderPosition = useCallback((progress: number) => {
     const frame = coverageFrame(progress);
@@ -63,45 +67,179 @@ export function CoverflowCoverage() {
     mm.add({ motion: MQ.motion, desktop: MQ.desktop, tall: "(min-height: 720px)", fine: MQ.finePointer, reduce: MQ.reduce }, context => {
       const motion = !!context.conditions?.motion;
       const desktop = !!context.conditions?.desktop;
+      const isTallDesktop = desktop && !!context.conditions?.tall;
       const position = { value: activeRef.current };
-      let travel: gsap.core.Tween | undefined;
-      let scrollTween: gsap.core.Tween | undefined;
+      let stepTween: gsap.core.Tween | undefined;
+      let triggerInstance: ScrollTrigger | undefined;
+
       renderPosition(position.value);
-      if (motion && desktop && context.conditions?.tall) {
+
+      if (isTallDesktop) {
         position.value = 0;
-        travel = gsap.to(position, {
-          value: TOTAL - 1, ease: "none",
-          onUpdate: () => renderPosition(position.value),
-          scrollTrigger: {
-            trigger: section, start: "top top+=80", end: () => `+=${window.innerHeight * 2.1}`,
-            pin: scene, scrub: .55, invalidateOnRefresh: true,
-            snap: { snapTo: 1 / (TOTAL - 1), directional: false, delay: .18, duration: { min: .18, max: .4 }, ease: "power2.out" },
+        triggerInstance = ScrollTrigger.create({
+          trigger: section,
+          start: "top top+=80",
+          end: () => `+=${window.innerHeight * 2.1}`,
+          pin: scene,
+          invalidateOnRefresh: true,
+          onEnter: () => {
+            if (!isStepAnimating.current) {
+              activeRef.current = 0;
+              setActive(0);
+              position.value = 0;
+              renderPosition(0);
+            }
+          },
+          onEnterBack: () => {
+            if (!isStepAnimating.current) {
+              activeRef.current = TOTAL - 1;
+              setActive(TOTAL - 1);
+              position.value = TOTAL - 1;
+              renderPosition(TOTAL - 1);
+            }
+          },
+          onLeave: () => {
+            activeRef.current = TOTAL - 1;
+            setActive(TOTAL - 1);
+            position.value = TOTAL - 1;
+            renderPosition(TOTAL - 1);
+          },
+          onLeaveBack: () => {
+            activeRef.current = 0;
+            setActive(0);
+            position.value = 0;
+            renderPosition(0);
+          },
+          onRefresh: self => {
+            if (self.isActive && !isStepAnimating.current) {
+              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
+              activeRef.current = nearest;
+              setActive(nearest);
+              position.value = nearest;
+              renderPosition(nearest);
+            }
+          },
+          onUpdate: self => {
+            if (!stepTween && !isStepAnimating.current && self.isActive) {
+              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
+              if (nearest !== activeRef.current) {
+                position.value = nearest;
+                renderPosition(nearest);
+              }
+            }
           },
         });
       }
-      const cancelTravel = () => { scrollTween?.kill(); scrollTween = undefined; keyboardTarget.current = null; };
+
+      navigate.current = (index, focusCard = false) => {
+        const target = Math.max(0, Math.min(TOTAL - 1, index));
+        keyboardTarget.current = focusCard ? target : null;
+        stepTween?.kill();
+
+        const trigger = triggerInstance;
+        const targetScroll = trigger
+          ? trigger.start + (target / (TOTAL - 1)) * (trigger.end - trigger.start)
+          : window.scrollY;
+
+        if (motion) {
+          isStepAnimating.current = true;
+          const scrollObj = { y: window.scrollY, pos: position.value };
+          stepTween = gsap.to(scrollObj, {
+            y: targetScroll,
+            pos: target,
+            duration: 0.55,
+            ease: "power2.out",
+            onUpdate: () => {
+              position.value = scrollObj.pos;
+              renderPosition(scrollObj.pos);
+              if (trigger && isTallDesktop) {
+                window.scrollTo({ top: scrollObj.y, behavior: "instant" });
+              }
+            },
+            onComplete: () => {
+              position.value = target;
+              renderPosition(target);
+              if (trigger && isTallDesktop) {
+                window.scrollTo({ top: targetScroll, behavior: "instant" });
+              }
+              isStepAnimating.current = false;
+              stepTween = undefined;
+            },
+          });
+        } else {
+          position.value = target;
+          renderPosition(target);
+          if (trigger && isTallDesktop) {
+            window.scrollTo({ top: targetScroll, behavior: "instant" });
+          }
+          isStepAnimating.current = false;
+        }
+      };
+
+      const onWheel = (event: WheelEvent) => {
+        if (!isTallDesktop || !triggerInstance) return;
+
+        const delta = event.deltaY;
+        if (Math.abs(delta) < 4 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
+
+        const scrollY = window.scrollY;
+        const trigger = triggerInstance;
+        const isPinned = scrollY >= trigger.start - 12 && scrollY <= trigger.end + 12;
+
+        if (!isPinned) return;
+
+        const direction = delta > 0 ? 1 : -1;
+        const current = activeRef.current;
+
+        // Allow natural exit scrolling down when at the last city (Gujarat)
+        if (direction > 0 && current >= TOTAL - 1) {
+          return;
+        }
+
+        // Allow natural exit scrolling up when at the first city (Mumbai)
+        if (direction < 0 && current <= 0) {
+          return;
+        }
+
+        // Intercept scroll within section: prevent default so fast flick CANNOT skip anything
+        event.preventDefault();
+
+        const now = Date.now();
+        const timeSinceLastWheel = now - lastWheelTime.current;
+        const timeSinceLastStep = now - lastStepTime.current;
+        lastWheelTime.current = now;
+
+        const reversedDirection = Math.sign(delta) !== Math.sign(lastWheelDelta.current);
+        lastWheelDelta.current = delta;
+
+        // One scroll gesture advances to the next city only:
+        // Trailing inertia within the same flick is debounced and ignored.
+        const canStep = !isStepAnimating.current &&
+          timeSinceLastStep > 460 &&
+          (reversedDirection || timeSinceLastWheel > 140 || timeSinceLastStep > 850);
+
+        if (canStep) {
+          const nextIndex = current + direction;
+          if (nextIndex >= 0 && nextIndex < TOTAL) {
+            lastStepTime.current = now;
+            navigate.current(nextIndex);
+          }
+        }
+      };
+
+      window.addEventListener("wheel", onWheel, { passive: false });
+
+      const cancelTravel = () => {
+        stepTween?.kill();
+        stepTween = undefined;
+        isStepAnimating.current = false;
+        keyboardTarget.current = null;
+      };
+
       const keyTravel = (event: KeyboardEvent) => {
         if (["PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
       };
-      window.addEventListener("wheel", cancelTravel, { passive: true });
-      window.addEventListener("touchstart", cancelTravel, { passive: true });
       window.addEventListener("keydown", keyTravel);
-      navigate.current = (index, focusCard = false) => {
-        const target = Math.max(0, Math.min(TOTAL - 1, index));
-        cancelTravel();
-        keyboardTarget.current = focusCard ? target : null;
-        const trigger = travel?.scrollTrigger;
-        if (trigger) {
-          const scroll = { value: window.scrollY };
-          scrollTween = gsap.to(scroll, {
-            value: trigger.start + target / (TOTAL - 1) * (trigger.end - trigger.start),
-            duration: .65, ease: "power3.inOut", onUpdate: () => window.scrollTo({ top: scroll.value, behavior: "instant" }),
-          });
-        } else if (motion) {
-          gsap.killTweensOf(position);
-          gsap.to(position, { value: target, duration: .65, ease: "power3.inOut", onUpdate: () => renderPosition(position.value) });
-        } else { position.value = target; renderPosition(target); }
-      };
 
       const shells = [...section.querySelectorAll<HTMLElement>(".cov-card-shell")];
       const tiltX = shells.map(shell => gsap.quickTo(shell, "rotationX", { duration: .45, ease: "power3.out" }));
@@ -120,11 +258,16 @@ export function CoverflowCoverage() {
         scene.dataset.visible = String(entry.isIntersecting);
       });
       observer.observe(scene);
+
       return () => {
-        cancelTravel(); gsap.killTweensOf(position);
-        scene.removeEventListener("pointermove", move); scene.removeEventListener("pointerleave", reset);
-        window.removeEventListener("wheel", cancelTravel); window.removeEventListener("touchstart", cancelTravel);
-        window.removeEventListener("keydown", keyTravel); observer.disconnect();
+        cancelTravel();
+        triggerInstance?.kill();
+        gsap.killTweensOf(position);
+        scene.removeEventListener("pointermove", move);
+        scene.removeEventListener("pointerleave", reset);
+        window.removeEventListener("wheel", onWheel);
+        window.removeEventListener("keydown", keyTravel);
+        observer.disconnect();
         navigate.current = () => {};
       };
     });
