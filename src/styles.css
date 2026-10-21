@@ -10,13 +10,14 @@
 
   /* Card and section layout interpolated with scroll:
      Compact (expansion 0): narrow slim strip, small cards, tight pitch (max brands visible).
+     Fits neatly on the first screen right below the Hero!
      Normalized (expansion 1): full editorial presence, comfortable spacing, high-contrast cards. */
-  --brand-w: calc(112px + var(--brand-expansion) * 88px);         /* 112px -> 200px */
-  --brand-h: calc(72px + var(--brand-expansion) * 58px);          /* 72px -> 130px */
-  --brand-pitch: calc(126px + var(--brand-expansion) * 96px);     /* 126px -> 222px */
-  --brand-stage-h: calc(88px + var(--brand-expansion) * 76px);    /* 88px -> 164px */
-  --brand-pad-top: calc(1.25rem + var(--brand-expansion) * 2.75rem); /* 1.25rem -> 4rem */
-  --brand-pad-bottom: calc(1.5rem + var(--brand-expansion) * 3.5rem);/* 1.5rem -> 5rem */
+  --brand-w: calc(108px + var(--brand-expansion) * 90px);         /* 108px -> 198px */
+  --brand-h: calc(66px + var(--brand-expansion) * 56px);          /* 66px -> 122px */
+  --brand-pitch: calc(122px + var(--brand-expansion) * 98px);     /* 122px -> 220px */
+  --brand-stage-h: calc(76px + var(--brand-expansion) * 84px);    /* 76px -> 160px */
+  --brand-pad-top: calc(0.65rem + var(--brand-expansion) * 2.85rem); /* 0.65rem -> 3.5rem */
+  --brand-pad-bottom: calc(0.75rem + var(--brand-expansion) * 3.75rem);/* 0.75rem -> 4.5rem */
 
   position: relative;
   isolation: isolate;
@@ -49,7 +50,7 @@
   font-weight: 800;
   text-transform: uppercase;
   color: #f5f1e8;
-  font-size: calc(1.15rem + var(--brand-expansion) * 1.35rem);
+  font-size: calc(1.1rem + var(--brand-expansion) * 1.35rem);
   line-height: 1.05;
   letter-spacing: -0.02em;
 }
@@ -71,8 +72,8 @@
 
 .brand-pause {
   flex: none;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border: 1px solid #a4b49a66;
   border-radius: 50%;
   color: #d7ed64;
@@ -80,7 +81,7 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 13px;
   transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
 }
 .brand-pause:hover {
@@ -96,7 +97,7 @@
 .brand-stage {
   position: relative;
   height: var(--brand-stage-h);
-  margin-top: calc(0.75rem + var(--brand-expansion) * 2rem);
+  margin-top: calc(0.5rem + var(--brand-expansion) * 1.75rem);
   perspective: 1400px;
   overflow: visible;
 }
@@ -189,18 +190,27 @@
   object-fit: contain;
 }
 
-/* BACK FACE (Brand Name & View More) */
+/* BACK FACE (Brand Name & Clickable View More Button) */
 .brand-back {
   transform: rotateY(180deg) translateZ(1px);
-  background: #141a18;
-  border-color: #d7ed64;
+  background: #17201c;
+  border: 1.5px solid #d7ed64;
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
+  justify-content: space-between;
   text-align: center;
+  box-shadow: inset 0 0 15px rgba(215, 237, 100, 0.08), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.brand-back-tag {
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 0.65vw, 9.5px);
+  letter-spacing: 0.1em;
+  color: #d7ed64;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.9;
 }
 .brand-back-name {
   display: -webkit-box;
@@ -208,37 +218,54 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(9px, 0.85vw, 12px);
+  font-weight: 800;
+  font-size: clamp(10px, 0.9vw, 13px);
   line-height: 1.2;
   color: #f5f1e8;
-  max-width: 90%;
+  max-width: 95%;
+  margin: auto 0;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 .brand-view-more {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   padding: 4px 12px;
   background: #d7ed64;
   color: #20201e;
   font-family: var(--font-mono);
-  font-size: clamp(9px, 0.75vw, 11px);
+  font-size: clamp(9px, 0.72vw, 11px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-radius: 9999px;
-  border: 1px solid #20201e;
+  border-radius: 0;
+  border: 1.5px solid #20201e;
   box-shadow: 2px 2px 0 0 #20201e;
-  transition: transform 0.15s, background-color 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, background-color 0.15s, box-shadow 0.15s, color 0.15s;
   cursor: pointer;
   white-space: nowrap;
 }
 .brand-view-more:hover {
   background: #f45b32;
-  color: #fff;
-  transform: scale(1.06);
+  color: #ffffff;
+  border-color: #000;
+  transform: translate(-1px, -1px);
   box-shadow: 3px 3px 0 0 #000;
+}
+.brand-view-more:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 #000;
+}
+.brand-view-more-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+  font-size: 1.1em;
+  line-height: 1;
+}
+.brand-view-more:hover .brand-view-more-arrow {
+  transform: translate(1px, -1px);
 }
 
 /* Interactive Card Flip on Hover, Focus, Active */
@@ -264,73 +291,71 @@
   opacity: 0.35;
 }
 
-/* BRAND PREVIEW POPOVER MODAL */
-.brand-popover-backdrop {
+/* FULL-SCREEN BRAND SHOWCASE MODAL (Portaled to document.body) */
+.brand-modal-root {
   position: fixed;
   inset: 0;
-  z-index: 90;
-  background: rgba(12, 16, 15, 0.7);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
 }
-.brand-popover-backdrop.is-open {
-  opacity: 1;
-  pointer-events: auto;
+.brand-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 12, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: brand-fade-in 0.2s ease-out;
+}
+@keyframes brand-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.brand-popover {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.96);
-  z-index: 100;
-  width: min(560px, calc(100vw - 32px));
-  max-height: 85vh;
+.brand-modal-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(740px, calc(100vw - 32px));
+  max-height: 88vh;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--paper);
   color: var(--ink);
   border: 2px solid var(--ink);
-  box-shadow: 8px 8px 0px 0px var(--ink), 0 24px 48px rgba(0, 0, 0, 0.45);
-  padding: 24px 24px 28px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.22s;
+  box-shadow: 10px 10px 0 0 var(--ink), 0 30px 60px rgba(0, 0, 0, 0.5);
+  padding: 28px 32px 32px;
+  animation: brand-modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.brand-popover.is-open {
-  opacity: 1;
-  visibility: visible;
-  transform: translate(-50%, -50%) scale(1);
+@keyframes brand-modal-pop {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.brand-popover-header {
+.brand-modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1.5px solid color-mix(in oklab, var(--ink) 18%, transparent);
-  padding-bottom: 16px;
-  margin-bottom: 20px;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
 }
-.brand-popover-brand {
+.brand-modal-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   min-width: 0;
 }
 .brand-preview-logo {
   display: grid;
   place-items: center;
-  width: 90px;
-  height: 52px;
-  padding: 6px 12px;
-  border: 1px solid color-mix(in oklab, var(--ink) 25%, transparent);
+  width: 110px;
+  height: 64px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--ink);
   background: #f5f1e8;
+  box-shadow: 3px 3px 0 0 var(--ink);
   flex-shrink: 0;
 }
 .brand-preview-logo img {
@@ -338,105 +363,112 @@
   max-height: 100%;
   object-fit: contain;
 }
-.brand-popover-meta {
+.brand-modal-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
-.brand-popover-tag {
+.brand-modal-kicker {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  color: color-mix(in oklab, var(--ink) 60%, transparent);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--orange);
   text-transform: uppercase;
 }
-.brand-popover h3 {
+.brand-modal-meta h3 {
   font-family: var(--font-display);
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.1;
   color: var(--ink);
   text-transform: uppercase;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .brand-close {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
-  border: 1.5px solid var(--ink);
+  border: 2px solid var(--ink);
   background: var(--paper);
   color: var(--ink);
   font-size: 20px;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, transform 0.15s;
+  box-shadow: 2.5px 2.5px 0 0 var(--ink);
+  transition: background-color 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .brand-close:hover {
   background: var(--orange);
   color: #fff;
-  transform: scale(1.05);
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0 0 #000;
 }
 
-.brand-popover-body {
+.brand-modal-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
-.brand-popover-body > img,
-.brand-popover-body > video {
+.brand-modal-body > img,
+.brand-modal-body > video {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border: 1.5px solid var(--ink);
-  box-shadow: 4px 4px 0 0 var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 0 var(--ink);
 }
 .brand-project-copy {
   display: block;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--ink);
 }
 .brand-project-copy > span {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 22px;
   background: var(--sand);
-  border: 1px dashed color-mix(in oklab, var(--ink) 35%, transparent);
+  border: 1.5px dashed color-mix(in oklab, var(--ink) 40%, transparent);
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink);
   font-weight: 600;
+  line-height: 1.5;
 }
 .brand-project-copy > span::before {
   content: '✦';
   color: var(--orange);
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1;
 }
 .brand-project {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 .brand-project strong {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   color: var(--ink);
   text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 .brand-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
 }
 .brand-tags > span {
-  padding: 3px 8px;
+  padding: 4px 10px;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
@@ -444,38 +476,52 @@
   letter-spacing: 0.05em;
   color: var(--ink);
   background: var(--lime);
-  border: 1px solid var(--ink);
-  box-shadow: 1.5px 1.5px 0 0 var(--ink);
+  border: 1.5px solid var(--ink);
+  box-shadow: 2px 2px 0 0 var(--ink);
 }
 
-.brand-popover-footer {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+.brand-modal-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1.5px solid color-mix(in oklab, var(--ink) 20%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
-.brand-popover-cta {
+.brand-modal-note {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: color-mix(in oklab, var(--ink) 60%, transparent);
+}
+.brand-modal-note em {
+  font-style: italic;
+  color: var(--signal);
+}
+.brand-modal-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
-  padding: 12px 20px;
+  padding: 12px 24px;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   background: var(--ink);
   color: var(--paper);
-  border: 1.5px solid var(--ink);
-  box-shadow: 3px 3px 0 0 var(--lime);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--lime);
   transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
   cursor: pointer;
   text-decoration: none;
 }
-.brand-popover-cta:hover {
+.brand-modal-cta:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 0 var(--lime);
+  box-shadow: 5px 5px 0 0 var(--lime);
   background: var(--ink-soft);
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { clients, work } from "@/content/site";
 import { gsap, MOTION, MQ, useGSAP } from "@/lib/motion";
 import { loopOffset } from "@/lib/brand-motion.mjs";
@@ -35,62 +36,50 @@ export function ClientStrip() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [focused, setFocused] = useState<number | null>(null);
   const [preview, setPreview] = useState<number | null>(null);
-  const [pinned, setPinned] = useState(false);
   const [paused, setPaused] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [motion, setMotion] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const active = preview ?? focused ?? hovered;
   const control = useRef({ active, paused });
   const focusCard = useRef<(index: number) => void>(() => {});
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     control.current = { active, paused };
   }, [active, paused]);
 
-  const clearCloseTimer = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-
-  const scheduleClose = () => {
-    clearCloseTimer();
-    closeTimer.current = setTimeout(() => {
-      setPreview(null);
-      setPinned(false);
-    }, 220);
-  };
-
   const closePreview = () => {
-    clearCloseTimer();
-    const keyboard = root.current?.querySelector(".brand-popover")?.contains(document.activeElement);
+    const keyboard = root.current?.querySelector(".brand-modal-dialog")?.contains(document.activeElement);
     const lastPreview = preview;
     setPreview(null);
-    setPinned(false);
     setHovered(null);
     if (keyboard && lastPreview !== null) {
       root.current?.querySelectorAll<HTMLButtonElement>("button.brand-lift")[lastPreview % clients.items.length]?.focus({ preventScroll: true });
     }
   };
 
-  const openPreview = (id: number, pin = false) => {
-    clearCloseTimer();
+  const openPreview = (id: number) => {
     setPreview(id);
-    if (pin) setPinned(true);
   };
 
+  // Lock body scroll while modal is active
   useEffect(() => {
     if (preview === null) return;
-    const outside = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) {
-        closePreview();
-      }
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closePreview();
     };
-    document.addEventListener("pointerdown", outside);
-    return () => document.removeEventListener("pointerdown", outside);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [preview]);
 
   useGSAP(() => {
@@ -111,15 +100,15 @@ export function ClientStrip() {
       section.dataset.motion = String(isMotion);
 
       if (isMotion) {
-        // Scrub smoothly from compact (0) to fully normalized (1) as user scrolls into the section
+        // Starts compact when docked at bottom of initial hero screen, then slowly enlarges as user scrolls down
         gsap.fromTo(section, { "--brand-expansion": 0 }, {
           "--brand-expansion": 1,
           ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "top 95%",
-            end: "top 25%",
-            scrub: 0.15,
+            start: "top bottom-=30", // begins slowly enlarging as soon as scroll starts
+            end: "top 18%",          // fully enlarged and normalized at comfortable viewing height
+            scrub: 0.3,
           },
         });
       } else {
@@ -209,12 +198,7 @@ export function ClientStrip() {
       data-paused={paused}
       data-playing={playing}
       onPointerLeave={() => {
-        if (focused === null && !pinned) scheduleClose();
-      }}
-      onKeyDown={event => {
-        if (event.key === "Escape") {
-          closePreview();
-        }
+        if (focused === null && preview === null) setHovered(null);
       }}
     >
       <div className="brand-dust" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
@@ -251,16 +235,10 @@ export function ClientStrip() {
                     key={client.name}
                     data-brand-card=""
                     onPointerEnter={event => {
-                      if (event.pointerType === "mouse") {
-                        clearCloseTimer();
-                        setHovered(id);
-                      }
+                      if (event.pointerType === "mouse") setHovered(id);
                     }}
                     onPointerLeave={event => {
-                      if (event.pointerType === "mouse") {
-                        setHovered(null);
-                        if (!pinned) scheduleClose();
-                      }
+                      if (event.pointerType === "mouse" && preview === null) setHovered(null);
                     }}
                   >
                     <Tag
@@ -279,16 +257,10 @@ export function ClientStrip() {
                       onPointerDown={event => {
                         if (event.pointerType === "mouse") event.preventDefault();
                       }}
-                      onClick={() => {
-                        if (preview === id) {
-                          closePreview();
-                        } else {
-                          openPreview(id, true);
-                        }
-                      }}
+                      onClick={() => openPreview(id)}
                     >
                       <span className="brand-spin">
-                        {/* FRONT FACE: Logo */}
+                        {/* FRONT FACE: Official Logo */}
                         <span className="brand-face brand-front">
                           <span className="brand-logo" style={{ backgroundColor: client.background || "#f5f1e8" }}>
                             <img
@@ -301,21 +273,19 @@ export function ClientStrip() {
                             />
                           </span>
                         </span>
-                        {/* BACK FACE: View More */}
+                        {/* BACK FACE: Brand Name & Clickable View More Button */}
                         <span className="brand-face brand-back">
-                          <span className="brand-back-name">{client.name}</span>
+                          <span className="brand-back-tag">PARTNER</span>
+                          <strong className="brand-back-name">{client.name}</strong>
                           <span
                             className="brand-view-more"
-                            onPointerEnter={event => {
-                              if (event.pointerType === "mouse") openPreview(id);
-                            }}
                             onClick={event => {
                               event.stopPropagation();
-                              openPreview(id, true);
+                              openPreview(id);
                             }}
                           >
                             <span>{clients.viewMore}</span>
-                            <span aria-hidden="true">↗</span>
+                            <span aria-hidden="true" className="brand-view-more-arrow">↗</span>
                           </span>
                         </span>
                       </span>
@@ -326,70 +296,69 @@ export function ClientStrip() {
             </div>
           ))}
         </div>
-
-        {/* BRAND PREVIEW POPOVER MODAL */}
-        {selectedClient && (
-          <>
-            <div
-              className="brand-popover-backdrop is-open"
-              aria-hidden="true"
-              onClick={closePreview}
-            />
-            <aside
-              id="brand-preview"
-              className="brand-popover is-open"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="brand-preview-title"
-              onPointerEnter={clearCloseTimer}
-              onPointerLeave={() => {
-                if (!pinned) scheduleClose();
-              }}
-            >
-              <div className="brand-popover-header">
-                <div className="brand-popover-brand">
-                  <div className="brand-preview-logo" style={{ backgroundColor: selectedClient.background || "#f5f1e8" }}>
-                    <img
-                      src={asset(selectedClient.logo)}
-                      alt=""
-                      width={selectedClient.width}
-                      height={selectedClient.height}
-                    />
-                  </div>
-                  <div className="brand-popover-meta">
-                    <span className="brand-popover-tag">[BRAND CAMPAIGN]</span>
-                    <h3 id="brand-preview-title">{selectedClient.name}</h3>
-                  </div>
-                </div>
-                <button
-                  className="brand-close"
-                  type="button"
-                  aria-label={clients.closePreview}
-                  onClick={closePreview}
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="brand-popover-body">
-                <CampaignPreview
-                  key={selectedClient.name}
-                  clientName={selectedClient.name}
-                  active={!paused && playing}
-                  motion={motion}
-                />
-              </div>
-
-              <div className="brand-popover-footer">
-                <a href="#contact" className="brand-popover-cta" onClick={closePreview}>
-                  <span>Discuss campaign like this</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </div>
-            </aside>
-          </>
-        )}
       </div>
+
+      {/* FULL-SCREEN SHOWCASE MODAL — Portaled directly to body so it is NOT limited to the brand section */}
+      {mounted && selectedClient && createPortal(
+        <div
+          className="brand-modal-root"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="brand-modal-title"
+        >
+          <div
+            className="brand-modal-backdrop"
+            aria-hidden="true"
+            onClick={closePreview}
+          />
+          <aside id="brand-preview" className="brand-modal-dialog">
+            <div className="brand-modal-header">
+              <div className="brand-modal-brand">
+                <div className="brand-preview-logo" style={{ backgroundColor: selectedClient.background || "#f5f1e8" }}>
+                  <img
+                    src={asset(selectedClient.logo)}
+                    alt=""
+                    width={selectedClient.width}
+                    height={selectedClient.height}
+                  />
+                </div>
+                <div className="brand-modal-meta">
+                  <span className="brand-modal-kicker">OFFLINE CAMPAIGN SHOWCASE</span>
+                  <h3 id="brand-modal-title">{selectedClient.name}</h3>
+                </div>
+              </div>
+              <button
+                className="brand-close"
+                type="button"
+                aria-label={clients.closePreview}
+                onClick={closePreview}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="brand-modal-body">
+              <CampaignPreview
+                key={selectedClient.name}
+                clientName={selectedClient.name}
+                active={!paused && playing}
+                motion={motion}
+              />
+            </div>
+
+            <div className="brand-modal-footer">
+              <div className="brand-modal-note">
+                <span>THE AD COMPANY</span> · <em>Committed to commitments.</em>
+              </div>
+              <a href="#contact" className="brand-modal-cta" onClick={closePreview}>
+                <span>Discuss a campaign like this</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </aside>
+        </div>,
+        document.body
+      )}
     </section>
   );
 }

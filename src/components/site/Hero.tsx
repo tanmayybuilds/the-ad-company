@@ -55,7 +55,7 @@ export function Hero() {
       id="top"
       ref={root}
       aria-labelledby="hero-title"
-      className="relative flex min-h-[min(820px,100svh)] items-center overflow-hidden border-b hairline bg-paper pb-20 pt-[calc(var(--header-h)+3rem)] lg:pb-24 lg:pt-[calc(var(--header-h)+4rem)]"
+      className="relative flex min-h-[calc(100svh-115px)] items-center overflow-hidden border-b hairline bg-paper pb-8 pt-[calc(var(--header-h)+1.5rem)] lg:pb-10 lg:pt-[calc(var(--header-h)+2rem)]"
     >
       <div
         aria-hidden="true"
