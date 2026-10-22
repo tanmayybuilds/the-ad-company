@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { coverage } from "@/content/site";
 import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
+import { exitReversePin } from "@/lib/reverse-pin.mjs";
 
 const TOTAL = coverage.locations.length;
 
@@ -73,6 +74,23 @@ export function CoverflowCoverage() {
       const position = { value: activeRef.current };
       let stepTween: gsap.core.Tween | undefined;
       let triggerInstance: ScrollTrigger | undefined;
+      let refreshing = false;
+
+      const cancelTravel = () => {
+        stepTween?.kill();
+        stepTween = undefined;
+        isStepAnimating.current = false;
+        keyboardTarget.current = null;
+      };
+      const resetToStart = () => {
+        cancelTravel();
+        position.value = 0;
+        renderPosition(0);
+        lastStepTime.current = lastWheelTime.current = lastWheelDelta.current = lastEnterTime.current = 0;
+      };
+      const leaveBackwards = (self: ScrollTrigger) => {
+        if (!refreshing && !isStepAnimating.current) exitReversePin(self, resetToStart);
+      };
 
       renderPosition(position.value);
 
@@ -97,31 +115,23 @@ export function CoverflowCoverage() {
               renderPosition(0);
             }
           },
-          onEnterBack: () => {
-            // When coming up, keep resting at city 0 without playing reverse animation
-            activeRef.current = 0;
-            setActive(0);
-            position.value = 0;
-            renderPosition(0);
-          },
+          onEnterBack: leaveBackwards,
           onLeave: () => {
             activeRef.current = TOTAL - 1;
             setActive(TOTAL - 1);
             position.value = TOTAL - 1;
             renderPosition(TOTAL - 1);
           },
-          onLeaveBack: () => {
-            activeRef.current = 0;
-            setActive(0);
-            position.value = 0;
-            renderPosition(0);
-          },
+          onLeaveBack: () => { if (!isStepAnimating.current) resetToStart(); },
+          onRefreshInit: () => { refreshing = true; },
           onRefresh: self => {
+            refreshing = false;
             if (self.isActive && !isStepAnimating.current) {
               renderPosition(activeRef.current);
             }
           },
           onUpdate: self => {
+            if (self.direction < 0) { leaveBackwards(self); return; }
             // Only update on drag when scrolling downward
             if (!stepTween && !isStepAnimating.current && self.isActive && self.direction > 0) {
               if (self.progress <= START_BUFFER) {
@@ -168,6 +178,7 @@ export function CoverflowCoverage() {
               renderPosition(scrollObj.pos);
               if (trigger && isTallDesktop) {
                 window.scrollTo({ top: scrollObj.y, behavior: "instant" });
+                ScrollTrigger.update();
               }
             },
             onComplete: () => {
@@ -175,6 +186,7 @@ export function CoverflowCoverage() {
               renderPosition(target);
               if (trigger && isTallDesktop) {
                 window.scrollTo({ top: targetScroll, behavior: "instant" });
+                ScrollTrigger.update();
               }
               isStepAnimating.current = false;
               stepTween = undefined;
@@ -184,7 +196,9 @@ export function CoverflowCoverage() {
           position.value = target;
           renderPosition(target);
           if (trigger && isTallDesktop) {
+            isStepAnimating.current = true;
             window.scrollTo({ top: targetScroll, behavior: "instant" });
+            ScrollTrigger.update();
           }
           isStepAnimating.current = false;
         }
@@ -194,7 +208,7 @@ export function CoverflowCoverage() {
         if (!isTallDesktop || !triggerInstance) return;
 
         const delta = event.deltaY;
-        if (Math.abs(delta) < 4 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
+        if (Math.abs(delta) <= Math.abs(event.deltaX) || (delta > 0 && delta < 4)) return;
 
         const scrollY = window.scrollY;
         const trigger = triggerInstance;
@@ -209,15 +223,7 @@ export function CoverflowCoverage() {
         // When coming up, animation does not play in reverse and scrolling proceeds directly upwards like a static website
         if (direction < 0) {
           cancelTravel();
-          if (activeRef.current !== 0) {
-            activeRef.current = 0;
-            setActive(0);
-            position.value = 0;
-            renderPosition(0);
-            if (scrollY > trigger.start + 4) {
-              window.scrollTo({ top: trigger.start, behavior: "auto" });
-            }
-          }
+          exitReversePin(trigger, resetToStart);
           return;
         }
 
@@ -263,13 +269,6 @@ export function CoverflowCoverage() {
 
       window.addEventListener("wheel", onWheel, { passive: false });
 
-      const cancelTravel = () => {
-        stepTween?.kill();
-        stepTween = undefined;
-        isStepAnimating.current = false;
-        keyboardTarget.current = null;
-      };
-
       skipToTeam.current = () => {
         cancelTravel();
         const trigger = triggerInstance;
@@ -281,9 +280,10 @@ export function CoverflowCoverage() {
       };
 
       const keyTravel = (event: KeyboardEvent) => {
-        if (["PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
+        if (["ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
       };
       window.addEventListener("keydown", keyTravel);
+      window.addEventListener("pointerdown", cancelTravel);
 
       const shells = [...section.querySelectorAll<HTMLElement>(".cov-card-shell")];
       const tiltX = shells.map(shell => gsap.quickTo(shell, "rotationX", { duration: .45, ease: "power3.out" }));
@@ -324,6 +324,7 @@ export function CoverflowCoverage() {
         scene.removeEventListener("pointerleave", reset);
         window.removeEventListener("wheel", onWheel);
         window.removeEventListener("keydown", keyTravel);
+        window.removeEventListener("pointerdown", cancelTravel);
         observer.disconnect();
         navigate.current = () => {};
       };

@@ -1,50 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, X } from 'lucide-react';
-import { about, company, coverage, footer, nav, team, work } from '@/content/site';
+import { useRef, useState } from 'react';
+import { about, company, coverage, footer, nav, team } from '@/content/site';
 import { useReveal } from '@/hooks/use-reveal';
 import { ActionLink, Eyebrow, Wordmark } from './primitives';
-import residential from '@/assets/service-residential.jpg';
-import outdoor from '@/assets/service-outdoor.jpg';
-import corporate from '@/assets/service-corporate.jpg';
-
-const examples = [
-  { title: 'In the neighbourhood.', type: 'Residential & community', image: residential, alt: 'Illustrated residential advertising environment', copy: 'From a lobby screen to a community activation, bring a brand into the places people call home.', formats: ['Society advertising', 'Digital screens', 'Community activations'] },
-  { title: 'Along the everyday route.', type: 'Outdoor & transit', image: outdoor, alt: 'Illustrated street with branded transport and roadside advertising', copy: 'Build a presence along everyday journeys with outdoor placements and branded vehicles.', formats: ['Outdoor digital', 'Auto & cab branding', 'Transit advertising'] },
-  { title: 'Part of the working day.', type: 'Corporate & coworking', image: corporate, alt: 'Illustrated office lobby with advertising screens', copy: 'Meet audiences at work through office placements and workplace activations.', formats: ['Office advertising', 'Coworking campaigns', 'Workplace activations'] },
-];
-
-export function Work() {
-  const root = useRef<HTMLElement>(null);
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [selected, setSelected] = useState<number | null>(null);
-  useReveal(root);
-  useEffect(() => {
-    if (selected === null) return;
-    const previous = document.activeElement as HTMLElement;
-    dialog.current?.showModal();
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = overflow; previous?.focus(); };
-  }, [selected]);
-  const project = selected === null ? null : examples[selected];
-  return <section id="work" ref={root} className="section-y bg-ink text-ivory" aria-labelledby="work-title">
-    <div className="container-page">
-      <div className="mb-10 flex flex-wrap items-end justify-between gap-6" data-reveal>
-        <div><Eyebrow tone="lime" className="mb-4">[03 // Out in the world]</Eyebrow><h2 id="work-title" className="text-display-lg max-w-3xl">{work.heading[0]}<br /><span className="text-lime">{work.heading[1]}</span></h2></div>
-        <p className="max-w-60 text-sm leading-relaxed text-ivory/65">A look at the possibilities.<br />Illustrative formats; campaign stories to follow.</p>
-      </div>
-      <div className="work-grid">
-        {examples.map((item, index) => <button type="button" key={item.type} onClick={() => setSelected(index)} className={`work-card group text-left ${index === 0 ? 'work-featured' : ''}`} data-reveal aria-haspopup="dialog">
-          <div className="work-image"><img src={item.image} alt={item.alt} loading="lazy" width="1024" height="768" /><span className="work-stamp">Illustrative concept / 0{index + 1}</span><span className="work-arrow" aria-hidden="true"><ArrowUpRight /></span></div>
-          <div className="p-5"><p className="text-label-index mb-2 text-[10px] text-lime">{item.type}</p><h3 className="font-display text-2xl font-bold uppercase leading-tight">{item.title}</h3>{index === 0 && <p className="mt-3 max-w-lg text-sm leading-relaxed text-ivory/70">{item.copy}</p>}<span className="mt-5 flex items-center justify-between border-t border-ivory/20 pt-3 text-label-index text-[10px]">Explore the format <span aria-hidden="true">↗</span></span></div>
-        </button>)}
-      </div>
-    </div>
-    <dialog ref={dialog} onClose={() => setSelected(null)} onClick={e => {if (e.target === e.currentTarget) dialog.current?.close();}} className="project-dialog" aria-labelledby="project-title">
-      {project && <><button onClick={() => dialog.current?.close()} className="dialog-close" aria-label="Close format details"><X /></button><img src={project.image} alt={project.alt} className="aspect-video w-full object-cover" /><div className="p-6 sm:p-9"><Eyebrow className="mb-3">Illustrative format — not a completed campaign</Eyebrow><h2 id="project-title" className="font-display text-3xl font-extrabold uppercase">{project.title}</h2><p className="my-5 leading-relaxed">{project.copy}</p><ul className="mb-6 flex flex-wrap gap-2">{project.formats.map(f => <li key={f} className="border border-ink/20 px-3 py-2 text-sm">{f}</li>)}</ul><ActionLink href="#contact" size="md" onClick={() => dialog.current?.close()}>Plan a campaign</ActionLink></div></>}
-    </dialog>
-  </section>;
-}
+export { Work } from './Work';
 
 export function About() {
   const root = useRef<HTMLElement>(null); useReveal(root);

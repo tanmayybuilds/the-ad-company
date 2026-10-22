@@ -3,6 +3,7 @@ import { services } from "@/content/site";
 import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
 import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
+import { exitReversePin } from "@/lib/reverse-pin.mjs";
 
 export function Services() {
   const root = useRef<HTMLElement>(null);
@@ -15,13 +16,11 @@ export function Services() {
   const activeZone = useRef(0);
   const navigate = useRef<(zone: number) => void>(() => {});
   const render = useRef<(frame: number) => void>(() => {});
-  const triggerRef = useRef<ScrollTrigger | null>(null);
   const [active, setActive] = useState(0);
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     const element = canvas.current!;
-    element.dataset.loaderState = "starting";
     const ctx = element.getContext("2d", { alpha: false });
     if (!ctx) { setUnavailable(true); return; }
     let disposed = false;
@@ -92,11 +91,9 @@ export function Services() {
       image.src = sequenceSource(index, import.meta.env.BASE_URL);
     }
 
-    element.dataset.loaderState = "loading";
     render.current(ZONE_STARTS[activeZone.current]);
 
     return () => {
-      element.dataset.loaderState = "disposed";
       disposed = true;
       render.current = () => {};
       frames.forEach(image => { image.onload = image.onerror = null; image.src = ""; });
@@ -125,6 +122,13 @@ export function Services() {
       let targetFrame = 0;
       let animFrameId: number | null = null;
       let isNavigating = false;
+      let refreshing = false;
+      let scrollTween: gsap.core.Tween | undefined;
+      const cancelTravel = () => {
+        scrollTween?.kill();
+        scrollTween = undefined;
+        isNavigating = false;
+      };
 
       const stepDamping = () => {
         if (reduced) return;
@@ -163,6 +167,7 @@ export function Services() {
       };
 
       const resetToStart = () => {
+        cancelTravel();
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         animFrameId = null;
         currentFrame = 0;
@@ -175,9 +180,13 @@ export function Services() {
         }
       };
 
+      const leaveBackwards = (self: ScrollTrigger) => {
+        if (!refreshing && !isNavigating) exitReversePin(self, resetToStart);
+      };
+
       const update = (self: ScrollTrigger) => {
-        // When coming backwards (scrolling UP), do not play reverse animation
-        if (self.direction < 0) {
+        if (self.direction < 0 && !isNavigating) {
+          leaveBackwards(self);
           return;
         }
 
@@ -250,47 +259,24 @@ export function Services() {
         anticipatePin: 0,
         invalidateOnRefresh: true,
         onUpdate: update,
-        onRefresh: syncImmediate,
-        onEnterBack: resetToStart,
-        onLeaveBack: resetToStart,
+        onRefreshInit: () => { refreshing = true; },
+        onRefresh: self => { refreshing = false; syncImmediate(self); },
+        onEnterBack: leaveBackwards,
+        onLeaveBack: () => { if (!isNavigating) resetToStart(); },
       });
 
-      triggerRef.current = trigger;
-
       const onWheel = (event: WheelEvent) => {
-        if (!triggerRef.current || isNavigating) return;
         const delta = event.deltaY;
-        if (Math.abs(delta) < 4 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
-
-        const trig = triggerRef.current;
-        const scrollY = window.scrollY;
-
-        // When scrolling UP (coming backwards):
-        // Allow the user to scroll straight up like a static website:
-        // Skip reverse playback, reset visual to starting point (Zone 0), and bypass the pinned distance.
-        if (delta < 0) {
-          const sectionEl = root.current;
-          const sectionTop = sectionEl
-            ? sectionEl.getBoundingClientRect().top + scrollY
-            : trig.start;
-          const topThreshold = Math.max(0, sectionTop - 70);
-
-          if (scrollY > topThreshold + 8 && scrollY <= trig.end + 60) {
-            if (animFrameId !== null) cancelAnimationFrame(animFrameId);
-            animFrameId = null;
-            resetToStart();
-            const prevScrollBehavior = document.documentElement.style.scrollBehavior;
-            document.documentElement.style.scrollBehavior = "auto";
-            window.scrollTo({ top: topThreshold, behavior: "instant" });
-            requestAnimationFrame(() => {
-              document.documentElement.style.scrollBehavior = prevScrollBehavior;
-            });
-          }
-          return;
-        }
+        if (delta >= 0 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
+        cancelTravel();
+        exitReversePin(trigger, resetToStart);
       };
-
-      window.addEventListener("wheel", onWheel, { passive: false });
+      const keyTravel = (event: KeyboardEvent) => {
+        if (["ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
+      };
+      window.addEventListener("wheel", onWheel, { passive: true });
+      window.addEventListener("keydown", keyTravel);
+      window.addEventListener("pointerdown", cancelTravel);
 
       let refreshFrame = 0;
       const resize = new ResizeObserver(() => {
@@ -303,7 +289,6 @@ export function Services() {
         resize.observe(sibling);
       }
 
-      let scrollTween: gsap.core.Tween | undefined;
       navigate.current = (zone: number) => {
         const prevZone = activeZone.current;
         const targetZone = Math.max(0, Math.min(services.items.length - 1, zone));
@@ -327,11 +312,13 @@ export function Services() {
           const previousBehavior = document.documentElement.style.scrollBehavior;
           document.documentElement.style.scrollBehavior = "auto";
           const restoreBehavior = () => {
+            ScrollTrigger.update();
             isNavigating = false;
             document.documentElement.style.scrollBehavior = previousBehavior;
           };
 
           if (reduced) {
+            isNavigating = true;
             window.scrollTo({ top: y, behavior: "auto" });
             restoreBehavior();
             const target = ZONE_STARTS[targetZone];
@@ -358,13 +345,14 @@ export function Services() {
       };
 
       return () => {
+        cancelTravel();
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         window.removeEventListener("wheel", onWheel);
+        window.removeEventListener("keydown", keyTravel);
+        window.removeEventListener("pointerdown", cancelTravel);
         resize.disconnect();
         cancelAnimationFrame(refreshFrame);
-        scrollTween?.kill();
         trigger.kill();
-        triggerRef.current = null;
         navigate.current = () => {};
       };
     });

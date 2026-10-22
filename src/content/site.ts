@@ -182,7 +182,23 @@ export const services = {
 };
 
 export const work = {
-  heading: ["Out there.", "Making an impression."],
+  heading: ["Out there.", "Making an", "Impression"],
+  eyebrow: "[03 // Out in the world]",
+  intro: "A look at the possibilities. Illustrative formats; campaign stories to follow.",
+  conceptLabel: "Illustrative concept",
+  exploreLabel: "Explore the format",
+  playLabel: "Play illustration",
+  pauseLabel: "Pause illustration",
+  mediaUnavailable: "This illustration could not load. You can still explore the format below.",
+  playbackBlocked: "Tap to play the illustration.",
+  detailLabel: "Illustrative format — not a completed campaign",
+  closeLabel: "Close format details",
+  contactLabel: "Plan a campaign",
+  examples: [
+    { title: "In the neighbourhood.", type: "Residential & community", video: "/videos/card_01.mp4", alt: "Animated residential advertising environment", copy: "From a lobby screen to a community activation, bring a brand into the places people call home.", formats: ["Society advertising", "Digital screens", "Community activations"] },
+    { title: "Along the everyday route.", type: "Outdoor & transit", video: "/videos/card_02.mp4", alt: "Animated street with branded transport and roadside advertising", copy: "Build a presence along everyday journeys with outdoor placements and branded vehicles.", formats: ["Outdoor digital", "Auto & cab branding", "Transit advertising"] },
+    { title: "Part of the working day.", type: "Corporate & coworking", video: "/videos/card_03.mp4", alt: "Animated office lobby with advertising screens", copy: "Meet audiences at work through office placements and workplace activations.", formats: ["Office advertising", "Coworking campaigns", "Workplace activations"] },
+  ],
   note: "Campaign packs to be added",
   placeholder: {
     photo: "Campaign photograph to be added",
