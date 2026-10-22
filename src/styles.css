@@ -1008,7 +1008,7 @@
 .service-sequence > .container-page { max-width: none; width: 100%; padding-inline: clamp(20px, 3vw, 56px); }
 .service-intro { display: grid; grid-template-columns: 2fr 1fr; align-items: end; gap: 32px; padding-bottom: 40px; border-bottom: 1px solid #14141330; }
 .service-intro > p { line-height: 1.7; max-width: 34ch; justify-self: end; }
-.service-journey { --service-top: 88px; position: relative; margin-top: 40px; }
+.service-journey { --service-top: 88px; position: relative; margin-top: 40px; margin-bottom: 0; }
 .service-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 24px; align-items: start; width: 100%; }
 .service-viewport { grid-column: 2; grid-row: 1; position: relative; z-index: 2; min-width: 0; margin: 0 8px 0 0; padding: 16px; background: #fff; border: 2px solid #141413; box-shadow: 8px 8px 0 #141413; }
 .service-viewport-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; padding-bottom: 12px; font: 10px/1.5 var(--font-mono); text-transform: uppercase; border-bottom: 1px solid #14141330; }

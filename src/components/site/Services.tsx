@@ -111,8 +111,8 @@ export function Services() {
     mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
       const reduced = !!context.conditions?.reduce;
 
-      const START_BUFFER = 0.12;
-      const END_BUFFER = 0.06;
+      const START_BUFFER = 0.08;
+      const END_BUFFER = 0.05;
 
       const progressToFrame = (progress: number) => {
         if (progress <= START_BUFFER) return 0;
@@ -138,7 +138,7 @@ export function Services() {
       const trigger = ScrollTrigger.create({
         trigger: scene,
         start: () => `top top+=${stickyTop()}`,
-        end: () => `+=${Math.round(window.innerHeight * 2.8)}`,
+        end: () => `+=${Math.round(window.innerHeight * 1.8)}`,
         pin: stageEl,
         pinSpacing: true,
         anticipatePin: 0,
@@ -213,8 +213,7 @@ export function Services() {
   const current = services.items[active];
 
   return (
-    <section id="services" ref={root} aria-labelledby="services-title" className="service-sequence section-y">
-      <span id="work" className="sr-only" aria-hidden="true" />
+    <section id="services" ref={root} aria-labelledby="services-title" className="service-sequence pt-14 lg:pt-20 pb-0">
       <div className="container-page">
         <div className="service-intro">
           <div>
