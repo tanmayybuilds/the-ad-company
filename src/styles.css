@@ -16,8 +16,15 @@
   --brand-h: calc(66px + var(--brand-expansion) * 56px);          /* 66px -> 122px */
   --brand-pitch: calc(122px + var(--brand-expansion) * 98px);     /* 122px -> 220px */
   --brand-stage-h: calc(76px + var(--brand-expansion) * 84px);    /* 76px -> 160px */
-  --brand-pad-top: calc(0.65rem + var(--brand-expansion) * 2.85rem); /* 0.65rem -> 3.5rem */
-  --brand-pad-bottom: calc(0.75rem + var(--brand-expansion) * 3.75rem);/* 0.75rem -> 4.5rem */
+  --brand-pad-top: calc(0.65rem + var(--brand-expansion) * 1.85rem); /* 0.65rem -> 2.5rem */
+  --brand-pad-bottom: calc(0.75rem + var(--brand-expansion) * 2.25rem);/* 0.75rem -> 3.0rem */
+
+  min-height: calc(115px + var(--brand-expansion) * (50vh - 115px));
+  min-height: calc(115px + var(--brand-expansion) * (50svh - 115px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
 
   position: relative;
   isolation: isolate;
