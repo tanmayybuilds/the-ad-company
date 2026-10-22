@@ -205,6 +205,7 @@ export function CoverflowCoverage() {
       };
 
       const onWheel = (event: WheelEvent) => {
+        if (document.body.style.overflow === "hidden") return;
         if (!isTallDesktop || !triggerInstance) return;
 
         const delta = event.deltaY;

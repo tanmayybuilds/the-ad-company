@@ -33,6 +33,7 @@ export function CampaignPreview({ clientName, active, motion }: { clientName: st
 
 export function ClientStrip() {
   const root = useRef<HTMLElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [focused, setFocused] = useState<number | null>(null);
   const [preview, setPreview] = useState<number | null>(null);
@@ -54,13 +55,8 @@ export function ClientStrip() {
   }, [active, paused]);
 
   const closePreview = () => {
-    const keyboard = root.current?.querySelector(".brand-modal-dialog")?.contains(document.activeElement);
-    const lastPreview = preview;
     setPreview(null);
     setHovered(null);
-    if (keyboard && lastPreview !== null) {
-      root.current?.querySelectorAll<HTMLButtonElement>("button.brand-lift")[lastPreview % clients.items.length]?.focus({ preventScroll: true });
-    }
   };
 
   const openPreview = (id: number) => {
@@ -69,16 +65,16 @@ export function ClientStrip() {
 
   // Lock body scroll while modal is active
   useEffect(() => {
-    if (preview === null) return;
+    if (preview === null || !dialog.current) return;
+    const modal = dialog.current;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    modal.showModal();
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closePreview();
-    };
-    window.addEventListener("keydown", onKey);
     return () => {
+      modal.close();
       document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onKey);
+      previousFocus?.focus({ preventScroll: true });
     };
   }, [preview]);
 
@@ -300,11 +296,11 @@ export function ClientStrip() {
 
       {/* FULL-SCREEN SHOWCASE MODAL — Portaled directly to body so it is NOT limited to the brand section */}
       {mounted && selectedClient && createPortal(
-        <div
+        <dialog
+          ref={dialog}
           className="brand-modal-root"
-          role="dialog"
-          aria-modal="true"
           aria-labelledby="brand-modal-title"
+          onCancel={event => { event.preventDefault(); closePreview(); }}
         >
           <div
             className="brand-modal-backdrop"
@@ -356,7 +352,7 @@ export function ClientStrip() {
               </a>
             </div>
           </aside>
-        </div>,
+        </dialog>,
         document.body
       )}
     </section>

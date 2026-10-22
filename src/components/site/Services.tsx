@@ -266,6 +266,7 @@ export function Services() {
       });
 
       const onWheel = (event: WheelEvent) => {
+        if (document.body.style.overflow === "hidden") return;
         const delta = event.deltaY;
         if (delta >= 0 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
         cancelTravel();
@@ -292,11 +293,12 @@ export function Services() {
       navigate.current = (zone: number) => {
         const prevZone = activeZone.current;
         const targetZone = Math.max(0, Math.min(services.items.length - 1, zone));
+        cancelTravel();
+        ScrollTrigger.refresh();
         activeZone.current = targetZone;
         setActive(targetZone);
 
         if (trigger) {
-          ScrollTrigger.refresh();
           let targetProgress: number;
           if (targetZone === 0) {
             targetProgress = START_BUFFER * 0.5;
@@ -308,7 +310,6 @@ export function Services() {
             targetProgress = START_BUFFER + normalized * (1 - START_BUFFER - END_BUFFER);
           }
           const y = trigger.start + targetProgress * (trigger.end - trigger.start);
-          scrollTween?.kill();
           const previousBehavior = document.documentElement.style.scrollBehavior;
           document.documentElement.style.scrollBehavior = "auto";
           const restoreBehavior = () => {

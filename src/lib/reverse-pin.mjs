@@ -1,4 +1,5 @@
 export function exitReversePin(trigger, reset) {
+  if (window.document?.body.style.overflow === 'hidden') return false;
   const y = window.scrollY;
   if (y < trigger.start || y > trigger.end) return false;
   reset();

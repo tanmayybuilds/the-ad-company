@@ -40,3 +40,14 @@ test('reverse exit leaves other sections alone and exits at the exact start boun
   assert.equal(exitReversePin(trigger, reset), true);
   assert.equal(moves[0].top, 999);
 });
+
+test('scrolling inside a modal never moves the underlying pinned page', t => {
+  const original = globalThis.window;
+  t.after(() => { globalThis.window = original; });
+  globalThis.window = {
+    scrollY: 1800,
+    document: { body: { style: { overflow: 'hidden' } } },
+    scrollTo() { assert.fail('A modal scroll must not move the page'); },
+  };
+  assert.equal(exitReversePin({ start: 1000, end: 3400 }, () => assert.fail('A modal scroll must not reset the scene')), false);
+});
