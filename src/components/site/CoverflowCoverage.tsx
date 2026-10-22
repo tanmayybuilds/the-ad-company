@@ -33,6 +33,7 @@ export function CoverflowCoverage() {
   const lastStepTime = useRef(0);
   const lastWheelTime = useRef(0);
   const lastWheelDelta = useRef(0);
+  const lastEnterTime = useRef(0);
   const skipToTeam = useRef<() => void>(() => {});
 
   const renderPosition = useCallback((progress: number) => {
@@ -75,15 +76,19 @@ export function CoverflowCoverage() {
 
       renderPosition(position.value);
 
+      const START_BUFFER = 0.12;
+
       if (isTallDesktop) {
         position.value = 0;
         triggerInstance = ScrollTrigger.create({
           trigger: section,
           start: "top top+=80",
-          end: () => `+=${window.innerHeight * 2.1}`,
+          end: () => `+=${window.innerHeight * 2.4}`,
           pin: scene,
+          anticipatePin: 0,
           invalidateOnRefresh: true,
           onEnter: () => {
+            lastEnterTime.current = Date.now();
             if (!isStepAnimating.current) {
               activeRef.current = 0;
               setActive(0);
@@ -118,7 +123,15 @@ export function CoverflowCoverage() {
           onUpdate: self => {
             // Only update on drag when scrolling downward
             if (!stepTween && !isStepAnimating.current && self.isActive && self.direction > 0) {
-              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
+              if (self.progress <= START_BUFFER) {
+                if (activeRef.current !== 0) {
+                  position.value = 0;
+                  renderPosition(0);
+                }
+                return;
+              }
+              const normalized = (self.progress - START_BUFFER) / (1 - START_BUFFER);
+              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(normalized * (TOTAL - 1))));
               if (nearest !== activeRef.current) {
                 position.value = nearest;
                 renderPosition(nearest);
@@ -134,8 +147,11 @@ export function CoverflowCoverage() {
         stepTween?.kill();
 
         const trigger = triggerInstance;
+        const targetProgress = target === 0
+          ? 0
+          : START_BUFFER + (target / (TOTAL - 1)) * (1 - START_BUFFER);
         const targetScroll = trigger
-          ? trigger.start + (target / (TOTAL - 1)) * (trigger.end - trigger.start)
+          ? trigger.start + targetProgress * (trigger.end - trigger.start)
           : window.scrollY;
 
         if (motion) {
@@ -181,9 +197,10 @@ export function CoverflowCoverage() {
 
         const scrollY = window.scrollY;
         const trigger = triggerInstance;
-        const isPinned = scrollY >= trigger.start - 12 && scrollY <= trigger.end + 12;
 
-        if (!isPinned) return;
+        // The user must completely reach the section and cover the screen first before wheel interception starts
+        if (scrollY < trigger.start - 1) return;
+        if (scrollY > trigger.end + 8) return;
 
         const direction = delta > 0 ? 1 : -1;
 
@@ -233,10 +250,16 @@ export function CoverflowCoverage() {
         const now = Date.now();
         const timeSinceLastWheel = now - lastWheelTime.current;
         const timeSinceLastStep = now - lastStepTime.current;
+        const timeSinceEnter = now - lastEnterTime.current;
         lastWheelTime.current = now;
 
         const reversedDirection = Math.sign(delta) !== Math.sign(lastWheelDelta.current);
         lastWheelDelta.current = delta;
+
+        // When resting at city 0 (Mumbai), ensure user has dwelled after entering before stepping to Pune
+        if (current === 0 && timeSinceEnter < 450) {
+          return;
+        }
 
         // One scroll gesture advances to the next city only:
         // Trailing inertia within the same flick is debounced and ignored.

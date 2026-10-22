@@ -111,8 +111,18 @@ export function Services() {
     mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
       const reduced = !!context.conditions?.reduce;
 
+      const START_BUFFER = 0.12;
+      const END_BUFFER = 0.06;
+
+      const progressToFrame = (progress: number) => {
+        if (progress <= START_BUFFER) return 0;
+        if (progress >= 1 - END_BUFFER) return TOTAL_FRAMES - 1;
+        const normalized = (progress - START_BUFFER) / (1 - START_BUFFER - END_BUFFER);
+        return sequenceProgressFrame(normalized);
+      };
+
       const update = (self: ScrollTrigger) => {
-        const frame = sequenceProgressFrame(self.progress);
+        const frame = progressToFrame(self.progress);
         const zone = sequenceZone(frame);
         if (zone !== activeZone.current) {
           activeZone.current = zone;
@@ -128,10 +138,10 @@ export function Services() {
       const trigger = ScrollTrigger.create({
         trigger: scene,
         start: () => `top top+=${stickyTop()}`,
-        end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
+        end: () => `+=${Math.round(window.innerHeight * 2.8)}`,
         pin: stageEl,
         pinSpacing: true,
-        anticipatePin: 1,
+        anticipatePin: 0,
         invalidateOnRefresh: true,
         onUpdate: update,
         onRefresh: update,
@@ -162,7 +172,15 @@ export function Services() {
 
         if (trigger) {
           trigger.refresh();
-          const targetProgress = targetFrame / (TOTAL_FRAMES - 1);
+          let targetProgress: number;
+          if (targetZone === 0) {
+            targetProgress = START_BUFFER * 0.5;
+          } else if (targetZone === services.items.length - 1) {
+            targetProgress = 1 - END_BUFFER * 0.5;
+          } else {
+            const normalized = targetFrame / (TOTAL_FRAMES - 1);
+            targetProgress = START_BUFFER + normalized * (1 - START_BUFFER - END_BUFFER);
+          }
           const y = trigger.start + targetProgress * (trigger.end - trigger.start);
           scrollTween?.kill();
           const previousBehavior = document.documentElement.style.scrollBehavior;

@@ -814,7 +814,7 @@
 }
 
 /* Coverage: ivory information planes over an ink 3D stage. */
-.cov-scroll-wrapper { position: relative; background: #19211e; color: #f5f1e8; }
+.cov-scroll-wrapper { position: relative; z-index: 10; isolation: isolate; background: #19211e; color: #f5f1e8; }
 .cov-stage { position: relative; height: calc(100svh - 80px); min-height: 620px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; isolation: isolate; overflow: clip; background: radial-gradient(ellipse at 65% 45%, #354336 0, #19211e 55%); }
 .cov-header { position: relative; z-index: 4; display: flex; align-items: end; justify-content: space-between; gap: 24px; padding-block: 16px 8px; }
 .cov-eyebrow { color: #d7ed64; font: 500 11px/1.4 var(--font-mono); margin-bottom: 6px; }
@@ -1004,12 +1004,12 @@
 }
 
 /* Scroll-driven environment sequence */
-.service-sequence { background: #f7f5f0; color: #141413; min-height: 360vh; border-bottom: 1px solid #14141330; }
+.service-sequence { background: #f7f5f0; color: #141413; position: relative; z-index: 10; isolation: isolate; border-bottom: 1px solid #14141330; }
 .service-sequence > .container-page { max-width: none; width: 100%; padding-inline: clamp(20px, 3vw, 56px); }
 .service-intro { display: grid; grid-template-columns: 2fr 1fr; align-items: end; gap: 32px; padding-bottom: 40px; border-bottom: 1px solid #14141330; }
 .service-intro > p { line-height: 1.7; max-width: 34ch; justify-self: end; }
-.service-journey { --service-top: 88px; --service-travel: 900vh; position: relative; height: calc(var(--service-travel) + 100vh); margin-top: 40px; }
-.service-stage { position: sticky; top: var(--service-top); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 24px; align-items: start; }
+.service-journey { --service-top: 88px; position: relative; margin-top: 40px; }
+.service-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 24px; align-items: start; width: 100%; }
 .service-viewport { grid-column: 2; grid-row: 1; position: relative; z-index: 2; min-width: 0; margin: 0 8px 0 0; padding: 16px; background: #fff; border: 2px solid #141413; box-shadow: 8px 8px 0 #141413; }
 .service-viewport-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; padding-bottom: 12px; font: 10px/1.5 var(--font-mono); text-transform: uppercase; border-bottom: 1px solid #14141330; }
 .service-viewport-heading > span:last-child { text-align: right; color: #983c24; }
@@ -1025,7 +1025,7 @@
 .service-metadata strong { font-weight: 600; }
 .service-journey-hint { padding: 10px 12px; background: #d9f99d; font: 11px/1.6 var(--font-mono); }
 .service-load-warning { font-size: 12px; line-height: 1.5; margin-top: 10px; }
-.service-zones { grid-column: 1; grid-row: 1; margin: 0; padding: 0; list-style: none; min-width: 0; max-height: calc(100svh - var(--service-top) - 24px); overflow-y: auto; scrollbar-width: thin; border-top: 1px solid #14141330; }
+.service-zones { grid-column: 1; grid-row: 1; margin: 0; padding: 0; list-style: none; min-width: 0; border-top: 1px solid #14141330; }
 .service-zone { border-bottom: 1px solid #14141330; }
 .service-zone-card { display: block; text-align: left; width: 100%; padding: 18px 14px; background: transparent; color: #141413; cursor: pointer; transition: background-color .35s, color .35s; }
 .service-zone-card:hover { background: #eae8e0; }
@@ -1047,8 +1047,8 @@
 @media (max-width: 1023px) {
   .service-intro { grid-template-columns: 1fr; gap: 24px; }
   .service-intro > p { justify-self: start; max-width: 55ch; }
-  .service-journey { --service-top: 76px; --service-travel: 800vh; margin-top: 28px; }
-  .service-stage { display: flex; flex-direction: column; gap: 16px; max-height: calc(100svh - var(--service-top) - 16px); }
+  .service-journey { --service-top: 76px; margin-top: 28px; }
+  .service-stage { display: flex; flex-direction: column; gap: 16px; }
   .service-zones { width: 100%; min-height: 0; }
   .service-viewport { width: calc(100% - 8px); flex-shrink: 0; margin-bottom: 0; padding: 12px; box-shadow: 5px 5px 0 #141413; }
   .service-screen { aspect-ratio: auto; height: clamp(120px, 24svh, 290px); }
@@ -1067,3 +1067,10 @@
 @media (prefers-reduced-motion: reduce) {
   .service-zone-card, .service-zone-details { transition: none; }
 }
+
+#about {
+  background-color: var(--paper);
+  position: relative;
+  z-index: 10;
+}
+

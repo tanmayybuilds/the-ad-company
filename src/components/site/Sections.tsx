@@ -48,7 +48,7 @@ export function Work() {
 
 export function About() {
   const root = useRef<HTMLElement>(null); useReveal(root);
-  return <section id="about" ref={root} className="section-y border-b hairline" aria-labelledby="about-title"><div className="container-page">
+  return <section id="about" ref={root} className="section-y border-b hairline bg-paper relative z-10" aria-labelledby="about-title"><div className="container-page">
     <div className="grid items-center gap-12 lg:grid-cols-2">
       <div data-reveal><Eyebrow className="mb-4">[04 // Why The Ad Company]</Eyebrow><h2 id="about-title" className="text-display-md">Committed to<br /><span className="text-signal">commitments.</span></h2><p className="mt-7 max-w-xl text-lg leading-relaxed">{about.copy}</p><p className="mt-4 max-w-lg leading-relaxed text-ink/65">The city is more than a backdrop. It is a collection of neighbourhoods, routines and journeys. We help you find your place in it.</p><ActionLink href="#contact" variant="outline" size="md" className="mt-7">Put your brief on the table</ActionLink></div>
       <figure className="about-poster" data-reveal><div className="flex justify-between border-b border-ink/20 pb-3 text-label-index text-[10px]"><span>The Ad Company</span><span>Everyday places / extraordinary potential</span></div><div className="poster-city" aria-hidden="true"><span /><span /><span /><span /><span /><span /></div><blockquote className="relative z-10 font-display text-[clamp(2.5rem,5vw,4.5rem)] font-extrabold uppercase leading-[.95]">The city<br />is our<br /><span className="text-signal">canvas.</span></blockquote><figcaption className="relative z-10 mt-8 text-label-index text-[11px]">An idea built for the real world. ↗</figcaption></figure>
