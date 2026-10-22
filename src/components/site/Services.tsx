@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { services } from "@/content/site";
-import { gsap, ScrollTrigger, MQ, useGSAP } from "@/lib/motion";
+import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
 import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
 
@@ -121,30 +121,127 @@ export function Services() {
         return sequenceProgressFrame(normalized);
       };
 
+      let currentFrame = 0;
+      let targetFrame = 0;
+      let animFrameId: number | null = null;
+      let isNavigating = false;
+
+      const stepDamping = () => {
+        if (reduced) return;
+        const diff = targetFrame - currentFrame;
+        if (Math.abs(diff) > 0.05) {
+          const absDiff = Math.abs(diff);
+          // Controlled cinematic easing: cap max frame advance per tick so it can never whip by too fast
+          const maxStep = absDiff > 50 ? absDiff * 0.08 : 1.4;
+          const step = Math.sign(diff) * Math.min(absDiff * 0.12, maxStep);
+          currentFrame += step;
+          const displayFrame = Math.round(currentFrame);
+          render.current(displayFrame);
+
+          if (!isNavigating) {
+            const zone = sequenceZone(displayFrame);
+            if (zone !== activeZone.current) {
+              activeZone.current = zone;
+              setActive(zone);
+            }
+          }
+          animFrameId = requestAnimationFrame(stepDamping);
+        } else {
+          currentFrame = targetFrame;
+          const displayFrame = Math.round(currentFrame);
+          render.current(displayFrame);
+
+          if (!isNavigating) {
+            const zone = sequenceZone(displayFrame);
+            if (zone !== activeZone.current) {
+              activeZone.current = zone;
+              setActive(zone);
+            }
+          }
+          animFrameId = null;
+        }
+      };
+
       const update = (self: ScrollTrigger) => {
+        if (self.progress <= 0) {
+          if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+          currentFrame = 0;
+          targetFrame = 0;
+          requestedFrame.current = 0;
+          render.current(0);
+          if (activeZone.current !== 0) {
+            activeZone.current = 0;
+            setActive(0);
+          }
+          return;
+        }
+        if (self.progress >= 1) {
+          if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+          currentFrame = TOTAL_FRAMES - 1;
+          targetFrame = TOTAL_FRAMES - 1;
+          requestedFrame.current = TOTAL_FRAMES - 1;
+          render.current(TOTAL_FRAMES - 1);
+          const lastZone = services.items.length - 1;
+          if (activeZone.current !== lastZone) {
+            activeZone.current = lastZone;
+            setActive(lastZone);
+          }
+          return;
+        }
+
+        const frame = progressToFrame(self.progress);
+        if (reduced) {
+          const zone = sequenceZone(frame);
+          if (zone !== activeZone.current) {
+            activeZone.current = zone;
+            setActive(zone);
+          }
+          const target = ZONE_STARTS[zone];
+          requestedFrame.current = target;
+          render.current(target);
+          return;
+        }
+
+        targetFrame = frame;
+        if (animFrameId === null) {
+          animFrameId = requestAnimationFrame(stepDamping);
+        }
+      };
+
+      const syncImmediate = (self: ScrollTrigger) => {
+        if (animFrameId !== null) {
+          cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+        }
         const frame = progressToFrame(self.progress);
         const zone = sequenceZone(frame);
         if (zone !== activeZone.current) {
           activeZone.current = zone;
           setActive(zone);
         }
-        const targetFrame = reduced ? ZONE_STARTS[zone] : frame;
-        requestedFrame.current = targetFrame;
-        render.current(targetFrame);
+        const target = reduced ? ZONE_STARTS[zone] : frame;
+        currentFrame = target;
+        targetFrame = target;
+        requestedFrame.current = target;
+        render.current(target);
       };
 
       const stickyTop = () => parseFloat(getComputedStyle(scene).getPropertyValue("--service-top")) || 88;
+      const scrollMultiplier = () =>
+        window.innerWidth < 1024 ? MOTION.services.scrollDistanceMobile : MOTION.services.scrollDistanceDesktop;
 
       const trigger = ScrollTrigger.create({
         trigger: scene,
         start: () => `top top+=${stickyTop()}`,
-        end: () => `+=${Math.round(window.innerHeight * 1.8)}`,
+        end: () => `+=${Math.round(window.innerHeight * scrollMultiplier())}`,
         pin: stageEl,
         pinSpacing: true,
         anticipatePin: 0,
         invalidateOnRefresh: true,
         onUpdate: update,
-        onRefresh: update,
+        onRefresh: syncImmediate,
       });
 
       triggerRef.current = trigger;
@@ -162,13 +259,10 @@ export function Services() {
 
       let scrollTween: gsap.core.Tween | undefined;
       navigate.current = (zone: number) => {
+        const prevZone = activeZone.current;
         const targetZone = Math.max(0, Math.min(services.items.length - 1, zone));
         activeZone.current = targetZone;
         setActive(targetZone);
-
-        const targetFrame = ZONE_STARTS[targetZone];
-        requestedFrame.current = targetFrame;
-        render.current(targetFrame);
 
         if (trigger) {
           trigger.refresh();
@@ -178,17 +272,37 @@ export function Services() {
           } else if (targetZone === services.items.length - 1) {
             targetProgress = 1 - END_BUFFER * 0.5;
           } else {
-            const normalized = targetFrame / (TOTAL_FRAMES - 1);
+            const keyframe = ZONE_STARTS[targetZone];
+            const normalized = keyframe / (TOTAL_FRAMES - 1);
             targetProgress = START_BUFFER + normalized * (1 - START_BUFFER - END_BUFFER);
           }
           const y = trigger.start + targetProgress * (trigger.end - trigger.start);
           scrollTween?.kill();
           const previousBehavior = document.documentElement.style.scrollBehavior;
           document.documentElement.style.scrollBehavior = "auto";
-          const restoreBehavior = () => { document.documentElement.style.scrollBehavior = previousBehavior; };
+          const restoreBehavior = () => {
+            isNavigating = false;
+            document.documentElement.style.scrollBehavior = previousBehavior;
+          };
+
+          if (reduced) {
+            window.scrollTo({ top: y, behavior: "auto" });
+            restoreBehavior();
+            const target = ZONE_STARTS[targetZone];
+            currentFrame = target;
+            targetFrame = target;
+            requestedFrame.current = target;
+            render.current(target);
+            return;
+          }
+
+          isNavigating = true;
+          const zoneDiff = Math.abs(targetZone - prevZone);
+          const scrollDuration = Math.min(1.8, 0.85 + zoneDiff * 0.22);
+
           scrollTween = gsap.to(window, {
             scrollTo: { y, autoKill: false },
-            duration: reduced ? 0 : 0.65,
+            duration: scrollDuration,
             ease: "power2.inOut",
             overwrite: "auto",
             onComplete: restoreBehavior,
@@ -198,6 +312,7 @@ export function Services() {
       };
 
       return () => {
+        if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         resize.disconnect();
         cancelAnimationFrame(refreshFrame);
         scrollTween?.kill();
