@@ -18,7 +18,7 @@ export const MOTION = {
   },
   reveal: { duration: 0.7, y: 24, yMobile: 12, start: "top 88%" },
   clients: { cycleSeconds: 5.2, pixelsPerSecond: 150 },
-  services: { indicator: 0.45, image: 0.6, scrollDistanceDesktop: 13.2, scrollDistanceMobile: 9.4 },
+  services: { indicator: 0.45, image: 0.6, scrollDistanceDesktop: 12.2, scrollDistanceMobile: 8.7 },
   work: { wipe: 0.9, stagger: 0.18 },
   process: { line: 1.0, step: 0.55, stagger: 0.28 },
   /** Hero 3D tilt range in radians (desktop fine pointer only). */

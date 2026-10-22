@@ -132,8 +132,8 @@ export function Services() {
         if (Math.abs(diff) > 0.05) {
           const absDiff = Math.abs(diff);
           // Controlled cinematic easing: cap max frame advance per tick so it can never whip by too fast
-          const maxStep = absDiff > 50 ? absDiff * 0.08 : 1.1;
-          const step = Math.sign(diff) * Math.min(absDiff * 0.095, maxStep);
+          const maxStep = absDiff > 50 ? absDiff * 0.08 : 1.25;
+          const step = Math.sign(diff) * Math.min(absDiff * 0.105, maxStep);
           currentFrame += step;
           const displayFrame = Math.round(currentFrame);
           render.current(displayFrame);
@@ -162,18 +162,27 @@ export function Services() {
         }
       };
 
+      const resetToStart = () => {
+        if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+        currentFrame = 0;
+        targetFrame = 0;
+        requestedFrame.current = 0;
+        render.current(0);
+        if (activeZone.current !== 0) {
+          activeZone.current = 0;
+          setActive(0);
+        }
+      };
+
       const update = (self: ScrollTrigger) => {
+        // When coming backwards (scrolling UP), do not play reverse animation
+        if (self.direction < 0) {
+          return;
+        }
+
         if (self.progress <= 0) {
-          if (animFrameId !== null) cancelAnimationFrame(animFrameId);
-          animFrameId = null;
-          currentFrame = 0;
-          targetFrame = 0;
-          requestedFrame.current = 0;
-          render.current(0);
-          if (activeZone.current !== 0) {
-            activeZone.current = 0;
-            setActive(0);
-          }
+          resetToStart();
           return;
         }
         if (self.progress >= 1) {
@@ -242,9 +251,30 @@ export function Services() {
         invalidateOnRefresh: true,
         onUpdate: update,
         onRefresh: syncImmediate,
+        onEnterBack: resetToStart,
+        onLeaveBack: resetToStart,
       });
 
       triggerRef.current = trigger;
+
+      const onWheel = (event: WheelEvent) => {
+        if (!triggerRef.current || isNavigating) return;
+        const delta = event.deltaY;
+        if (Math.abs(delta) < 4 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
+
+        const trig = triggerRef.current;
+        const scrollY = window.scrollY;
+
+        // When scrolling UP (coming backwards):
+        // Skip reverse playback and reset to the starting point so scrolling down plays it anew
+        if (delta < 0 && scrollY > trig.start + 4 && scrollY <= trig.end + 20) {
+          event.preventDefault();
+          resetToStart();
+          window.scrollTo({ top: trig.start, behavior: "auto" });
+        }
+      };
+
+      window.addEventListener("wheel", onWheel, { passive: false });
 
       let refreshFrame = 0;
       const resize = new ResizeObserver(() => {
@@ -313,6 +343,7 @@ export function Services() {
 
       return () => {
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+        window.removeEventListener("wheel", onWheel);
         resize.disconnect();
         cancelAnimationFrame(refreshFrame);
         scrollTween?.kill();
