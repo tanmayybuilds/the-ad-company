@@ -44,6 +44,16 @@ test('input during travel is consumed rather than queued or skipping a stop', ()
   assert.equal(wheel(2, false, 0, 1216), 'wait');
 });
 
+test('bidirectional wheel steps move one stop backward and release only at the first pointer', () => {
+  const wheel = createWheelStep(6, true);
+  assert.equal(wheel(3, false, -1200, 0), 2);
+  assert.equal(wheel(2, true, -100, 16), 'wait');
+  assert.equal(wheel(2, false, -100, 32), 'wait');
+  assert.equal(wheel(2, false, -100, 1200), 1);
+  assert.equal(wheel(1, false, 100, 2400), 2);
+  assert.equal(wheel(0, false, -100, 3600), 'back');
+});
+
 test('close-up desktop framing keeps the pedestal, portrait and introduction readable', () => {
   for (const [width, height] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     const view = teamFraming(width, height);
@@ -104,13 +114,17 @@ test('a floor path ends at the following pedestal in CSS floor coordinates', () 
   }
 });
 
-test('render window keeps at most three consecutive stops mounted in the scene', () => {
+test('render window prepares two stops ahead of the arriving pointer while retaining the outgoing pointer', () => {
   assert.deepEqual(teamWindow(0, 6), { first: 0, last: 2 });
-  assert.deepEqual(teamWindow(1.7, 6), { first: 1, last: 3 });
+  assert.deepEqual(teamWindow(1.7, 6), { first: 1, last: 4 });
+  assert.deepEqual(teamWindow(2.0001, 6), { first: 2, last: 5 });
+  assert.deepEqual(teamWindow(2.51, 6), { first: 2, last: 5 });
   assert.deepEqual(teamWindow(4.8, 6), { first: 4, last: 5 });
   assert.deepEqual(teamWindow(5, 6), { first: 5, last: 5 });
   for (let progress = -1; progress < 7; progress += .01) {
     const { first, last } = teamWindow(progress, 6);
-    assert.ok(first >= 0 && last < 6 && last - first < 3);
+    assert.ok(first >= 0 && last < 6 && last - first <= 3);
+    const active = Math.max(0, Math.min(5, Math.round(progress)));
+    assert.ok(last >= Math.min(5, active + 2), 'The displayed pointer must already have its next two pointers prepared');
   }
 });

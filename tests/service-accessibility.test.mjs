@@ -17,9 +17,13 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     export const MQ = { motion: 'motion', reduce: 'reduce' };
     export const MOTION = {};
     export const useGSAP = callback => globalThis.__serviceTest.effects.push(callback);
-    export const gsap = { to: (_, options) => {
+    export const gsap = { to: (target, options) => {
       globalThis.__serviceTest.tween = options;
-      return { kill: () => { globalThis.__serviceTest.kills++; options.onInterrupt?.(); } };
+      const travel = { target, options, from: target.frame, killed: false,
+        kill() { this.killed = true; globalThis.__serviceTest.kills++; options.onInterrupt?.(); }
+      };
+      globalThis.__serviceTest.travel = travel;
+      return travel;
     }, matchMedia: () => ({
       add: (_, callback) => globalThis.__serviceTest.cleanups.push(callback({ conditions: { reduce: globalThis.__serviceTest.reduced } })),
       revert: () => globalThis.__serviceTest.cleanups.forEach(cleanup => cleanup?.())
@@ -30,7 +34,11 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
         return globalThis.__serviceTest.trigger = { start: 1000.4, end: 5000.6, progress: 0, direction: 1, vars: options, kill() {} };
       },
       refresh: () => { const trigger = globalThis.__serviceTest.trigger; trigger.vars.onRefreshInit(); trigger.vars.onRefresh(trigger); },
-      update: () => {}
+      update: () => {
+        const trigger = globalThis.__serviceTest.trigger;
+        trigger.progress = Math.max(0, Math.min(1, (window.scrollY - trigger.start) / (trigger.end - trigger.start)));
+        trigger.vars.onUpdate(trigger);
+      }
     };
   `;
   // Run the real component's setup and category handlers with hook/motion boundaries stubbed.
@@ -91,19 +99,58 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     const cleanup = harness.effects[0]();
     const trigger = harness.trigger;
     const navigate = harness.refs[8].current;
-    navigate(0);
-    trigger.vars.onUpdate(trigger);
-    assert.equal(harness.kills, 0, 'Navigation to the first frame must not cancel its own tween');
-    harness.tween.onComplete();
-    for (let zone = 1; zone < 5; zone++) {
-      navigate(zone);
-      window.scrollY = Math.round(harness.tween.scrollTo.y);
-      trigger.progress = (window.scrollY - trigger.start) / (trigger.end - trigger.start);
+    const goal = zone => zone === 4 ? 265 : [0, 42, 99, 156][zone];
+    const advance = (fraction, zone) => {
+      const travel = harness.travel;
+      assert.ok(!travel.killed);
+      assert.ok(travel.options.duration <= .55, 'Manual category switching must finish within 550ms');
+      travel.target.frame = travel.from + (travel.options.frame - travel.from) * fraction;
+      travel.options.onUpdate?.();
       trigger.vars.onUpdate(trigger);
+      assert.equal(harness.selection, zone, 'The selected category must stay stable throughout its transition');
+      assert.equal(frames.at(-1), Math.round(travel.target.frame), 'The visual must follow the manual transition directly, without a second easing loop');
+    };
+    const finish = zone => {
+      advance(1, zone);
+      harness.travel.options.onComplete();
+      trigger.vars.onUpdate(trigger);
+      settle();
+      assert.equal(frames.at(-1), goal(zone));
+      assert.equal(harness.selection, zone, 'Completion must not bounce back to the previous category');
+      assert.equal(pendingFrames.size, 0);
+    };
+    // Reproduce fifth → first: the first queued scroll update can still report the old endpoint.
+    trigger.progress = 1; window.scrollY = Math.round(trigger.end);
+    trigger.vars.onRefreshInit(); trigger.vars.onRefresh(trigger);
+    navigate(0);
+    trigger.progress = 1;
+    trigger.vars.onUpdate(trigger);
+    assert.equal(harness.selection, 0, 'A stale fifth-category endpoint must not overwrite the first category chosen by the user');
+    assert.equal(harness.kills, 0, 'Navigation to the first frame must not cancel its own tween');
+    finish(0);
+    for (let from = 0; from < 5; from++) for (let to = 0; to < 5; to++) {
+      navigate(from); finish(from);
+      navigate(to);
+      advance(.5, to);
       trigger.vars.onRefreshInit(); trigger.vars.onRefresh(trigger);
-      assert.equal(harness.selection, zone, 'Refresh during explicit navigation must preserve its category');
-      harness.tween.onComplete();
+      assert.equal(harness.selection, to, 'Refresh during explicit navigation must preserve its category');
+      finish(to);
     }
+    navigate(4); advance(.25, 4);
+    const replaced = harness.travel;
+    navigate(0);
+    assert.ok(replaced.killed, 'A new click must cancel the previous transition');
+    advance(.25, 0);
+    const replacedAgain = harness.travel;
+    navigate(2);
+    assert.ok(replacedAgain.killed);
+    finish(2);
+    navigate(0); advance(.25, 0);
+    window.dispatchEvent(new Event('pointerdown'));
+    assert.ok(harness.travel.killed);
+    assert.equal(frames.at(-1), 0, 'Interrupting a manual transition must settle to its aligned document position, not freeze on a different category');
+    assert.equal(harness.selection, 0);
+    navigate(4); finish(4);
     const wheel = deltaY => {
       const event = new Event('wheel'); Object.assign(event, { deltaY, deltaX: 0 }); window.dispatchEvent(event);
     };
@@ -124,6 +171,16 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     trigger.direction = -1;
     scrub(.6);
     assert.equal(harness.selection, 3);
+    const beforeRefresh = frames.length;
+    trigger.vars.onRefreshInit();
+    trigger.progress = 0;
+    trigger.vars.onUpdate(trigger);
+    trigger.vars.onEnter(trigger);
+    trigger.vars.onLeaveBack();
+    assert.equal(frames.length, beforeRefresh, 'Temporary zero progress during layout refresh must not rewind or reload the frame window');
+    trigger.progress = .6;
+    trigger.vars.onRefresh(trigger);
+    assert.equal(frames.at(-1), 159);
     wheel(100); trigger.direction = 1; scrub(.8);
     assert.equal(harness.selection, 4);
     scrub(1);
@@ -138,6 +195,9 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     wheel(100); trigger.direction = 1; scrub(1);
     window.scrollY = trigger.end + 601;
     window.dispatchEvent(new Event('scroll'));
+    trigger.vars.onRefreshInit();
+    trigger.vars.onEnter(trigger);
+    trigger.vars.onRefresh(trigger);
     wheel(-100); trigger.direction = -1;
     window.scrollY = Math.floor(trigger.end);
     trigger.progress = 1;

@@ -3,7 +3,7 @@ import { services } from "@/content/site";
 import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
 import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceWindow } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
-import { exitReversePin, observeScrollDirection } from "@/lib/reverse-pin.mjs";
+import { exitReversePin, observeScrollDirection, scrollPinTo } from "@/lib/reverse-pin.mjs";
 
 export function Services() {
   const root = useRef<HTMLElement>(null);
@@ -148,11 +148,11 @@ export function Services() {
       let isNavigating = false;
       let refreshing = false;
       let passedStage = false;
-      let scrollTween: gsap.core.Tween | undefined;
+      let travelTween: gsap.core.Tween | undefined;
       const scrollDirection = observeScrollDirection();
       const cancelTravel = () => {
-        scrollTween?.kill();
-        scrollTween = undefined;
+        travelTween?.kill();
+        travelTween = undefined;
         isNavigating = false;
       };
 
@@ -211,12 +211,13 @@ export function Services() {
       };
 
       const update = (self: ScrollTrigger) => {
-        if (passedStage && self.direction < 0 && !isNavigating) {
+        if (refreshing || isNavigating) return;
+        if (passedStage && self.direction < 0) {
           leaveBackwards(self);
           return;
         }
 
-        if (self.progress <= 0 && !isNavigating) {
+        if (self.progress <= 0) {
           resetToStart();
           return;
         }
@@ -264,8 +265,8 @@ export function Services() {
 
       const trigger = ScrollTrigger.create({
         trigger: scene,
-        // This pin can register after Coverage; reserve its upstream spacing first on every refresh.
-        refreshPriority: 1,
+        // Enable document-order sorting: restore the client strip first, then this pin, then Coverage.
+        refreshPriority: 0,
         start: () => `top top+=${stickyTop()}`,
         end: () => `+=${Math.round(window.innerHeight * scrollMultiplier())}`,
         pin: stageEl,
@@ -275,9 +276,9 @@ export function Services() {
         onUpdate: update,
         onRefreshInit: () => { refreshing = true; },
         onRefresh: self => { refreshing = false; if (!isNavigating) syncImmediate(self); },
-        onEnter: () => { passedStage = false; },
+        onEnter: () => { if (!refreshing) passedStage = false; },
         onEnterBack: leaveBackwards,
-        onLeaveBack: () => { if (!isNavigating && scrollDirection.direction() === -1) resetToStart(); },
+        onLeaveBack: () => { if (!refreshing && !isNavigating && scrollDirection.direction() === -1) resetToStart(); },
       });
 
       const onScroll = () => {
@@ -289,19 +290,24 @@ export function Services() {
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
 
+      const interruptTravel = () => {
+        if (!isNavigating) return;
+        cancelTravel();
+        syncImmediate(trigger);
+      };
       const onWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.defaultPrevented || document.body.style.overflow === "hidden") return;
         const delta = event.deltaY;
-        if (delta >= 0 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
-        cancelTravel();
-        leaveBackwards(trigger);
+        if (Math.abs(delta) <= Math.abs(event.deltaX)) return;
+        interruptTravel();
+        if (delta < 0) leaveBackwards(trigger);
       };
       const keyTravel = (event: KeyboardEvent) => {
-        if (["ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
+        if (["ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) interruptTravel();
       };
       window.addEventListener("wheel", onWheel, { passive: true });
       window.addEventListener("keydown", keyTravel);
-      window.addEventListener("pointerdown", cancelTravel);
+      window.addEventListener("pointerdown", interruptTravel);
 
       let refreshFrame = 0;
       const resize = new ResizeObserver(() => {
@@ -315,39 +321,40 @@ export function Services() {
       }
 
       navigate.current = (zone: number) => {
-        const prevZone = activeZone.current;
         const targetZone = Math.max(0, Math.min(services.items.length - 1, zone));
         scrollDirection.reset();
         cancelTravel();
+        if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+        animFrameId = null;
         passedStage = false;
-        ScrollTrigger.refresh();
+        isNavigating = true;
         activeZone.current = targetZone;
         setActive(targetZone);
-
-        if (trigger) {
-          const targetProgress = targetZone === services.items.length - 1 ? 1 : ZONE_STARTS[targetZone] / (TOTAL_FRAMES - 1);
-          const y = trigger.start + targetProgress * (trigger.end - trigger.start);
-          const previousBehavior = document.documentElement.style.scrollBehavior;
-          document.documentElement.style.scrollBehavior = "auto";
-          const restoreBehavior = () => {
-            ScrollTrigger.update();
+        ScrollTrigger.refresh();
+        const destination = targetZone === services.items.length - 1 ? TOTAL_FRAMES - 1 : ZONE_STARTS[targetZone];
+        const alignScroll = () => {
+          scrollPinTo(trigger.start + destination / (TOTAL_FRAMES - 1) * (trigger.end - trigger.start));
+          ScrollTrigger.update();
+        };
+        // Pin position and manual frame travel must not run separate easing loops.
+        alignScroll();
+        const travel = { frame: currentFrame };
+        travelTween = gsap.to(travel, {
+          frame: destination,
+          duration: .45,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            currentFrame = targetFrame = travel.frame;
+            render.current(Math.round(currentFrame));
+          },
+          onComplete: () => {
+            currentFrame = targetFrame = destination;
+            render.current(destination);
+            alignScroll();
+            travelTween = undefined;
             isNavigating = false;
-            document.documentElement.style.scrollBehavior = previousBehavior;
-          };
-
-          isNavigating = true;
-          const zoneDiff = Math.abs(targetZone - prevZone);
-          const scrollDuration = Math.min(2.2, 0.95 + zoneDiff * 0.28);
-
-          scrollTween = gsap.to(window, {
-            scrollTo: { y, autoKill: false },
-            duration: scrollDuration,
-            ease: "power2.inOut",
-            overwrite: "auto",
-            onComplete: restoreBehavior,
-            onInterrupt: restoreBehavior,
-          });
-        }
+          },
+        });
       };
 
       return () => {
@@ -356,7 +363,7 @@ export function Services() {
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         window.removeEventListener("wheel", onWheel);
         window.removeEventListener("keydown", keyTravel);
-        window.removeEventListener("pointerdown", cancelTravel);
+        window.removeEventListener("pointerdown", interruptTravel);
         window.removeEventListener('scroll', onScroll);
         resize.disconnect();
         cancelAnimationFrame(refreshFrame);

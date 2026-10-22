@@ -26,8 +26,8 @@ export function teamPath(a, b) {
 }
 
 export function teamWindow(progress, count) {
-  const first = Math.floor(clamp(progress, 0, count - 1));
-  return { first, last: Math.min(count - 1, first + 2) };
+  const position = clamp(progress, 0, count - 1);
+  return { first: Math.floor(position), last: Math.min(count - 1, Math.ceil(position) + 2) };
 }
 
 export function teamFraming(width, height) {

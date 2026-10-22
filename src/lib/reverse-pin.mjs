@@ -3,7 +3,7 @@ export function scrollPinTo(y) {
   return window.scrollY;
 }
 
-export function createWheelStep(count) {
+export function createWheelStep(count, bidirectional = false) {
   let lastTime = -Infinity, lastDirection = 0;
   return (index, busy, delta, time) => {
     if (!delta) return 'wait';
@@ -11,8 +11,9 @@ export function createWheelStep(count) {
     const fresh = time - lastTime > 180 || direction !== lastDirection;
     lastTime = time;
     lastDirection = direction;
-    if (direction < 0) return 'back';
+    if (direction < 0 && !bidirectional) return 'back';
     if (busy || !fresh) return 'wait';
+    if (direction < 0) return index > 0 ? index - 1 : 'back';
     return index < count - 1 ? index + 1 : 'leave';
   };
 }

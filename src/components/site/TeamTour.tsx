@@ -39,10 +39,11 @@ export function TeamTour() {
     const section = root.current!, stage = world.current!;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let top = 0, distance = 0, raf = 0, lastTime = 0, visible = false, selected = -1;
-    let firstVisible = -1;
+    let firstVisible = -1, lastVisible = -1;
     let lastScrollY = window.scrollY, travelling = false, travelStarted = 0;
+    let passedStage = false;
     let touch: { x: number; y: number; handled: boolean } | null = null;
-    const wheelStep = createWheelStep(positions.length);
+    const wheelStep = createWheelStep(positions.length, true);
     const scrollDirection = observeScrollDirection();
     const inside = () => distance > 0 && window.scrollY >= Math.floor(top) && window.scrollY <= Math.ceil(top + distance);
     const locked = () => document.body.style.overflow === 'hidden';
@@ -62,6 +63,7 @@ export function TeamTour() {
     function measure() {
       top = section.getBoundingClientRect().top + window.scrollY;
       distance = Math.max(0, section.offsetHeight - window.innerHeight);
+      if (window.scrollY >= top + section.offsetHeight) passedStage = true;
       const framing = teamFraming(window.innerWidth, window.innerHeight);
       section.style.setProperty('--tour-scale', String(framing.scale));
       section.style.setProperty('--active-card-scale', String(framing.cardScale));
@@ -76,8 +78,12 @@ export function TeamTour() {
       const previous = lastScrollY, y = window.scrollY;
       lastScrollY = y;
       if (reduced.matches || locked() || Math.abs(y - previous) <= 1) return;
+      if (y >= top + section.offsetHeight) passedStage = true;
       if (y < previous) {
-        if (scrollDirection.direction() === -1 && !leaveBackwards() && y < top && previous >= top) resetToStart();
+        if (scrollDirection.direction() !== -1) return;
+        if (passedStage) { leaveBackwards(); return; }
+        if (y < top && previous >= top) resetToStart();
+        else if (inside() && !travelling && target.current > 0) jump.current(target.current - 1);
         return;
       }
       if (scrollDirection.direction() !== 1) return;
@@ -104,12 +110,14 @@ export function TeamTour() {
       section.style.setProperty('--tour-progress', String(current.current / (positions.length - 1)));
 
       const viewRange = teamWindow(current.current, positions.length);
-      if (viewRange.first !== firstVisible) {
+      if (viewRange.first !== firstVisible || viewRange.last !== lastVisible) {
         firstVisible = viewRange.first;
+        lastVisible = viewRange.last;
         nodes.current.forEach((element, index) => {
           if (!element) return;
           element.hidden = index < viewRange.first || index > viewRange.last;
           element.inert = element.hidden;
+          if (!element.hidden) void element.querySelector<HTMLImageElement>('img')?.decode().catch(() => {});
         });
         paths.current.forEach((element, index) => {
           if (element) element.hidden = index < viewRange.first || index >= viewRange.last;
@@ -141,12 +149,14 @@ export function TeamTour() {
     function resetToStart() {
       cancelAnimationFrame(raf); raf = 0; lastTime = 0;
       travelling = false;
+      passedStage = false;
       current.current = target.current = 0;
-      firstVisible = -1;
+      firstVisible = lastVisible = -1;
       render(0);
     }
 
     function leaveBackwards() {
+      if (!passedStage) return false;
       const exited = exitReversePin({ start: top, end: top + distance }, resetToStart, scrollDirection.direction());
       if (exited) { scrollDirection.reset(); lastScrollY = window.scrollY; }
       return exited;
@@ -157,6 +167,7 @@ export function TeamTour() {
         setActive(index);
         nodes.current[index]?.scrollIntoView({ behavior: 'instant', block: 'center' });
       } else {
+        passedStage = false;
         target.current = index;
         travelling = current.current !== index;
         travelStarted = performance.now();
@@ -169,7 +180,8 @@ export function TeamTour() {
       if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       const step = wheelStep(target.current, travelling, event.deltaY, event.timeStamp);
       if (event.defaultPrevented || reduced.matches || locked() || !inside()) return;
-      if (step === 'back') { leaveBackwards(); return; }
+      if (passedStage) { if (event.deltaY < 0) leaveBackwards(); return; }
+      if (step === 'back') return;
       if (step === 'leave') return;
       event.preventDefault();
       if (typeof step === 'number') jump.current(step);
@@ -181,7 +193,10 @@ export function TeamTour() {
       if (element?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
       if (event.key === ' ' && element?.closest('button, a')) return;
       if (event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)) {
-        event.preventDefault(); leaveBackwards();
+        if (passedStage) { leaveBackwards(); return; }
+        if (target.current === 0 && !travelling && !event.repeat) return;
+        event.preventDefault();
+        if (!travelling && !event.repeat) jump.current(target.current - 1);
       } else if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === ' ') {
         if (target.current === positions.length - 1 && !travelling && !event.repeat) return;
         event.preventDefault();
@@ -196,12 +211,13 @@ export function TeamTour() {
       if (!touch || event.touches.length !== 1 || reduced.matches || locked() || !inside()) return;
       const delta = touch.y - event.touches[0].clientY;
       if (Math.abs(event.touches[0].clientX - touch.x) >= Math.abs(delta)) return;
-      if (delta < -12) { touch.handled = true; leaveBackwards(); return; }
-      if (delta <= 0) return;
-      if (target.current === positions.length - 1 && !travelling && !touch.handled) return;
+      if (passedStage) { if (delta < -12) leaveBackwards(); return; }
+      if (!delta) return;
+      const direction = Math.sign(delta);
+      if (!travelling && !touch.handled && (direction < 0 ? target.current === 0 : target.current === positions.length - 1)) return;
       if (event.cancelable) event.preventDefault();
       if (travelling || touch.handled) { touch.handled = true; return; }
-      if (delta > 30) { touch.handled = true; jump.current(target.current + 1); }
+      if (Math.abs(delta) > 30) { touch.handled = true; jump.current(target.current + direction); }
     }
     function onTouchEnd() { touch = null; }
 
@@ -229,7 +245,7 @@ export function TeamTour() {
         element.inert = false;
         element.style.removeProperty('--node-opacity');
       });
-      firstVisible = -1;
+      firstVisible = lastVisible = -1;
       travelling = false;
       touch = null;
       current.current = target.current = Math.round(target.current);
@@ -301,7 +317,7 @@ export function TeamTour() {
           })}
           {team.members.map((node, index) => <article key={node.id} id={node.id} ref={element => { nodes.current[index] = element; }} className={`team-node team-node-${node.theme} team-card-${node.cardSide}`} data-active={active === index} style={{ '--node-bg': node.bgHex, '--node-accent': node.accentHex, '--node-text': node.textHex, '--node-yaw': `${node.worldPos.yaw}deg`, transform: `translate3d(${node.worldPos.x}px,0,${node.worldPos.z}px) rotateY(${node.worldPos.yaw}deg)` } as CSSProperties} aria-label={`${node.number}: ${node.stageTitle} ${node.memberName}`}>
             <button className="team-pedestal" type="button" onClick={() => jump.current(index)} aria-label={`Go to ${node.number}: ${node.stageTitle}`}><span className="team-target-ring" /><span className="team-beak" style={{ rotate: `${index < positions.length - 1 ? -teamPath(node.worldPos, positions[index + 1]).angle - node.worldPos.yaw : 90}deg` }} /><span className="team-pedestal-number">{node.number}</span></button>
-            <div className="team-standee" aria-hidden="true"><div className="team-portrait"><span>{node.memberName.split(' ').map(name => name[0]).join('')}</span><img src={node.cutoutUrl.startsWith('/') ? `${import.meta.env.BASE_URL}${node.cutoutUrl.slice(1)}` : node.cutoutUrl} alt="" width="190" height="260" decoding="async" onError={event => { event.currentTarget.hidden = true; }} /></div><span className="team-mount" /></div>
+            <div className="team-standee" aria-hidden="true"><div className="team-portrait"><span>{node.memberName.split(' ').map(name => name[0]).join('')}</span><img src={node.cutoutUrl.startsWith('/') ? `${import.meta.env.BASE_URL}${node.cutoutUrl.slice(1)}` : node.cutoutUrl} alt="" width="190" height="260" loading="eager" decoding="async" onError={event => { event.currentTarget.hidden = true; }} /></div><span className="team-mount" /></div>
             <RoleCard node={node} />
           </article>)}
         </div>

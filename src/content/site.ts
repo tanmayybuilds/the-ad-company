@@ -368,7 +368,7 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
 export const team = {
   eyebrow: "[06 // People make it happen]",
   heading: ["The people behind", "the placements."],
-  hint: "Scroll down: one pointer at a time. Scroll up to return.",
+  hint: "Scroll back and forth: one pointer at a time.",
   note: "Sample profiles & stock portraits. Team roster awaiting confirmation.",
   previous: "Prev pointer",
   next: "Next pointer",

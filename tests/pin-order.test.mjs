@@ -4,12 +4,15 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-test('a Services pin registered after Coverage reserves its space before downstream measurements', async () => {
+test('refresh restores the expanding client strip before Services and reserves Services space before Coverage', async () => {
   const names = ['window', 'document', 'ResizeObserver', 'IntersectionObserver', 'requestAnimationFrame', 'cancelAnimationFrame', 'getComputedStyle', '__pins'];
   const originals = Object.fromEntries(names.map(name => [name, globalThis[name]]));
   const triggers = [];
-  let current, sortRequired = false, serviceSpace = 0;
-  const section = kind => Object.assign(new EventTarget(), { kind, dataset: {}, querySelectorAll: () => [], previousElementSibling: null });
+  let current, sortRequired = false, serviceSpace = 0, brandSpace = 0;
+  const naturalTop = { brands: 300, services: 1000, coverage: 4000 };
+  const section = kind => Object.assign(new EventTarget(), { kind, dataset: {}, querySelectorAll: () => [], previousElementSibling: null,
+    getBoundingClientRect: () => ({ top: naturalTop[kind] + (kind === 'brands' ? 0 : brandSpace) + (kind === 'coverage' ? serviceSpace : 0) }),
+  });
   globalThis.window = Object.assign(new EventTarget(), { innerHeight: 1000, innerWidth: 1440, scrollY: 0 });
   globalThis.document = window.document = { body: { style: { overflow: '' } } };
   globalThis.ResizeObserver = globalThis.IntersectionObserver = class { observe() {} disconnect() {} };
@@ -17,13 +20,15 @@ test('a Services pin registered after Coverage reserves its space before downstr
   globalThis.cancelAnimationFrame = () => {};
   globalThis.getComputedStyle = () => ({ getPropertyValue: () => '88' });
   const refresh = () => {
-    // GSAP reverts pin spacing, then measures triggers in registration order unless priority enables sorting.
+    // GSAP sorts by priority then document position, reverts layout, and restores animations in that order.
+    if (sortRequired) triggers.sort((a, b) => (b.vars.refreshPriority || 0) * 1e6 - (a.vars.refreshPriority || 0) * 1e6 + a.vars.trigger.getBoundingClientRect().top - b.vars.trigger.getBoundingClientRect().top);
     serviceSpace = 0;
-    if (sortRequired) triggers.sort((a, b) => (b.vars.refreshPriority || 0) - (a.vars.refreshPriority || 0));
+    brandSpace = 0;
     for (const trigger of triggers) {
       trigger.vars.onRefreshInit?.();
+      if (trigger.vars.trigger.kind === 'brands') { brandSpace = 500; continue; }
       const services = trigger.vars.trigger.kind === 'services';
-      trigger.start = services ? 1000 - 88 : 4000 + serviceSpace - 80;
+      trigger.start = services ? 1000 + brandSpace - 88 : 4000 + brandSpace + serviceSpace - 80;
       trigger.end = trigger.start + Number(trigger.vars.end().slice(2));
       if (services) serviceSpace = trigger.end - trigger.start;
       trigger.vars.onRefresh?.(trigger);
@@ -78,29 +83,34 @@ test('a Services pin registered after Coverage reserves its space before downstr
       }
       return current.setup();
     };
+    // The client strip changes page height; its scrubbed expansion is restored during its refresh.
+    const brands = { vars: { trigger: section('brands') } };
+    triggers.push(brands);
     // Services initially has no pin while fit measurement is pending; Coverage registers first.
     mount(Services, 'services', false)();
     const coverageCleanup = mount(CoverflowCoverage, 'coverage', true);
     refresh();
-    assert.equal(triggers[0].start, 3920);
+    assert.equal(triggers[1].start, 4420);
     for (let visit = 0; visit < 3; visit++) {
       const serviceCleanup = mount(Services, 'services', true);
       refresh();
       const services = triggers.find(t => t.vars.trigger.kind === 'services');
       const coverage = triggers.find(t => t.vars.trigger.kind === 'coverage');
+      assert.equal(services.start, 1412, 'Services must measure after the client strip restores its expanded height');
       assert.ok(coverage.start > services.end, `Coverage starts at ${coverage.start} inside Services (${services.start}–${services.end})`);
       const corporate = services.start + 60 / 265 * (services.end - services.start);
       assert.ok(corporate < coverage.start);
-      assert.equal(coverage.start, 16120);
+      assert.equal(coverage.start, 16620);
       // A subsequent resize/accordion refresh must preserve both ranges and their complete order.
       refresh();
-      assert.equal(coverage.start, 16120);
+      assert.equal(coverage.start, 16620);
+      assert.equal(services.start, 1412, 'Repeated refresh must not move the Services pin to its compact-header position');
       serviceCleanup();
       refresh();
-      assert.equal(triggers.length, 1);
-      assert.equal(coverage.start, 3920, 'Removing an upstream pin must not leave a blank spacer');
+      assert.equal(triggers.length, 2);
+      assert.equal(coverage.start, 4420, 'Removing an upstream pin must not leave a blank spacer');
     }
     coverageCleanup();
-    assert.equal(triggers.length, 0);
+    assert.deepEqual(triggers, [brands]);
   } finally { await server.close(); Object.assign(globalThis, originals); }
 });

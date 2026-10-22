@@ -10,11 +10,13 @@ Editable business content is in `src/content/site.ts`. Shared motion settings li
 
 Section 06 now uses a scroll-driven CSS 3D team pathway with six sample profiles, local stock portraits, jump controls and a reduced-motion layout. The sample names and portraits are not a confirmed roster. See [tour implementation](docs/team-tour.md) and [portrait sources](docs/team-portraits.md).
 
-The team camera uses a centered close-up with a 14-degree tilt, larger pedestals and portraits, and readable active profile cards. Only three team stops render at a time, and decorative effects stay still when idle. The Services sequence keeps at most nine frames in memory instead of preloading all 266, and releases them off-screen.
+The team camera uses a centered close-up with a 14-degree tilt, larger pedestals and portraits, and readable active profile cards. Three stops render at rest; travel briefly retains the outgoing stop while preparing the arriving pointer and its next two stops, with at most four visible. Upcoming portraits are decoded ahead of arrival, and decorative effects stay still when idle. The Services sequence keeps at most nine frames in memory instead of preloading all 266, and releases them off-screen.
 
-Within the team tour, one downward scroll gesture advances one pointer and settles exactly there. Upward scrolling skips the pinned distance and resets the tour, matching Coverage. A later downward visit starts again at pointer 01.
+Within the team tour, one scroll gesture moves one pointer forward or backward and settles exactly there. At pointer 01 upward scrolling exits; at pointer 06 downward scrolling exits. Once the whole section has left the screen, returning upward skips its animation distance and resets the tour. A later downward visit starts again at pointer 01.
 
 Services scrolls forward and backward within the animation during an active visit. This remains available just after the pin releases while the stage is still visible. Once the entire stage has scrolled above the header, returning upward bypasses the animation distance and resets it; a fresh downward visit can scrub both ways again.
+
+Manual Services selection uses a single 450 ms frame transition with the category highlight held on the chosen destination. Its document position aligns immediately, rapid clicks replace the previous transition, and new scroll input settles the interrupted transition before resuming normal scrubbing.
 
 Reverse exits require actual upward input, so rounding, pin refreshes and manual pointer navigation cannot reset a forward journey. Services scrolls naturally when its panel cannot fit the viewport, and Services/Coverage omit long pins under reduced motion. See the [showcase code audit](docs/showcase-audit.md) for fixes, verification and remaining business handoff items.
 
