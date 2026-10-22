@@ -205,7 +205,7 @@ export function CoverflowCoverage() {
         const direction = delta > 0 ? 1 : -1;
 
         // 1. SCROLLING UP:
-        // When coming up, animation does not play in reverse and scrolling proceeds normally to #about
+        // When coming up, animation does not play in reverse and scrolling proceeds directly upwards like a static website
         if (direction < 0) {
           cancelTravel();
           if (activeRef.current !== 0) {
@@ -215,23 +215,7 @@ export function CoverflowCoverage() {
             renderPosition(0);
           }
           if (scrollY > trigger.start) {
-            event.preventDefault();
-            const now = Date.now();
-            if (now - lastStepTime.current > 320) {
-              lastStepTime.current = now;
-              isStepAnimating.current = true;
-              const scrollObj = { y: window.scrollY };
-              stepTween = gsap.to(scrollObj, {
-                y: trigger.start - 10,
-                duration: 0.45,
-                ease: "power2.out",
-                onUpdate: () => window.scrollTo({ top: scrollObj.y, behavior: "instant" }),
-                onComplete: () => {
-                  isStepAnimating.current = false;
-                  stepTween = undefined;
-                },
-              });
-            }
+            window.scrollTo({ top: trigger.start - 2, behavior: "instant" });
           }
           return;
         }
