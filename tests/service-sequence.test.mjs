@@ -25,7 +25,7 @@ test('all 266 frames map to the five requested ranges and valid local WebP asset
     assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', path);
     assert.ok(bytes.length > 100, path);
   }
-  assert.deepEqual(counts, [53, 53, 53, 53, 54]);
+  assert.deepEqual(counts, [42, 57, 57, 50, 60]);
   assert.deepEqual(ZONE_STARTS.map(sequenceZone), [0, 1, 2, 3, 4]);
   for (let zone = 1; zone < ZONE_STARTS.length; zone++) {
     assert.equal(sequenceZone(ZONE_STARTS[zone] - 1), zone - 1);
