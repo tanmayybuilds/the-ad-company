@@ -4,7 +4,20 @@ import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
-import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource } from '../src/lib/service-sequence.mjs';
+import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceWindow } from '../src/lib/service-sequence.mjs';
+
+test('frame loading is bounded and prioritizes the current frame in either scroll direction', () => {
+  assert.deepEqual(sequenceWindow(100), [100, 99, 101, 98, 102, 97, 103, 96, 104]);
+  assert.deepEqual(sequenceWindow(0), [0, 1, 2, 3, 4]);
+  assert.deepEqual(sequenceWindow(265), [265, 264, 263, 262, 261]);
+  assert.deepEqual(sequenceWindow(99, true), [99]);
+  for (let frame = -1; frame <= 267; frame++) {
+    const window = sequenceWindow(frame);
+    assert.ok(window.length <= 9);
+    assert.equal(new Set(window).size, window.length);
+    assert.ok(window.every(index => index >= 0 && index < TOTAL_FRAMES));
+  }
+});
 
 test('scroll progress reaches every frame and selects the same category in both directions', () => {
   const forward = Array.from({ length: TOTAL_FRAMES }, (_, frame) => sequenceProgressFrame(frame / 265));
@@ -36,7 +49,7 @@ test('all 266 frames map to the five requested ranges and valid local WebP asset
 });
 
 test('the environment index exposes all five categories and only the active description', async () => {
-  const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, hmr: false, watch: null }, appType: 'custom' });
+  const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, appType: 'custom' });
   try {
     const { Services } = await server.ssrLoadModule('/src/components/site/Services.tsx');
     const { services } = await server.ssrLoadModule('/src/content/site.ts');

@@ -972,15 +972,6 @@
 .coverage-target div:nth-child(2) { width:65%; height:65%; border-style:dashed; }
 .coverage-target div:nth-child(3) { width:30%; height:30%; background:var(--lime); border-color:var(--ink); }
 .coverage-target span { z-index:1; font:40px var(--font-mono); }
-.team-card { border:1px solid #20201e45; background:var(--paper); overflow:hidden; }
-.team-art { position:relative; height:220px; display:flex; align-items:flex-end; justify-content:space-between; overflow:hidden; padding:22px; background:var(--sand-deep); }
-.team-art span { font:800 110px/.8 var(--font-display); color:var(--ink); letter-spacing:-.1em; }
-.team-art b { font:normal 100px/.8 var(--font-display); color:var(--signal); transform:translateY(0); transition:transform .4s; }
-.team-art-1 { background:var(--lime); }
-.team-art-2 { background:var(--ink); }
-.team-art-2 span { color:var(--paper); }
-.team-art-2 b { color:var(--lime); }
-.team-card:hover b { transform:translate(6px,-8px); }
 .contact-form label { display:block; margin-bottom:8px; font:600 10px/1.5 var(--font-mono); letter-spacing:.05em; text-transform:uppercase; }
 .contact-form label span { color:#60605b; font-weight:400; }
 .contact-form input,.contact-form select,.contact-form textarea { width:100%; min-width:0; border:1px solid #20201e70; background:var(--ivory); padding:12px; font:14px/1.5 var(--font-sans); border-radius:0; }
@@ -994,7 +985,6 @@
   .section-y .flex > div { min-width:0; max-width:100%; }
   .about-poster { min-height:390px; }
   .coverage-target { width:150px; height:150px; }
-  .team-art { height:190px; }
 }
 
 /* Scroll-driven environment sequence */

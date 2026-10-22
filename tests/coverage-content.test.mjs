@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
 test('coverage keeps every location selectable and separates enquiry links from card buttons', async () => {
-  const server = await createServer({ server: { middlewareMode: true, watch: null, hmr: false }, appType: 'custom' });
+  const server = await createServer({ server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom' });
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
     const { coverage } = await server.ssrLoadModule('/src/content/site.ts');

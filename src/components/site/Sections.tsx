@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
-import { about, company, coverage, footer, nav, team } from '@/content/site';
+import { about, company, coverage, footer, nav } from '@/content/site';
 import { useReveal } from '@/hooks/use-reveal';
 import { ActionLink, Eyebrow, Wordmark } from './primitives';
 export { Work } from './Work';
+export { TeamTour as Team } from './TeamTour';
 
 export function About() {
   const root = useRef<HTMLElement>(null); useReveal(root);
@@ -24,12 +25,6 @@ export function Coverage() {
       <div className="coverage-panel" data-reveal><div className="flex justify-between border-b border-ink/20 pb-4 text-label-index text-[10px]"><span>Your next placement</span><span>India ↗</span></div><div className="coverage-target" aria-hidden="true"><div /><div /><div /><span>+</span></div><div aria-live="polite"><p className="text-label-index text-signal text-[10px]">Explore a campaign in</p><h3 className="mt-2 font-display text-3xl font-extrabold uppercase">{coverage.locations[active].name}</h3></div><ActionLink href="#contact" variant="outline" size="md" className="mt-6">Discuss availability</ActionLink><p className="mt-5 text-xs leading-relaxed text-ink/60">{coverage.pendingNote}</p></div>
     </div>
   </div></section>;
-}
-
-export function Team() {
-  const root = useRef<HTMLElement>(null); useReveal(root);
-  const labels = ['The brief.', 'The plan.', 'The places.', 'The details.', 'The ground.', 'The follow-through.'];
-  return <section id="team" ref={root} className="section-y border-b hairline" aria-labelledby="team-title"><div className="container-page"><div className="mb-10 flex flex-wrap items-end justify-between gap-5" data-reveal><div><Eyebrow className="mb-4">[06 // People make it happen]</Eyebrow><h2 id="team-title" className="text-display-lg">{team.heading[0]}<br />{team.heading[1]}</h2></div><p className="max-w-56 text-sm leading-relaxed text-ink/60">Meet the team, coming soon.<br />Profiles will be added after confirmation.</p></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{labels.map((label, i) => <article key={label} className="team-card" data-reveal><div className={`team-art team-art-${i % 3}`} aria-hidden="true"><span>0{i + 1}</span><b>↗</b></div><div className="border-t border-ink/20 p-5"><p className="text-label-index text-[10px] text-signal">Profile to be introduced</p><h3 className="mt-2 font-display text-xl font-bold uppercase">{label}</h3></div></article>)}</div></div></section>;
 }
 
 export function Footer() {

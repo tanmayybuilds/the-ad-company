@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { services } from "@/content/site";
 import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
-import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource } from "@/lib/service-sequence.mjs";
+import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceWindow } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
-import { exitReversePin } from "@/lib/reverse-pin.mjs";
+import { exitReversePin, observeScrollDirection } from "@/lib/reverse-pin.mjs";
 
 export function Services() {
   const root = useRef<HTMLElement>(null);
@@ -18,38 +18,73 @@ export function Services() {
   const render = useRef<(frame: number) => void>(() => {});
   const [active, setActive] = useState(0);
   const [unavailable, setUnavailable] = useState(false);
+  const [fitsViewport, setFitsViewport] = useState(false);
+
+  useEffect(() => {
+    const measure = () => {
+      const top = parseFloat(getComputedStyle(journey.current!).getPropertyValue('--service-top')) || 88;
+      setFitsViewport(stage.current!.offsetHeight <= window.innerHeight - top - 16);
+    };
+    let disposed = false;
+    measure();
+    window.addEventListener('resize', measure);
+    document.fonts?.ready.then(() => { if (!disposed) measure(); });
+    return () => { disposed = true; window.removeEventListener('resize', measure); };
+  }, []);
 
   useEffect(() => {
     const element = canvas.current!;
     const ctx = element.getContext("2d", { alpha: false });
     if (!ctx) { setUnavailable(true); return; }
     let disposed = false;
-    let settled = 0;
-    let failed = 0;
+    let nearViewport = false;
+    const reduced = window.matchMedia(MQ.reduce);
     drawnFrame.current = -1;
-    const frames = Array.from({ length: TOTAL_FRAMES }, () => new Image());
+    const frames = new Map<number, HTMLImageElement>();
 
     const isReady = (i: number) => {
-      const img = frames[i];
+      const img = frames.get(i);
       return !!img && img.complete && img.naturalWidth > 0;
+    };
+
+    const release = (index: number, image: HTMLImageElement) => {
+      image.onload = image.onerror = null;
+      image.removeAttribute('src');
+      frames.delete(index);
     };
 
     render.current = value => {
       const target = sequenceFrame(value);
       requestedFrame.current = target;
-      let index = target;
-
-      // Nearest loaded frame fallback
-      if (!isReady(index)) {
-        index = -1;
-        for (let d = 1; d < TOTAL_FRAMES; d++) {
-          if (target - d >= 0 && isReady(target - d)) { index = target - d; break; }
-          if (target + d < TOTAL_FRAMES && isReady(target + d)) { index = target + d; break; }
+      if (disposed || !nearViewport || document.hidden) return;
+      const wanted = sequenceWindow(target, reduced.matches);
+      frames.forEach((image, index) => { if (!wanted.includes(index)) release(index, image); });
+      for (const index of wanted) {
+        if (!frames.has(index)) {
+          const image = new Image();
+          image.decoding = 'async';
+          image.onload = () => {
+            if (index === requestedFrame.current) setUnavailable(false);
+            render.current(requestedFrame.current);
+          };
+          image.onerror = () => {
+            if (index === requestedFrame.current) setUnavailable(true);
+            if (progress.current) progress.current.hidden = true;
+          };
+          frames.set(index, image);
+          image.src = sequenceSource(index, import.meta.env.BASE_URL);
         }
       }
-
-      if (index < 0 || drawnFrame.current === index) return;
-      const image = frames[index];
+      const loaded = wanted.filter(isReady);
+      if (progress.current) {
+        progress.current.style.setProperty('--loaded', String(loaded.length / wanted.length));
+        progress.current.setAttribute('aria-valuemax', String(wanted.length));
+        progress.current.setAttribute('aria-valuenow', String(loaded.length));
+        progress.current.hidden = drawnFrame.current >= 0 || loaded.length > 0;
+      }
+      const index = loaded[0];
+      if (index === undefined || drawnFrame.current === index) return;
+      const image = frames.get(index)!;
       if (element.width !== image.naturalWidth || element.height !== image.naturalHeight) {
         element.width = image.naturalWidth;
         element.height = image.naturalHeight;
@@ -60,43 +95,31 @@ export function Services() {
       drawnFrame.current = index;
     };
 
-    const onLoadOrError = (event: Event | string) => {
-      if (disposed) return;
-      settled++;
-      if (typeof event === "string" || event.type === "error") failed++;
-      render.current(requestedFrame.current);
-      if (progress.current) {
-        progress.current.style.setProperty("--loaded", String(settled / TOTAL_FRAMES));
-        progress.current.setAttribute("aria-valuenow", String(settled));
-        progress.current.hidden = settled === TOTAL_FRAMES;
+    function syncVisibility() {
+      if (nearViewport && !document.hidden) {
+        render.current(requestedFrame.current);
+      } else {
+        frames.forEach((image, index) => release(index, image));
+        element.width = element.height = 1;
+        element.dataset.ready = 'false';
+        drawnFrame.current = -1;
       }
-      if (settled === TOTAL_FRAMES) setUnavailable(failed > 0);
-    };
-
-    // High priority: preload keyframe starts for all categories first
-    const priorityStarts = [0, 42, 99, 156, 206];
-    priorityStarts.forEach(index => {
-      const image = frames[index];
-      image.decoding = "async";
-      image.onload = image.onerror = onLoadOrError;
-      image.src = sequenceSource(index, import.meta.env.BASE_URL);
-    });
-
-    // Load remaining frames
-    for (let index = 0; index < TOTAL_FRAMES; index++) {
-      if (priorityStarts.includes(index)) continue;
-      const image = frames[index];
-      image.decoding = "async";
-      image.onload = image.onerror = onLoadOrError;
-      image.src = sequenceSource(index, import.meta.env.BASE_URL);
     }
-
-    render.current(ZONE_STARTS[activeZone.current]);
+    const observer = new IntersectionObserver(([entry]) => {
+      nearViewport = entry.isIntersecting;
+      syncVisibility();
+    }, { rootMargin: '300px' });
+    observer.observe(stage.current!);
+    document.addEventListener('visibilitychange', syncVisibility);
+    reduced.addEventListener('change', syncVisibility);
 
     return () => {
       disposed = true;
       render.current = () => {};
-      frames.forEach(image => { image.onload = image.onerror = null; image.src = ""; });
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', syncVisibility);
+      reduced.removeEventListener('change', syncVisibility);
+      frames.forEach((image, index) => release(index, image));
     };
   }, []);
 
@@ -107,23 +130,26 @@ export function Services() {
 
     mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
       const reduced = !!context.conditions?.reduce;
-
-      const START_BUFFER = 0.08;
-      const END_BUFFER = 0.05;
-
-      const progressToFrame = (progress: number) => {
-        if (progress <= START_BUFFER) return 0;
-        if (progress >= 1 - END_BUFFER) return TOTAL_FRAMES - 1;
-        const normalized = (progress - START_BUFFER) / (1 - START_BUFFER - END_BUFFER);
-        return sequenceProgressFrame(normalized);
-      };
+      // A stage taller than the screen must scroll naturally so every category stays reachable.
+      if (reduced || !fitsViewport) {
+        render.current(ZONE_STARTS[activeZone.current]);
+        navigate.current = zone => {
+          const index = Math.max(0, Math.min(services.items.length - 1, zone));
+          activeZone.current = index;
+          setActive(index);
+          render.current(ZONE_STARTS[index]);
+        };
+        return () => { navigate.current = () => {}; };
+      }
 
       let currentFrame = 0;
       let targetFrame = 0;
       let animFrameId: number | null = null;
       let isNavigating = false;
       let refreshing = false;
+      let passedStage = false;
       let scrollTween: gsap.core.Tween | undefined;
+      const scrollDirection = observeScrollDirection();
       const cancelTravel = () => {
         scrollTween?.kill();
         scrollTween = undefined;
@@ -131,7 +157,6 @@ export function Services() {
       };
 
       const stepDamping = () => {
-        if (reduced) return;
         const diff = targetFrame - currentFrame;
         if (Math.abs(diff) > 0.05) {
           const absDiff = Math.abs(diff);
@@ -168,6 +193,7 @@ export function Services() {
 
       const resetToStart = () => {
         cancelTravel();
+        passedStage = false;
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         animFrameId = null;
         currentFrame = 0;
@@ -181,16 +207,16 @@ export function Services() {
       };
 
       const leaveBackwards = (self: ScrollTrigger) => {
-        if (!refreshing && !isNavigating) exitReversePin(self, resetToStart);
+        if (passedStage && !refreshing && !isNavigating && exitReversePin(self, resetToStart, scrollDirection.direction())) scrollDirection.reset();
       };
 
       const update = (self: ScrollTrigger) => {
-        if (self.direction < 0 && !isNavigating) {
+        if (passedStage && self.direction < 0 && !isNavigating) {
           leaveBackwards(self);
           return;
         }
 
-        if (self.progress <= 0) {
+        if (self.progress <= 0 && !isNavigating) {
           resetToStart();
           return;
         }
@@ -209,20 +235,7 @@ export function Services() {
           return;
         }
 
-        const frame = progressToFrame(self.progress);
-        if (reduced) {
-          const zone = sequenceZone(frame);
-          if (zone !== activeZone.current) {
-            activeZone.current = zone;
-            setActive(zone);
-          }
-          const target = ZONE_STARTS[zone];
-          requestedFrame.current = target;
-          render.current(target);
-          return;
-        }
-
-        targetFrame = frame;
+        targetFrame = sequenceProgressFrame(self.progress);
         if (animFrameId === null) {
           animFrameId = requestAnimationFrame(stepDamping);
         }
@@ -233,17 +246,16 @@ export function Services() {
           cancelAnimationFrame(animFrameId);
           animFrameId = null;
         }
-        const frame = progressToFrame(self.progress);
+        const frame = sequenceProgressFrame(self.progress);
         const zone = sequenceZone(frame);
         if (zone !== activeZone.current) {
           activeZone.current = zone;
           setActive(zone);
         }
-        const target = reduced ? ZONE_STARTS[zone] : frame;
-        currentFrame = target;
-        targetFrame = target;
-        requestedFrame.current = target;
-        render.current(target);
+        currentFrame = frame;
+        targetFrame = frame;
+        requestedFrame.current = frame;
+        render.current(frame);
       };
 
       const stickyTop = () => parseFloat(getComputedStyle(scene).getPropertyValue("--service-top")) || 88;
@@ -252,6 +264,8 @@ export function Services() {
 
       const trigger = ScrollTrigger.create({
         trigger: scene,
+        // This pin can register after Coverage; reserve its upstream spacing first on every refresh.
+        refreshPriority: 1,
         start: () => `top top+=${stickyTop()}`,
         end: () => `+=${Math.round(window.innerHeight * scrollMultiplier())}`,
         pin: stageEl,
@@ -260,17 +274,27 @@ export function Services() {
         invalidateOnRefresh: true,
         onUpdate: update,
         onRefreshInit: () => { refreshing = true; },
-        onRefresh: self => { refreshing = false; syncImmediate(self); },
+        onRefresh: self => { refreshing = false; if (!isNavigating) syncImmediate(self); },
+        onEnter: () => { passedStage = false; },
         onEnterBack: leaveBackwards,
-        onLeaveBack: () => { if (!isNavigating) resetToStart(); },
+        onLeaveBack: () => { if (!isNavigating && scrollDirection.direction() === -1) resetToStart(); },
       });
 
+      const onScroll = () => {
+        if (refreshing || isNavigating || document.body.style.overflow === 'hidden') return;
+        // At pin end the stage is still visible; latch only after its whole height has scrolled above the header.
+        const y = window.scrollY;
+        if (!passedStage && y >= trigger.end && y >= trigger.end + stageEl.offsetHeight) passedStage = true;
+      };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+
       const onWheel = (event: WheelEvent) => {
-        if (document.body.style.overflow === "hidden") return;
+        if (event.ctrlKey || event.defaultPrevented || document.body.style.overflow === "hidden") return;
         const delta = event.deltaY;
         if (delta >= 0 || Math.abs(delta) <= Math.abs(event.deltaX)) return;
         cancelTravel();
-        exitReversePin(trigger, resetToStart);
+        leaveBackwards(trigger);
       };
       const keyTravel = (event: KeyboardEvent) => {
         if (["ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) cancelTravel();
@@ -293,22 +317,15 @@ export function Services() {
       navigate.current = (zone: number) => {
         const prevZone = activeZone.current;
         const targetZone = Math.max(0, Math.min(services.items.length - 1, zone));
+        scrollDirection.reset();
         cancelTravel();
+        passedStage = false;
         ScrollTrigger.refresh();
         activeZone.current = targetZone;
         setActive(targetZone);
 
         if (trigger) {
-          let targetProgress: number;
-          if (targetZone === 0) {
-            targetProgress = START_BUFFER * 0.5;
-          } else if (targetZone === services.items.length - 1) {
-            targetProgress = 1 - END_BUFFER * 0.5;
-          } else {
-            const keyframe = ZONE_STARTS[targetZone];
-            const normalized = keyframe / (TOTAL_FRAMES - 1);
-            targetProgress = START_BUFFER + normalized * (1 - START_BUFFER - END_BUFFER);
-          }
+          const targetProgress = targetZone === services.items.length - 1 ? 1 : ZONE_STARTS[targetZone] / (TOTAL_FRAMES - 1);
           const y = trigger.start + targetProgress * (trigger.end - trigger.start);
           const previousBehavior = document.documentElement.style.scrollBehavior;
           document.documentElement.style.scrollBehavior = "auto";
@@ -317,18 +334,6 @@ export function Services() {
             isNavigating = false;
             document.documentElement.style.scrollBehavior = previousBehavior;
           };
-
-          if (reduced) {
-            isNavigating = true;
-            window.scrollTo({ top: y, behavior: "auto" });
-            restoreBehavior();
-            const target = ZONE_STARTS[targetZone];
-            currentFrame = target;
-            targetFrame = target;
-            requestedFrame.current = target;
-            render.current(target);
-            return;
-          }
 
           isNavigating = true;
           const zoneDiff = Math.abs(targetZone - prevZone);
@@ -346,11 +351,13 @@ export function Services() {
       };
 
       return () => {
+        scrollDirection.destroy();
         cancelTravel();
         if (animFrameId !== null) cancelAnimationFrame(animFrameId);
         window.removeEventListener("wheel", onWheel);
         window.removeEventListener("keydown", keyTravel);
         window.removeEventListener("pointerdown", cancelTravel);
+        window.removeEventListener('scroll', onScroll);
         resize.disconnect();
         cancelAnimationFrame(refreshFrame);
         trigger.kill();
@@ -359,7 +366,7 @@ export function Services() {
     });
 
     return () => mm.revert();
-  }, { scope: root });
+  }, { scope: root, dependencies: [fitsViewport], revertOnUpdate: true });
 
   const current = services.items[active];
 

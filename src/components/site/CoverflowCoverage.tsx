@@ -2,7 +2,7 @@ import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { coverage } from "@/content/site";
 import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
-import { exitReversePin } from "@/lib/reverse-pin.mjs";
+import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from "@/lib/reverse-pin.mjs";
 
 const TOTAL = coverage.locations.length;
 
@@ -31,9 +31,6 @@ export function CoverflowCoverage() {
   const keyboardTarget = useRef<number | null>(null);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const isStepAnimating = useRef(false);
-  const lastStepTime = useRef(0);
-  const lastWheelTime = useRef(0);
-  const lastWheelDelta = useRef(0);
   const lastEnterTime = useRef(0);
   const skipToTeam = useRef<() => void>(() => {});
 
@@ -70,11 +67,13 @@ export function CoverflowCoverage() {
     mm.add({ motion: MQ.motion, desktop: MQ.desktop, tall: "(min-height: 720px)", fine: MQ.finePointer, reduce: MQ.reduce }, context => {
       const motion = !!context.conditions?.motion;
       const desktop = !!context.conditions?.desktop;
-      const isTallDesktop = desktop && !!context.conditions?.tall;
+      const isTallDesktop = motion && desktop && !!context.conditions?.tall;
       const position = { value: activeRef.current };
       let stepTween: gsap.core.Tween | undefined;
       let triggerInstance: ScrollTrigger | undefined;
       let refreshing = false;
+      const scrollDirection = observeScrollDirection();
+      const wheelStep = createWheelStep(TOTAL);
 
       const cancelTravel = () => {
         stepTween?.kill();
@@ -86,15 +85,13 @@ export function CoverflowCoverage() {
         cancelTravel();
         position.value = 0;
         renderPosition(0);
-        lastStepTime.current = lastWheelTime.current = lastWheelDelta.current = lastEnterTime.current = 0;
+        lastEnterTime.current = 0;
       };
       const leaveBackwards = (self: ScrollTrigger) => {
-        if (!refreshing && !isStepAnimating.current) exitReversePin(self, resetToStart);
+        if (!refreshing && !isStepAnimating.current && exitReversePin(self, resetToStart, scrollDirection.direction())) scrollDirection.reset();
       };
 
       renderPosition(position.value);
-
-      const START_BUFFER = 0.12;
 
       if (isTallDesktop) {
         position.value = 0;
@@ -122,7 +119,7 @@ export function CoverflowCoverage() {
             position.value = TOTAL - 1;
             renderPosition(TOTAL - 1);
           },
-          onLeaveBack: () => { if (!isStepAnimating.current) resetToStart(); },
+          onLeaveBack: () => { if (!isStepAnimating.current && scrollDirection.direction() === -1) resetToStart(); },
           onRefreshInit: () => { refreshing = true; },
           onRefresh: self => {
             refreshing = false;
@@ -134,15 +131,7 @@ export function CoverflowCoverage() {
             if (self.direction < 0) { leaveBackwards(self); return; }
             // Only update on drag when scrolling downward
             if (!stepTween && !isStepAnimating.current && self.isActive && self.direction > 0) {
-              if (self.progress <= START_BUFFER) {
-                if (activeRef.current !== 0) {
-                  position.value = 0;
-                  renderPosition(0);
-                }
-                return;
-              }
-              const normalized = (self.progress - START_BUFFER) / (1 - START_BUFFER);
-              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(normalized * (TOTAL - 1))));
+              const nearest = Math.max(0, Math.min(TOTAL - 1, Math.round(self.progress * (TOTAL - 1))));
               if (nearest !== activeRef.current) {
                 position.value = nearest;
                 renderPosition(nearest);
@@ -153,14 +142,13 @@ export function CoverflowCoverage() {
       }
 
       navigate.current = (index, focusCard = false) => {
+        scrollDirection.reset();
         const target = Math.max(0, Math.min(TOTAL - 1, index));
         keyboardTarget.current = focusCard ? target : null;
         stepTween?.kill();
 
         const trigger = triggerInstance;
-        const targetProgress = target === 0
-          ? 0
-          : START_BUFFER + (target / (TOTAL - 1)) * (1 - START_BUFFER);
+        const targetProgress = target / (TOTAL - 1);
         const targetScroll = trigger
           ? trigger.start + targetProgress * (trigger.end - trigger.start)
           : window.scrollY;
@@ -177,7 +165,7 @@ export function CoverflowCoverage() {
               position.value = scrollObj.pos;
               renderPosition(scrollObj.pos);
               if (trigger && isTallDesktop) {
-                window.scrollTo({ top: scrollObj.y, behavior: "instant" });
+                scrollPinTo(scrollObj.y);
                 ScrollTrigger.update();
               }
             },
@@ -185,7 +173,7 @@ export function CoverflowCoverage() {
               position.value = target;
               renderPosition(target);
               if (trigger && isTallDesktop) {
-                window.scrollTo({ top: targetScroll, behavior: "instant" });
+                scrollPinTo(targetScroll);
                 ScrollTrigger.update();
               }
               isStepAnimating.current = false;
@@ -197,7 +185,7 @@ export function CoverflowCoverage() {
           renderPosition(target);
           if (trigger && isTallDesktop) {
             isStepAnimating.current = true;
-            window.scrollTo({ top: targetScroll, behavior: "instant" });
+            scrollPinTo(targetScroll);
             ScrollTrigger.update();
           }
           isStepAnimating.current = false;
@@ -205,11 +193,12 @@ export function CoverflowCoverage() {
       };
 
       const onWheel = (event: WheelEvent) => {
-        if (document.body.style.overflow === "hidden") return;
+        if (event.ctrlKey || event.defaultPrevented || document.body.style.overflow === "hidden") return;
         if (!isTallDesktop || !triggerInstance) return;
 
         const delta = event.deltaY;
-        if (Math.abs(delta) <= Math.abs(event.deltaX) || (delta > 0 && delta < 4)) return;
+        if (Math.abs(delta) <= Math.abs(event.deltaX)) return;
+        const step = wheelStep(activeRef.current, isStepAnimating.current, delta, event.timeStamp);
 
         const scrollY = window.scrollY;
         const trigger = triggerInstance;
@@ -218,59 +207,22 @@ export function CoverflowCoverage() {
         if (scrollY < trigger.start - 1) return;
         if (scrollY > trigger.end + 8) return;
 
-        const direction = delta > 0 ? 1 : -1;
-
-        // 1. SCROLLING UP:
-        // When coming up, animation does not play in reverse and scrolling proceeds directly upwards like a static website
-        if (direction < 0) {
+        if (step === 'back') {
           cancelTravel();
-          exitReversePin(trigger, resetToStart);
+          leaveBackwards(trigger);
           return;
         }
 
-        // 2. SCROLLING DOWN:
-        const current = activeRef.current;
-
-        // Allow natural exit scrolling down when at the last city (Gujarat)
-        if (current >= TOTAL - 1) {
-          return;
-        }
-
-        // Intercept scroll within section: prevent default so fast flick CANNOT skip anything
+        if (step === 'leave') return;
         event.preventDefault();
-
-        const now = Date.now();
-        const timeSinceLastWheel = now - lastWheelTime.current;
-        const timeSinceLastStep = now - lastStepTime.current;
-        const timeSinceEnter = now - lastEnterTime.current;
-        lastWheelTime.current = now;
-
-        const reversedDirection = Math.sign(delta) !== Math.sign(lastWheelDelta.current);
-        lastWheelDelta.current = delta;
-
-        // When resting at city 0 (Mumbai), ensure user has dwelled after entering before stepping to Pune
-        if (current === 0 && timeSinceEnter < 450) {
-          return;
-        }
-
-        // One scroll gesture advances to the next city only:
-        // Trailing inertia within the same flick is debounced and ignored.
-        const canStep = !isStepAnimating.current &&
-          timeSinceLastStep > 460 &&
-          (reversedDirection || timeSinceLastWheel > 140 || timeSinceLastStep > 850);
-
-        if (canStep) {
-          const nextIndex = current + 1;
-          if (nextIndex < TOTAL) {
-            lastStepTime.current = now;
-            navigate.current(nextIndex);
-          }
-        }
+        if (activeRef.current === 0 && Date.now() - lastEnterTime.current < 450) return;
+        if (typeof step === 'number') navigate.current(step);
       };
 
       window.addEventListener("wheel", onWheel, { passive: false });
 
       skipToTeam.current = () => {
+        scrollDirection.reset();
         cancelTravel();
         const trigger = triggerInstance;
         if (trigger && isTallDesktop) {
@@ -316,6 +268,7 @@ export function CoverflowCoverage() {
       }
 
       return () => {
+        scrollDirection.destroy();
         cancelAnimationFrame(refreshFrame);
         resize.disconnect();
         cancelTravel();

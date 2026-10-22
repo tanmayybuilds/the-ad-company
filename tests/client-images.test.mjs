@@ -8,7 +8,7 @@ import { createServer } from 'vite';
 test('client logos resolve to real assets when hosted under the GitHub Pages path', async () => {
   const server = await createServer({
     base: '/the-ad-company/',
-    server: { middlewareMode: true, watch: null },
+    server: { middlewareMode: true, watch: null, hmr: false, ws: false },
     appType: 'custom',
   });
   try {

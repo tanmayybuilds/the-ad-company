@@ -130,7 +130,7 @@ export function Work() {
         {work.examples.map((item, index) => <BentoCard key={item.video} index={index} active={active === index} reduced={reduced} onActivate={setActive} onExplore={() => { setActive(null); setSelected(index); }} />)}
       </div>
     </div>
-    <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog" aria-labelledby="project-title">
+    <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog" aria-labelledby={project ? 'project-title' : undefined}>
       {project && <><button type="button" onClick={() => dialog.current?.close()} className="dialog-close" aria-label={work.closeLabel} autoFocus><X /></button>
         <video key={project.video} src={videoSource(project.video)} muted playsInline controls preload="metadata" aria-label={project.alt} className="aspect-video w-full object-cover" />
         <div className="p-6 sm:p-9"><Eyebrow className="mb-3">{work.detailLabel}</Eyebrow><h2 id="project-title" className="font-display text-3xl font-extrabold uppercase">{project.title}</h2><p className="my-5 leading-relaxed">{project.copy}</p><ul className="mb-6 flex flex-wrap gap-2">{project.formats.map(format => <li key={format} className="border border-ink/20 px-3 py-2 text-sm">{format}</li>)}</ul><ActionLink href="#contact" size="md" onClick={() => dialog.current?.close()}>{work.contactLabel}</ActionLink></div></>}

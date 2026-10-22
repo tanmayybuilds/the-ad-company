@@ -156,10 +156,13 @@ function CaptureHook() {
   const { gl, scene, camera } = useThree();
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    (window as unknown as { __captureCity?: () => string }).__captureCity = () => {
+    const target = window as unknown as { __captureCity?: () => string };
+    const capture = () => {
       gl.render(scene, camera);
       return gl.domElement.toDataURL("image/png");
     };
+    target.__captureCity = capture;
+    return () => { if (target.__captureCity === capture) delete target.__captureCity; };
   }, [gl, scene, camera]);
   return null;
 }

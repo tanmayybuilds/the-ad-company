@@ -40,13 +40,6 @@ export type Project = {
 
 export type Location = { name: string; kind: "City" | "State / region"; state?: string };
 
-export type TeamMember = {
-  name: string | null;
-  role: string | null;
-  responsibility: string | null;
-  photo: { src: string; alt: string } | null;
-};
-
 export const company = {
   name: "The Ad Company",
   wordmark: "THE AD COMPANY",
@@ -83,7 +76,7 @@ export const hero = {
 };
 
 export const clients = {
-  heading: "Brands we’ve worked with",
+  heading: "Our Clientele",
   interactionHint: "Flip a card. Explore the work.",
   viewMore: "View more",
   closePreview: "Close brand preview",
@@ -256,17 +249,132 @@ export const coverage = {
   ] satisfies Location[],
 };
 
-export const team = {
-  heading: ["The people behind", "the placements."],
-  note: "Team roster to be confirmed.",
-  members: Array.from({ length: 6 }, () => ({
-    name: null,
-    role: null,
-    responsibility: null,
-    photo: null,
-  })) as TeamMember[],
-};
+export interface TeamPointerNode {
+  id: string;
+  number: string;       // "01" .. "06"
+  stageTitle: string;   // "THE BRIEF." .. "THE FOLLOW-THROUGH."
+  memberName: string;
+  roleTitle: string;
+  responsibility: string;
+  introCopy: string;
+  theme: 'stone' | 'lime' | 'charcoal';
+  bgHex: string;
+  accentHex: string;
+  textHex: string;
+  cutoutUrl: string;    // Replaceable sample cutout URL
+  worldPos: { x: number; z: number; yaw: number }; // Alternating zig-zag 3D coordinates
+  cardSide: 'right' | 'left';
+}
 
+export const TEAM_POINTER_NODES: TeamPointerNode[] = [
+  {
+    id: 'pointer-01',
+    number: '01',
+    stageTitle: 'THE BRIEF.',
+    memberName: 'Aarav Mehta',
+    roleTitle: 'Client Strategy & Discovery Lead',
+    responsibility: 'Brief intake, audience decoding & market goals',
+    introCopy: 'Turns raw brand ambitions into sharp on-ground campaign briefs before a single site is booked.',
+    theme: 'stone',
+    bgHex: '#E5E3DC',
+    accentHex: '#B84A24',
+    textHex: '#141413',
+    cutoutUrl: '/team/sample-01.webp',
+    worldPos: { x: 0, z: 0, yaw: 0 },
+    cardSide: 'right',
+  },
+  {
+    id: 'pointer-02',
+    number: '02',
+    stageTitle: 'THE PLAN.',
+    memberName: 'Rohan Kulkarni',
+    roleTitle: 'Media Planning & Route Architect',
+    responsibility: 'City selection, frequency mapping & format mix',
+    introCopy: 'Architects high-visibility daily commuter corridors across Mumbai, Pune, Bengaluru, and Gujarat.',
+    theme: 'lime',
+    bgHex: '#D2F055',
+    accentHex: '#B84A24',
+    textHex: '#141413',
+    cutoutUrl: '/team/sample-02.webp',
+    worldPos: { x: 420, z: -650, yaw: -14 },
+    cardSide: 'right',
+  },
+  {
+    id: 'pointer-03',
+    number: '03',
+    stageTitle: 'THE PLACES.',
+    memberName: 'Priya Nair',
+    roleTitle: 'Location Scouting & Site Partnerships',
+    responsibility: 'Premium residential, transit & corporate inventory',
+    introCopy: 'Secures high-dwell-time placements at neighbourhood gates, arterial junctions, and coworking hubs.',
+    theme: 'charcoal',
+    bgHex: '#191A18',
+    accentHex: '#D2F055',
+    textHex: '#FFFFFF',
+    cutoutUrl: '/team/sample-03.webp',
+    worldPos: { x: -380, z: -1300, yaw: 14 },
+    cardSide: 'left',
+  },
+  {
+    id: 'pointer-04',
+    number: '04',
+    stageTitle: 'THE DETAILS.',
+    memberName: 'Kabir Deshmukh',
+    roleTitle: 'Creative Production & Technical Specs',
+    responsibility: 'Format adaptation, DOOH calibration & print QA',
+    introCopy: 'Obsesses over every pixel pitch, viewing distance, and material finish so every placement pops.',
+    theme: 'stone',
+    bgHex: '#E5E3DC',
+    accentHex: '#B84A24',
+    textHex: '#141413',
+    cutoutUrl: '/team/sample-04.webp',
+    worldPos: { x: 420, z: -1950, yaw: -14 },
+    cardSide: 'right',
+  },
+  {
+    id: 'pointer-05',
+    number: '05',
+    stageTitle: 'THE GROUND.',
+    memberName: 'Neha Joshi',
+    roleTitle: 'On-Ground Execution & Field Operations',
+    responsibility: 'Rigging, live installation & zero-delay rollout',
+    introCopy: 'Leads field crews across every city to bring campaigns live on schedule and in pristine condition.',
+    theme: 'lime',
+    bgHex: '#D2F055',
+    accentHex: '#B84A24',
+    textHex: '#141413',
+    cutoutUrl: '/team/sample-05.webp',
+    worldPos: { x: -380, z: -2600, yaw: 14 },
+    cardSide: 'left',
+  },
+  {
+    id: 'pointer-06',
+    number: '06',
+    stageTitle: 'THE FOLLOW-THROUGH.',
+    memberName: 'Vikram Shah',
+    roleTitle: 'Proof-of-Play, Analytics & Account Delivery',
+    responsibility: 'Timestamped verification, uptime audits & reporting',
+    introCopy: 'Closes the loop with verified on-ground proof-of-play telemetry and transparent post-campaign reports.',
+    theme: 'charcoal',
+    bgHex: '#191A18',
+    accentHex: '#D2F055',
+    textHex: '#FFFFFF',
+    cutoutUrl: '/team/sample-06.webp',
+    worldPos: { x: 0, z: -3250, yaw: 0 },
+    cardSide: 'right',
+  },
+];
+
+export const team = {
+  eyebrow: "[06 // People make it happen]",
+  heading: ["The people behind", "the placements."],
+  hint: "Scroll down: one pointer at a time. Scroll up to return.",
+  note: "Sample profiles & stock portraits. Team roster awaiting confirmation.",
+  previous: "Prev pointer",
+  next: "Next pointer",
+  skip: "Continue to your campaign brief",
+  members: TEAM_POINTER_NODES,
+};
 export const contact = {
   heading: ["Got a brand", "to put out there?"],
   copy: "Tell us what you have in mind. Let’s talk about where your brand could show up next.",

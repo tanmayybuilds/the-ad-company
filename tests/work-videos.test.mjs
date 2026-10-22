@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
 test('the three bento illustrations bind to real MP4s under the Pages base path', async () => {
-  const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, hmr: false, watch: null }, appType: 'custom' });
+  const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, appType: 'custom' });
   try {
     const { Work } = await server.ssrLoadModule('/src/components/site/Work.tsx');
     const { work } = await server.ssrLoadModule('/src/content/site.ts');

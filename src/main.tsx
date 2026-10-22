@@ -15,8 +15,10 @@ if (typeof window !== 'undefined') {
   document.fonts?.ready?.then(() => ScrollTrigger.refresh());
 }
 
-function App() {
+export function App() {
   return <><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip /><Services /><Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
 }
-createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+if (typeof document !== 'undefined') {
+  createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+}
 
