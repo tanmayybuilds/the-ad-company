@@ -1,257 +1,187 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import residentialImg from "@/assets/service-residential.jpg";
-import corporateImg from "@/assets/service-corporate.jpg";
-import outdoorImg from "@/assets/service-outdoor.jpg";
-import cinemaImg from "@/assets/service-cinema-airport.jpg";
-import deliveryImg from "@/assets/service-delivery.jpg";
+import { useEffect, useRef, useState } from "react";
 import { services } from "@/content/site";
-import { useReveal } from "@/hooks/use-reveal";
-import { gsap, MOTION, useGSAP } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { gsap, ScrollTrigger, MQ, useGSAP } from "@/lib/motion";
+import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
-
-const visuals: Record<string, { src: string; alt: string }> = {
-  residential: {
-    src: residentialImg,
-    alt: "Illustration: miniature apartment society entrance with a lobby screen and notice board.",
-  },
-  corporate: {
-    src: corporateImg,
-    alt: "Illustration: miniature office lobby with a standee and a wall screen.",
-  },
-  outdoor: {
-    src: outdoorImg,
-    alt: "Illustration: miniature street with an auto-rickshaw, a cab, a bus shelter and a roadside screen.",
-  },
-  cinema: {
-    src: cinemaImg,
-    alt: "Illustration: miniature airport gate and cinema hall, each with a large screen.",
-  },
-  delivery: {
-    src: deliveryImg,
-    alt: "Illustration: miniature doorstep with a delivery bag holding a flyer and a phone showing an ad.",
-  },
-};
 
 export function Services() {
   const root = useRef<HTMLElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const indicatorRef = useRef<HTMLDivElement>(null);
+  const journey = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const progress = useRef<HTMLDivElement>(null);
+  const requestedFrame = useRef(0);
+  const drawnFrame = useRef(-1);
+  const activeZone = useRef(0);
+  const navigate = useRef<(zone: number) => void>(() => {});
+  const render = useRef<(frame: number) => void>(() => {});
   const [active, setActive] = useState(0);
-  const first = useRef(true);
-  const reduce = useRef(false);
+  const [unavailable, setUnavailable] = useState(false);
 
-  useReveal(root);
+  useEffect(() => {
+    const element = canvas.current!;
+    element.dataset.loaderState = "starting";
+    const ctx = element.getContext("2d", { alpha: false });
+    if (!ctx) { setUnavailable(true); return; }
+    let disposed = false;
+    let settled = 0;
+    let failed = 0;
+    drawnFrame.current = -1;
+    const frames = Array.from({ length: TOTAL_FRAMES }, () => new Image());
 
-  const placeIndicator = useCallback((animate: boolean) => {
-    const list = listRef.current;
-    const ind = indicatorRef.current;
-    const row = list?.children[active] as HTMLElement | undefined;
-    if (!row || !ind) return;
-    const props = { y: row.offsetTop, height: row.offsetHeight };
-    if (animate && !reduce.current) {
-      gsap.to(ind, { ...props, duration: MOTION.services.indicator, ease: MOTION.easeInOut, overwrite: true });
-    } else {
-      gsap.set(ind, props);
-    }
-  }, [active]);
-
-  useLayoutEffect(() => {
-    reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    placeIndicator(!first.current);
-    first.current = false;
-    const ro = new ResizeObserver(() => placeIndicator(false));
-    if (listRef.current) ro.observe(listRef.current);
-    return () => ro.disconnect();
-  }, [placeIndicator]);
-
-  // Image transition when the selection changes.
-  useGSAP(
-    () => {
-      const imgs = gsap.utils.toArray<HTMLElement>("[data-service-img]", root.current);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      imgs.forEach((img, i) => {
-        if (i === active) {
-          gsap.set(img, { zIndex: 2, opacity: 1 });
-          if (!reduced) {
-            gsap.fromTo(
-              img,
-              { clipPath: "inset(0% 0% 100% 0%)", scale: 1.06 },
-              { clipPath: "inset(0% 0% 0% 0%)", scale: 1, duration: MOTION.services.image, ease: MOTION.ease, overwrite: true },
-            );
-          } else {
-            gsap.set(img, { clipPath: "inset(0% 0% 0% 0%)", scale: 1 });
-          }
-        } else {
-          gsap.set(img, { zIndex: 1 });
-          gsap.to(img, { opacity: 0, duration: reduced ? 0 : 0.3, delay: reduced ? 0 : 0.35, overwrite: true });
+    render.current = value => {
+      const target = sequenceFrame(value);
+      requestedFrame.current = target;
+      let index = target;
+      const ready = (i: number) => frames[i]?.complete && frames[i].naturalWidth > 0;
+      // Keep the nearest loaded frame visible during slow loads or a failed request.
+      if (!ready(index)) {
+        index = -1;
+        for (let distance = 1; distance < TOTAL_FRAMES; distance++) {
+          if (ready(target - distance)) { index = target - distance; break; }
+          if (ready(target + distance)) { index = target + distance; break; }
         }
+      }
+      if (index < 0 || drawnFrame.current === index) return;
+      const image = frames[index];
+      if (element.width !== image.naturalWidth || element.height !== image.naturalHeight) {
+        element.width = image.naturalWidth;
+        element.height = image.naturalHeight;
+      }
+      ctx.drawImage(image, 0, 0);
+      element.dataset.frame = String(index + 1);
+      element.dataset.ready = "true";
+      drawnFrame.current = index;
+    };
+
+    frames.forEach((image, index) => {
+      image.decoding = "async";
+      image.onload = image.onerror = event => {
+        if (disposed) return;
+        settled++;
+        if (typeof event === "string" || event.type === "error") failed++;
+        render.current(requestedFrame.current);
+        if (progress.current) {
+          progress.current.style.setProperty("--loaded", String(settled / TOTAL_FRAMES));
+          progress.current.setAttribute("aria-valuenow", String(settled));
+          progress.current.hidden = settled === TOTAL_FRAMES;
+        }
+        if (settled === TOTAL_FRAMES) setUnavailable(failed > 0);
+      };
+      image.src = sequenceSource(index, import.meta.env.BASE_URL);
+    });
+    element.dataset.loaderState = "loading";
+    return () => {
+      element.dataset.loaderState = "disposed";
+      disposed = true;
+      render.current = () => {};
+      frames.forEach(image => { image.onload = image.onerror = null; image.src = ""; });
+    };
+  }, []);
+
+  useGSAP(() => {
+    const scene = journey.current!;
+    const mm = gsap.matchMedia();
+    mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
+      const reduced = !!context.conditions?.reduce;
+      const update = (trigger: ScrollTrigger) => {
+        const frame = sequenceProgressFrame(trigger.progress);
+        const zone = sequenceZone(frame);
+        if (zone !== activeZone.current) {
+          activeZone.current = zone;
+          setActive(zone);
+        }
+        requestedFrame.current = reduced ? ZONE_STARTS[zone] : frame;
+        render.current(requestedFrame.current);
+      };
+      const stickyTop = () => parseFloat(getComputedStyle(scene).getPropertyValue("--service-top")) || 88;
+      const trigger = ScrollTrigger.create({
+        trigger: scene,
+        start: () => `top top+=${stickyTop()}`,
+        end: () => `+=${Math.max(1, scene.offsetHeight - window.innerHeight)}`,
+        onUpdate: update,
+        onRefresh: update,
       });
-    },
-    { scope: root, dependencies: [active] },
-  );
+      // The expanding logo strip and late font loads can move this section after setup.
+      let refreshFrame = 0;
+      const resize = new ResizeObserver(() => {
+        cancelAnimationFrame(refreshFrame);
+        refreshFrame = requestAnimationFrame(() => trigger.refresh());
+      });
+      resize.observe(scene);
+      resize.observe(root.current!);
+      for (let sibling = root.current?.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+        resize.observe(sibling);
+      }
+      let scrollTween: gsap.core.Tween | undefined;
+      navigate.current = zone => {
+        trigger.refresh();
+        const y = trigger.start + (trigger.end - trigger.start) * ZONE_STARTS[zone] / (TOTAL_FRAMES - 1);
+        scrollTween?.kill();
+        const previousBehavior = document.documentElement.style.scrollBehavior;
+        document.documentElement.style.scrollBehavior = "auto";
+        const restoreBehavior = () => { document.documentElement.style.scrollBehavior = previousBehavior; };
+        scrollTween = gsap.to(window, {
+          scrollTo: { y, autoKill: true }, duration: reduced ? 0 : 0.7,
+          ease: "power2.inOut", overwrite: "auto",
+          onComplete: restoreBehavior, onInterrupt: restoreBehavior,
+        });
+      };
+      return () => {
+        resize.disconnect();
+        cancelAnimationFrame(refreshFrame);
+        scrollTween?.kill();
+        navigate.current = () => {};
+      };
+    });
+    return () => mm.revert();
+  }, { scope: root });
 
-  const current = services.items[active]!;
-
+  const current = services.items[active];
   return (
-    <section
-      id="services"
-      ref={root}
-      aria-labelledby="services-title"
-      className="section-y relative border-b hairline bg-paper"
-    >
+    <section id="services" ref={root} aria-labelledby="services-title" className="service-sequence section-y">
       <div className="container-page">
-        <div className="grid grid-cols-1 items-end gap-6 border-b hairline pb-10 lg:grid-cols-12">
-          <div className="min-w-0 lg:col-span-8" data-reveal>
-            <Eyebrow className="mb-3">[02 // Where your brand can show up]</Eyebrow>
-            <h2 id="services-title" className="text-display-lg text-ink">
-              {services.heading[0]}
-              <br />
-              {services.heading[1]}
-            </h2>
+        <div className="service-intro">
+          <div>
+            <Eyebrow className="mb-3">{services.eyebrow}</Eyebrow>
+            <h2 id="services-title" className="text-display-lg">{services.heading[0]}<br />{services.heading[1]}</h2>
           </div>
-          <p className="max-w-md leading-relaxed text-ink/80 lg:col-span-4 lg:pb-2" data-reveal>
-            {services.intro}
-          </p>
+          <p>{services.intro}</p>
         </div>
-
-        <div className="grid grid-cols-1 items-start gap-10 pt-10 lg:grid-cols-12 lg:gap-6">
-          {/* Supporting visual — shown first on mobile so a selection is visible. */}
-          <div className="lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:order-2 lg:col-span-5" data-reveal>
-            <figure
-              id="service-visual"
-              aria-live="polite"
-              className="border-2 border-ink bg-paper p-4 shadow-hard-md md:p-5"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3 border-b hairline pb-2">
-                <span className="text-label-index text-[0.6875rem] text-ink">
-                  Format example // {current.visualLabel}
-                </span>
-                <span className="text-label-index text-[0.6875rem] text-signal">Illustration</span>
-              </div>
-              <div className="relative aspect-[4/3] w-full overflow-hidden border border-ink bg-sand-deep">
-                {services.items.map((s, i) => (
-                  <img
-                    key={s.id}
-                    data-service-img
-                    src={visuals[s.id]!.src}
-                    alt={i === active ? visuals[s.id]!.alt : ""}
-                    aria-hidden={i !== active}
-                    width={1024}
-                    height={768}
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ opacity: i === 0 ? 1 : 0 }}
-                  />
-                ))}
-                <span className="text-label-index absolute bottom-3 left-3 z-10 bg-ink px-2 py-1 text-[0.6875rem] text-ivory">
-                  [{current.index}] {current.title}
-                </span>
-              </div>
-              <figcaption className="mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-label-index block text-[0.625rem] text-ink/60">Formats</span>
-                  <span className="text-label-tag text-ink">{current.formats.length} listed</span>
-                </div>
-                <div>
-                  <span className="text-label-index block text-[0.625rem] text-ink/60">Focus</span>
-                  <span className="text-label-tag text-ink">
-                    {current.primary ? "Our primary focus" : "Also available"}
+        <div ref={journey} className="service-journey">
+          <div className="service-stage">
+          <figure id="service-visual" className="service-viewport">
+            <div className="service-viewport-heading">
+              <span>Format example // {current.visualLabel}</span>
+              <span>Illustration // [{current.index}]</span>
+            </div>
+            <div className="service-screen">
+              <img className="service-poster" src={sequenceSource(0, import.meta.env.BASE_URL)} alt="Illustrative miniature city with advertising placements." width="1080" height="608" />
+              <canvas ref={canvas} width="1080" height="608" role="img" aria-label={`Illustrative 3D environment: ${current.title}`} />
+              <span className="service-screen-label">[{current.index}] {current.title}</span>
+              <div ref={progress} className="service-loading" role="progressbar" aria-label={services.loadingLabel} aria-valuemin={0} aria-valuemax={TOTAL_FRAMES} aria-valuenow={0} />
+            </div>
+            <figcaption>
+              <div className="service-metadata"><div><span>Formats</span><strong>{current.formats.length} listed</strong></div><div><span>Focus</span><strong>{current.focusLabel}</strong></div></div>
+              <p className="service-journey-hint">{services.journeyHint}</p>
+              {unavailable && <p className="service-load-warning" role="status">{services.unavailable}</p>}
+            </figcaption>
+          </figure>
+          <ol className="service-zones" aria-label="Advertising environments">
+            {services.items.map((service, index) => (
+              <li key={service.id} className="service-zone" data-active={active === index}>
+                <button type="button" className="service-zone-card" aria-expanded={active === index} aria-controls={`service-details-${service.id}`} onClick={() => navigate.current(index)}>
+                  <span className="service-zone-top"><span className="service-zone-number">{service.index}</span><span className="service-zone-title">{service.title}</span><span className="service-zone-toggle" aria-hidden="true">{active === index ? "−" : "+"}</span></span>
+                  <span id={`service-details-${service.id}`} className="service-zone-details" aria-hidden={active !== index}>
+                    <span className="service-zone-details-inner">
+                      <span className="service-zone-badge">{service.badge}</span>
+                      <span className="service-zone-lead">{service.lead}</span>
+                      <span className="service-formats">{service.formats.map(format => <span key={format}>{format}</span>)}</span>
+                    </span>
                   </span>
-                </div>
-                <p className="text-label-index col-span-2 border border-lime-deep/40 bg-lime/30 p-2 text-[0.6875rem] normal-case tracking-normal text-ink">
-                  Illustrative environment only — not a client campaign.
-                </p>
-              </figcaption>
-            </figure>
-          </div>
-
-          {/* Service index */}
-          <div className="relative min-w-0 lg:order-1 lg:col-span-7">
-            <div
-              ref={indicatorRef}
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 bg-ink shadow-hard-sm"
-              style={{ height: 0 }}
-            />
-            <ul ref={listRef} className="relative" aria-label="Services">
-              {services.items.map((s, i) => {
-                const isActive = i === active;
-                return (
-                  <li
-                    key={s.id}
-                    data-active={isActive}
-                    onClick={() => setActive(i)}
-                    onMouseEnter={(e) => {
-                      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) setActive(i);
-                      void e;
-                    }}
-                    className={cn(
-                      "group relative cursor-pointer border-b px-4 py-6 transition-colors duration-300 md:px-6",
-                      isActive ? "border-transparent text-ivory" : "hairline text-ink hover:bg-sand",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={cn(
-                            "text-label-index transition-colors",
-                            isActive ? "text-lime" : s.primary ? "text-signal" : "text-ink/55",
-                          )}
-                        >
-                          [{s.index}]
-                        </span>
-                        {s.primary && (
-                          <span className="text-label-tag bg-orange px-2 py-0.5 text-[0.625rem] tracking-widest text-ink">
-                            Primary focus
-                          </span>
-                        )}
-                      </div>
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "h-3 w-3 rounded-full border transition-colors",
-                          isActive ? "border-lime bg-lime" : "border-ink/40 bg-transparent",
-                        )}
-                      />
-                    </div>
-                    <h3
-                      className={cn(
-                        "mt-2 font-display font-bold uppercase leading-tight tracking-tight",
-                        s.primary ? "text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)]" : "text-headline-md",
-                      )}
-                    >
-                      <button
-                        type="button"
-                        aria-pressed={isActive}
-                        aria-controls="service-visual"
-                        onFocus={() => setActive(i)}
-                        className="text-left uppercase focus-visible:outline-offset-4"
-                      >
-                        {s.title}
-                      </button>
-                    </h3>
-                    <p className={cn("mt-1 font-medium transition-colors", isActive ? "text-ivory/85" : "text-ink/75")}>
-                      {s.lead}
-                    </p>
-                    <ul className="mt-4 flex flex-wrap gap-2" aria-label={`${s.title} formats`}>
-                      {s.formats.map((f) => (
-                        <li
-                          key={f}
-                          className={cn(
-                            "text-label-index border px-2.5 py-1 text-[0.6875rem] normal-case tracking-normal transition-colors",
-                            isActive ? "border-ivory/25 bg-ink-soft text-ivory" : "border-ink/20 bg-paper text-ink",
-                          )}
-                        >
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ul>
+                </button>
+              </li>
+            ))}
+          </ol>
           </div>
         </div>
       </div>

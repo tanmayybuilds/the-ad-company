@@ -100,14 +100,14 @@ export function ClientStrip() {
       section.dataset.motion = String(isMotion);
 
       if (isMotion) {
-        // Starts compact when docked at bottom of initial hero screen, then slowly enlarges as user scrolls down
+        // Starts compact when docked at bottom of initial hero screen, then enlarges as user scrolls down
         gsap.fromTo(section, { "--brand-expansion": 0 }, {
           "--brand-expansion": 1,
           ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "top bottom-=30", // begins slowly enlarging as soon as scroll starts
-            end: "top 18%",          // fully enlarged and normalized at comfortable viewing height
+            start: "top bottom-=30", // begins enlarging as soon as scroll starts
+            end: "top 60%",          // animation completed and reaches final size at this stage
             scrub: 0.1,
           },
         });

@@ -16,6 +16,8 @@ export type Service = {
   /** Residential & community is the company's strongest emphasis. */
   primary?: boolean;
   visualLabel: string;
+  badge: string;
+  focusLabel: string;
 };
 
 export type Project = {
@@ -111,6 +113,10 @@ export const clients = {
 
 /** Provisional offerings awaiting final business confirmation. */
 export const services = {
+  eyebrow: "[02 // Where your brand can show up]",
+  journeyHint: "Interactive 3D environment journey — scroll or click any vertical to explore.",
+  loadingLabel: "Loading environment sequence",
+  unavailable: "Some animation frames could not load. Showing the available illustration.",
   heading: ["Real places.", "Real brand presence."],
   intro:
     "Different environments. Different formats. One clear aim: put your brand where people are.",
@@ -129,14 +135,18 @@ export const services = {
       ],
       primary: true,
       visualLabel: "Residential society",
+      badge: "Primary focus",
+      focusLabel: "Our primary focus",
     },
     {
       id: "corporate",
       index: "02",
       title: "Corporate & coworking",
       lead: "Connect with people where their working day happens.",
-      formats: ["Corporate office advertising", "Coworking-space campaigns", "Workplace activations"],
-      visualLabel: "Office & coworking",
+      formats: ["Corporate office advertising", "Coworking space campaigns", "Workspace activations"],
+      visualLabel: "Corporate & coworking",
+      badge: "Workspace media",
+      focusLabel: "Decision makers",
     },
     {
       id: "outdoor",
@@ -144,7 +154,9 @@ export const services = {
       title: "Outdoor & transit",
       lead: "Build visibility across streets and moving journeys.",
       formats: ["Outdoor digital advertising", "Transit advertising", "Auto branding", "Cab branding"],
-      visualLabel: "Street & transit",
+      visualLabel: "Outdoor & transit",
+      badge: "High visibility",
+      focusLabel: "Citywide reach",
     },
     {
       id: "cinema",
@@ -152,7 +164,9 @@ export const services = {
       title: "Cinema, airports & in-flight",
       lead: "Reach audiences across entertainment and travel.",
       formats: ["Cinema advertising", "Airport advertising", "In-flight advertising"],
-      visualLabel: "Cinema & airport",
+      visualLabel: "Cinema & airports",
+      badge: "Captive audience",
+      focusLabel: "Premium dwell time",
     },
     {
       id: "delivery",
@@ -160,7 +174,9 @@ export const services = {
       title: "Delivery & in-app",
       lead: "Show up at the doorstep and on the screen.",
       formats: ["Delivery flyer campaigns", "In-app advertising"],
-      visualLabel: "Doorstep & app",
+      visualLabel: "Delivery & in-app",
+      badge: "Direct to doorstep",
+      focusLabel: "Instant commerce",
     },
   ] satisfies Service[],
 };
