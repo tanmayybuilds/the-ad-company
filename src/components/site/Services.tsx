@@ -266,11 +266,27 @@ export function Services() {
         const scrollY = window.scrollY;
 
         // When scrolling UP (coming backwards):
-        // Skip reverse playback and reset to the starting point so scrolling down plays it anew
-        if (delta < 0 && scrollY > trig.start + 4 && scrollY <= trig.end + 20) {
-          event.preventDefault();
-          resetToStart();
-          window.scrollTo({ top: trig.start, behavior: "auto" });
+        // Allow the user to scroll straight up like a static website:
+        // Skip reverse playback, reset visual to starting point (Zone 0), and bypass the pinned distance.
+        if (delta < 0) {
+          const sectionEl = root.current;
+          const sectionTop = sectionEl
+            ? sectionEl.getBoundingClientRect().top + scrollY
+            : trig.start;
+          const topThreshold = Math.max(0, sectionTop - 70);
+
+          if (scrollY > topThreshold + 8 && scrollY <= trig.end + 60) {
+            if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+            animFrameId = null;
+            resetToStart();
+            const prevScrollBehavior = document.documentElement.style.scrollBehavior;
+            document.documentElement.style.scrollBehavior = "auto";
+            window.scrollTo({ top: topThreshold, behavior: "instant" });
+            requestAnimationFrame(() => {
+              document.documentElement.style.scrollBehavior = prevScrollBehavior;
+            });
+          }
+          return;
         }
       };
 
