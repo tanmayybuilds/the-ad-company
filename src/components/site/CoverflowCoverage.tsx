@@ -82,9 +82,10 @@ export function CoverflowCoverage() {
         position.value = 0;
         triggerInstance = ScrollTrigger.create({
           trigger: section,
-          start: "top top+=80",
-          end: () => `+=${window.innerHeight * 2.4}`,
+          start: () => "top top+=80",
+          end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
           pin: scene,
+          pinSpacing: true,
           anticipatePin: 0,
           invalidateOnRefresh: true,
           onEnter: () => {
@@ -213,9 +214,9 @@ export function CoverflowCoverage() {
             setActive(0);
             position.value = 0;
             renderPosition(0);
-          }
-          if (scrollY > trigger.start) {
-            window.scrollTo({ top: trigger.start - 2, behavior: "instant" });
+            if (scrollY > trigger.start + 4) {
+              window.scrollTo({ top: trigger.start, behavior: "auto" });
+            }
           }
           return;
         }
@@ -302,7 +303,20 @@ export function CoverflowCoverage() {
       });
       observer.observe(scene);
 
+      let refreshFrame = 0;
+      const resize = new ResizeObserver(() => {
+        cancelAnimationFrame(refreshFrame);
+        refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+      });
+      resize.observe(section);
+      resize.observe(scene);
+      for (let sibling = section.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+        resize.observe(sibling);
+      }
+
       return () => {
+        cancelAnimationFrame(refreshFrame);
+        resize.disconnect();
         cancelTravel();
         triggerInstance?.kill();
         gsap.killTweensOf(position);

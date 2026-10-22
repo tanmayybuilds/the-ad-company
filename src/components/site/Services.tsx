@@ -249,7 +249,7 @@ export function Services() {
       let refreshFrame = 0;
       const resize = new ResizeObserver(() => {
         cancelAnimationFrame(refreshFrame);
-        refreshFrame = requestAnimationFrame(() => trigger.refresh());
+        refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
       });
       resize.observe(scene);
       resize.observe(root.current!);
@@ -265,7 +265,7 @@ export function Services() {
         setActive(targetZone);
 
         if (trigger) {
-          trigger.refresh();
+          ScrollTrigger.refresh();
           let targetProgress: number;
           if (targetZone === 0) {
             targetProgress = START_BUFFER * 0.5;

@@ -7,7 +7,13 @@ import { Services } from '@/components/site/Services';
 import { Work, About, Team, Footer } from '@/components/site/Sections';
 import { CoverflowCoverage } from '@/components/site/CoverflowCoverage';
 import { Contact } from '@/components/site/Contact';
+import { ScrollTrigger } from '@/lib/motion';
 import './styles.css';
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+  document.fonts?.ready?.then(() => ScrollTrigger.refresh());
+}
 
 function App() {
   return <><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip /><Services /><Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
