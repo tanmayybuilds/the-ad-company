@@ -132,8 +132,8 @@ export function Services() {
         if (Math.abs(diff) > 0.05) {
           const absDiff = Math.abs(diff);
           // Controlled cinematic easing: cap max frame advance per tick so it can never whip by too fast
-          const maxStep = absDiff > 50 ? absDiff * 0.08 : 1.4;
-          const step = Math.sign(diff) * Math.min(absDiff * 0.12, maxStep);
+          const maxStep = absDiff > 50 ? absDiff * 0.08 : 1.1;
+          const step = Math.sign(diff) * Math.min(absDiff * 0.095, maxStep);
           currentFrame += step;
           const displayFrame = Math.round(currentFrame);
           render.current(displayFrame);
@@ -298,7 +298,7 @@ export function Services() {
 
           isNavigating = true;
           const zoneDiff = Math.abs(targetZone - prevZone);
-          const scrollDuration = Math.min(1.8, 0.85 + zoneDiff * 0.22);
+          const scrollDuration = Math.min(2.2, 0.95 + zoneDiff * 0.28);
 
           scrollTween = gsap.to(window, {
             scrollTo: { y, autoKill: false },
