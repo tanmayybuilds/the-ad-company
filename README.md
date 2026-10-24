@@ -6,6 +6,10 @@ Stack: React 19, TypeScript, Vite 8, Tailwind CSS 4, GSAP + ScrollTrigger, Three
 
 Commands: `npm install`, `npm run dev`, `npm test`, `npm run build`.
 
+V4 uses the client-approved Porcelain & Teal palette across the interface: porcelain `#F7F9F8`, pale teal `#E5EFF0`, logo teal `#12546B`, gold `#D9A328`, and dark text `#102F38`. The palette is fixed in `src/styles.css`; there is no theme picker or stored theme preference. Dark feature sections use deeper teal shades with readable gold accents. Existing client marks, photos, and videos keep their original colors.
+
+The supplied transparent logo is retained in `public/brand/logo.png`. Its SVG wrapper embeds the original PNG pixels and trims only empty margins. Header, footer, campaign preview, site icon, and 3D signs use the artwork directly over their existing backgrounds, without a white backing.
+
 Editable business content is in `src/content/site.ts`. Shared motion settings live in `src/lib/motion.ts`. The desktop city is lazy-loaded and renders on demand; mobile and reduced-motion users receive the existing static artwork. All retained imagery is local.
 
 Section 06 now uses a scroll-driven CSS 3D team pathway with six sample profiles, local stock portraits, jump controls and a reduced-motion layout. The sample names and portraits are not a confirmed roster. See [tour implementation](docs/team-tour.md) and [portrait sources](docs/team-portraits.md).

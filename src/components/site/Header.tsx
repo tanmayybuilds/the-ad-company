@@ -69,7 +69,7 @@ export function Header() {
     >
       <a
         href="#main"
-        className="text-label-tag sr-only z-[60] bg-ink px-4 py-2 text-ivory focus:not-sr-only focus:absolute focus:left-4 focus:top-3"
+        className="text-label-tag sr-only z-[60] bg-brand px-4 py-2 text-on-inverse focus:not-sr-only focus:absolute focus:left-4 focus:top-3"
       >
         Skip to content
       </a>
@@ -110,7 +110,7 @@ export function Header() {
           <button
             ref={buttonRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center border-2 border-ink bg-paper text-ink shadow-hard-xs transition-colors hover:bg-lime lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center border-2 border-ink bg-paper text-ink shadow-hard-xs transition-colors hover:bg-lime hover:text-on-accent lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -127,7 +127,7 @@ export function Header() {
         ref={panelRef}
         inert={!open}
         className={cn(
-          "absolute inset-x-0 top-full origin-top border-b-2 border-ink bg-ink text-ivory transition-[opacity,transform,visibility] duration-300 ease-out lg:hidden",
+          "absolute inset-x-0 top-full origin-top border-b-2 border-ink bg-inverse text-on-inverse transition-[opacity,transform,visibility] duration-300 ease-out lg:hidden",
           open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0",
         )}
       >
@@ -141,7 +141,7 @@ export function Header() {
                   className="flex items-baseline justify-between py-4 font-display text-3xl font-extrabold uppercase tracking-tight transition-colors hover:text-lime"
                 >
                   {item.label}
-                  <span className="text-label-index text-ivory/60">[0{i + 1}]</span>
+                  <span className="text-label-index text-on-inverse/70">[0{i + 1}]</span>
                 </a>
               </li>
             ))}

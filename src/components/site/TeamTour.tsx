@@ -315,7 +315,7 @@ export function TeamTour() {
               <span className="team-path-fill" /><span className="team-chevrons">{Array.from({ length: Math.ceil(path.length / 75) }, (_, arrow) => <b key={arrow}>❯</b>)}</span>
             </div>;
           })}
-          {team.members.map((node, index) => <article key={node.id} id={node.id} ref={element => { nodes.current[index] = element; }} className={`team-node team-node-${node.theme} team-card-${node.cardSide}`} data-active={active === index} style={{ '--node-bg': node.bgHex, '--node-accent': node.accentHex, '--node-text': node.textHex, '--node-yaw': `${node.worldPos.yaw}deg`, transform: `translate3d(${node.worldPos.x}px,0,${node.worldPos.z}px) rotateY(${node.worldPos.yaw}deg)` } as CSSProperties} aria-label={`${node.number}: ${node.stageTitle} ${node.memberName}`}>
+          {team.members.map((node, index) => <article key={node.id} id={node.id} ref={element => { nodes.current[index] = element; }} className={`team-node team-node-${node.theme} team-card-${node.cardSide}`} data-active={active === index} style={{ '--node-yaw': `${node.worldPos.yaw}deg`, transform: `translate3d(${node.worldPos.x}px,0,${node.worldPos.z}px) rotateY(${node.worldPos.yaw}deg)` } as CSSProperties} aria-label={`${node.number}: ${node.stageTitle} ${node.memberName}`}>
             <button className="team-pedestal" type="button" onClick={() => jump.current(index)} aria-label={`Go to ${node.number}: ${node.stageTitle}`}><span className="team-target-ring" /><span className="team-beak" style={{ rotate: `${index < positions.length - 1 ? -teamPath(node.worldPos, positions[index + 1]).angle - node.worldPos.yaw : 90}deg` }} /><span className="team-pedestal-number">{node.number}</span></button>
             <div className="team-standee" aria-hidden="true"><div className="team-portrait"><span>{node.memberName.split(' ').map(name => name[0]).join('')}</span><img src={node.cutoutUrl.startsWith('/') ? `${import.meta.env.BASE_URL}${node.cutoutUrl.slice(1)}` : node.cutoutUrl} alt="" width="190" height="260" loading="eager" decoding="async" onError={event => { event.currentTarget.hidden = true; }} /></div><span className="team-mount" /></div>
             <RoleCard node={node} />
@@ -324,7 +324,7 @@ export function TeamTour() {
         </div>
       </div>
 
-      <div className="team-mobile-role" style={{ '--node-bg': team.members[active].bgHex, '--node-text': team.members[active].textHex } as CSSProperties}><RoleCard node={team.members[active]} /></div>
+      <div className={`team-mobile-role team-node-${team.members[active].theme}`}><RoleCard node={team.members[active]} /></div>
 
       <div className="team-bottom container-page">
         <div className="team-bottom-row"><button type="button" className="team-step" disabled={active === 0} onClick={() => jump.current(Math.max(0, active - 1))}><span aria-hidden="true">←</span> {team.previous}</button><div className="team-stage-status"><StagePills label="Campaign pathway progress" active={active} onJump={index => jump.current(index)} /><p className="team-current" aria-live="polite" aria-atomic="true"><span>{team.members[active].number} / 06</span> {team.members[active].stageTitle}</p></div><button type="button" className="team-step" disabled={active === 5} onClick={() => jump.current(Math.min(5, active + 1))}>{team.next} <span aria-hidden="true">→</span></button></div>

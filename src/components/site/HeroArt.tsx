@@ -87,8 +87,8 @@ export function HeroArt() {
       <div className="text-label-index absolute -left-2 -top-4 z-20 border border-ink bg-paper px-3 py-1 text-[0.6875rem] font-bold text-ink shadow-hard-xs sm:-left-4">
         {hero.artNotes.top}
       </div>
-      <div className="text-label-index absolute -bottom-4 right-2 z-20 flex items-center gap-2 border border-ink bg-lime px-3 py-1 text-[0.6875rem] font-bold text-ink shadow-hard-xs">
-        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-ink" />
+      <div className="text-label-index absolute -bottom-4 right-2 z-20 flex items-center gap-2 border border-ink bg-lime px-3 py-1 text-[0.6875rem] font-bold text-on-accent shadow-hard-xs">
+        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-brand" />
         {hero.artNotes.bottom}
       </div>
 

@@ -5,20 +5,21 @@
  * Renders on demand: frames are drawn only while the tilt is settling, so the
  * scene is idle (no loop) when nothing moves, and fully paused offscreen.
  */
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { MOTION } from "@/lib/motion";
+import { companyLogo } from "@/lib/logo";
 
 const C = {
-  ivory: "#F8F5EE",
-  beige: "#EDE6D8",
-  plinth: "#DED8CC",
-  plinthEdge: "#CFC7B8",
-  ink: "#222220",
-  orange: "#F45B32",
-  lime: "#D7ED64",
-  glass: "#2F393E",
+  ivory: "#F7F9F8",
+  beige: "#E5EFF0",
+  plinth: "#CEDFE2",
+  plinthEdge: "#AAC8CE",
+  ink: "#102F38",
+  orange: "#12546B",
+  lime: "#D9A328",
+  glass: "#294B56",
 };
 
 type Pointer = { x: number; y: number };
@@ -171,20 +172,21 @@ function CaptureHook() {
 /* Textures                                                            */
 /* ------------------------------------------------------------------ */
 
-function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void) {
+function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D, logo: CanvasImageSource) => void) {
   const invalidate = useThree((s) => s.invalidate);
+  const logo = useLoader(THREE.TextureLoader, companyLogo.src);
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d")!;
-    draw(ctx);
+    draw(ctx, logo.image);
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 4;
     return t;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [w, h]);
+  }, [w, h, logo]);
 
   // Redraw once the brand fonts are available.
   useEffect(() => {
@@ -197,7 +199,7 @@ function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingConte
         if (cancelled) return;
         const ctx = (texture.image as HTMLCanvasElement).getContext("2d")!;
         ctx.clearRect(0, 0, w, h);
-        draw(ctx);
+        draw(ctx, logo.image);
         texture.needsUpdate = true;
         invalidate();
       });
@@ -214,22 +216,17 @@ function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingConte
 const SYNE = '"Syne", "Arial Black", sans-serif';
 const MONO = '"JetBrains Mono", monospace';
 
-function drawScreen(ctx: CanvasRenderingContext2D) {
+function drawScreen(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.fillStyle = C.ink;
   ctx.fillRect(0, 0, 512, 720);
-  ctx.fillStyle = C.orange;
+  ctx.fillStyle = C.beige;
   ctx.fillRect(36, 36, 440, 330);
+  ctx.drawImage(logo, 64, 60, 384, 384 * companyLogo.height / companyLogo.width);
   ctx.fillStyle = C.ink;
-  ctx.font = `800 64px ${SYNE}`;
-  ctx.fillText("THE AD", 64, 130);
-  ctx.fillText("CO.", 64, 196);
-  ctx.fillStyle = C.lime;
-  ctx.fillRect(64, 236, 160, 14);
-  ctx.fillStyle = "#F5F1E8";
   ctx.font = `800 36px ${SYNE}`;
   ctx.fillText("OUT IN THE", 64, 300);
   ctx.fillText("REAL WORLD.", 64, 342);
-  ctx.fillStyle = "#F5F1E8";
+  ctx.fillStyle = C.ivory;
   ctx.fillRect(36, 396, 440, 288);
   ctx.fillStyle = C.ink;
   ctx.font = `800 34px ${SYNE}`;
@@ -244,32 +241,23 @@ function drawScreen(ctx: CanvasRenderingContext2D) {
   ctx.fillText("[ON-GROUND]", 64, 620);
 }
 
-function drawMural(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = C.orange;
+function drawMural(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
+  ctx.fillStyle = C.beige;
   ctx.fillRect(0, 0, 512, 900);
   ctx.fillStyle = C.ink;
   ctx.font = `800 104px ${SYNE}`;
   ctx.fillText("THE", 44, 170);
   ctx.fillText("CITY", 44, 280);
   ctx.fillText("IS OUR", 44, 390);
-  ctx.fillStyle = "#F5F1E8";
+  ctx.fillStyle = C.ink;
   ctx.fillText("CANVAS.", 44, 500);
   ctx.fillStyle = C.lime;
   ctx.fillRect(44, 560, 240, 22);
-  ctx.fillStyle = C.ink;
-  ctx.font = `700 30px ${MONO}`;
-  ctx.fillText("THE AD COMPANY", 44, 820);
+  ctx.drawImage(logo, 44, 680, 424, 424 * companyLogo.height / companyLogo.width);
 }
 
-function drawAutoPanel(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = C.lime;
-  ctx.fillRect(0, 0, 256, 128);
-  ctx.fillStyle = C.ink;
-  ctx.font = `800 46px ${SYNE}`;
-  ctx.fillText("THE AD", 18, 58);
-  ctx.fillText("CO.", 18, 108);
-  ctx.fillStyle = C.orange;
-  ctx.fillRect(170, 76, 64, 32);
+function drawAutoPanel(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
+  ctx.drawImage(logo, 8, 7, 240, 240 * companyLogo.height / companyLogo.width);
 }
 
 function drawBanner(ctx: CanvasRenderingContext2D) {
@@ -440,17 +428,17 @@ function AutoRickshaw() {
       <Box args={[1.45, 0.42, 0.92]} color={C.orange} position={[0, 0.42, 0]} />
       {/* Cabin frame + canvas hood */}
       <Box args={[1.12, 0.12, 0.96]} color={C.ink} position={[-0.12, 1.22, 0]} />
-      <Box args={[1.0, 0.56, 0.06]} color={C.orange} position={[-0.18, 0.9, 0.44]} shadow={false} />
-      <Box args={[1.0, 0.56, 0.06]} color={C.orange} position={[-0.18, 0.9, -0.44]} shadow={false} />
+      <Box args={[1.0, 0.56, 0.06]} color={C.beige} position={[-0.18, 0.9, 0.44]} shadow={false} />
+      <Box args={[1.0, 0.56, 0.06]} color={C.beige} position={[-0.18, 0.9, -0.44]} shadow={false} />
       <Box args={[0.06, 0.6, 0.92]} color={C.ink} position={[-0.66, 0.92, 0]} />
       {/* Ad panels on both sides */}
       <mesh position={[-0.2, 0.92, 0.475]}>
         <planeGeometry args={[0.82, 0.41]} />
-        <meshStandardMaterial map={panel} roughness={0.9} />
+        <meshStandardMaterial map={panel} transparent roughness={0.9} />
       </mesh>
       <mesh position={[-0.2, 0.92, -0.475]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[0.82, 0.41]} />
-        <meshStandardMaterial map={panel} roughness={0.9} />
+        <meshStandardMaterial map={panel} transparent roughness={0.9} />
       </mesh>
       {/* Windshield */}
       <mesh position={[0.5, 0.92, 0]} rotation={[0, 0, -0.22]}>

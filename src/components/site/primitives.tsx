@@ -2,20 +2,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { company } from "@/content/site";
+import { companyLogo } from "@/lib/logo";
 
 export const actionVariants = cva(
   "group/action inline-flex items-center justify-center gap-3 border-2 border-ink font-display font-bold uppercase tracking-wider transition-[transform,box-shadow,background-color,color] duration-200 ease-out select-none active:translate-x-[2px] active:translate-y-[2px] disabled:pointer-events-none aria-disabled:cursor-not-allowed",
   {
     variants: {
       variant: {
-        /** Charcoal fill → orange on hover. */
-        ink: "bg-ink text-ivory shadow-hard hover:bg-orange hover:text-ink hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-md active:shadow-hard-xs",
-        /** Electric orange → acid lime on hover. */
+        /** Teal fill, gold on hover. */
+        ink: "bg-brand text-on-inverse shadow-hard hover:bg-orange hover:text-on-accent hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-md active:shadow-hard-xs",
+        /** Gold action with a contrasting label in every theme. */
         signal:
-          "bg-orange text-ink shadow-hard-sm hover:bg-lime hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-md active:shadow-hard-xs",
-        outline: "bg-transparent text-ink hover:bg-ink hover:text-ivory",
-        /** On orange backgrounds. */
-        inkOnSignal: "bg-ink text-ivory shadow-hard-ivory hover:bg-lime hover:text-ink",
+          "bg-orange text-on-accent shadow-hard-sm hover:bg-brand hover:text-on-inverse hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-md active:shadow-hard-xs",
+        outline: "bg-transparent text-ink hover:bg-brand hover:text-on-inverse",
+        /** On gold backgrounds. */
+        inkOnSignal: "bg-brand text-on-inverse shadow-hard-ivory hover:bg-inverse hover:text-on-inverse",
         disabled: "border-ink/40 bg-transparent text-ink/70 border-dashed",
       },
       size: {
@@ -99,43 +100,8 @@ export function Eyebrow({
   );
 }
 
-export function LogoMark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      className={cn("h-8 w-8 shrink-0", className)}
-      focusable="false"
-    >
-      <rect width="32" height="32" fill="var(--ink)" />
-      <path
-        d="M10 22 L22 10 M13 10 H22 V19"
-        fill="none"
-        stroke="var(--lime)"
-        strokeWidth="3"
-        strokeLinecap="square"
-      />
-    </svg>
-  );
-}
-
-export function Wordmark({ tone = "ink", tag = true }: { tone?: "ink" | "ivory"; tag?: boolean }) {
-  return (
-    <span className="flex items-center gap-2 sm:gap-3">
-      <LogoMark />
-      <span
-        className={cn(
-          "font-display text-sm font-extrabold uppercase leading-none tracking-tight sm:text-xl",
-          tone === "ink" ? "text-ink" : "text-ivory",
-        )}
-      >
-        {company.wordmark}
-      </span>
-      {tag && (
-        <span className="text-label-index hidden border border-ink/15 px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground xl:inline-block">
-          [OOH·IN]
-        </span>
-      )}
-    </span>
-  );
+export function Wordmark({ tone = "ink" }: { tone?: "ink" | "ivory" }) {
+  return <span className={cn("company-logo", tone === "ivory" && "company-logo-footer")}>
+    <img src={companyLogo.src} width={companyLogo.width} height={companyLogo.height} alt={company.name} decoding="async" />
+  </span>;
 }

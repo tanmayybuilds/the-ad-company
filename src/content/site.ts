@@ -258,9 +258,6 @@ export interface TeamPointerNode {
   responsibility: string;
   introCopy: string;
   theme: 'stone' | 'lime' | 'charcoal';
-  bgHex: string;
-  accentHex: string;
-  textHex: string;
   cutoutUrl: string;    // Replaceable sample cutout URL
   worldPos: { x: number; z: number; yaw: number }; // Alternating zig-zag 3D coordinates
   cardSide: 'right' | 'left';
@@ -276,9 +273,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'Brief intake, audience decoding & market goals',
     introCopy: 'Turns raw brand ambitions into sharp on-ground campaign briefs before a single site is booked.',
     theme: 'stone',
-    bgHex: '#E5E3DC',
-    accentHex: '#B84A24',
-    textHex: '#141413',
     cutoutUrl: '/team/sample-01.webp',
     worldPos: { x: 0, z: 0, yaw: 0 },
     cardSide: 'right',
@@ -292,9 +286,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'City selection, frequency mapping & format mix',
     introCopy: 'Architects high-visibility daily commuter corridors across Mumbai, Pune, Bengaluru, and Gujarat.',
     theme: 'lime',
-    bgHex: '#D2F055',
-    accentHex: '#B84A24',
-    textHex: '#141413',
     cutoutUrl: '/team/sample-02.webp',
     worldPos: { x: 420, z: -650, yaw: -14 },
     cardSide: 'right',
@@ -308,9 +299,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'Premium residential, transit & corporate inventory',
     introCopy: 'Secures high-dwell-time placements at neighbourhood gates, arterial junctions, and coworking hubs.',
     theme: 'charcoal',
-    bgHex: '#191A18',
-    accentHex: '#D2F055',
-    textHex: '#FFFFFF',
     cutoutUrl: '/team/sample-03.webp',
     worldPos: { x: -380, z: -1300, yaw: 14 },
     cardSide: 'left',
@@ -324,9 +312,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'Format adaptation, DOOH calibration & print QA',
     introCopy: 'Obsesses over every pixel pitch, viewing distance, and material finish so every placement pops.',
     theme: 'stone',
-    bgHex: '#E5E3DC',
-    accentHex: '#B84A24',
-    textHex: '#141413',
     cutoutUrl: '/team/sample-04.webp',
     worldPos: { x: 420, z: -1950, yaw: -14 },
     cardSide: 'right',
@@ -340,9 +325,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'Rigging, live installation & zero-delay rollout',
     introCopy: 'Leads field crews across every city to bring campaigns live on schedule and in pristine condition.',
     theme: 'lime',
-    bgHex: '#D2F055',
-    accentHex: '#B84A24',
-    textHex: '#141413',
     cutoutUrl: '/team/sample-05.webp',
     worldPos: { x: -380, z: -2600, yaw: 14 },
     cardSide: 'left',
@@ -356,9 +338,6 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     responsibility: 'Timestamped verification, uptime audits & reporting',
     introCopy: 'Closes the loop with verified on-ground proof-of-play telemetry and transparent post-campaign reports.',
     theme: 'charcoal',
-    bgHex: '#191A18',
-    accentHex: '#D2F055',
-    textHex: '#FFFFFF',
     cutoutUrl: '/team/sample-06.webp',
     worldPos: { x: 0, z: -3250, yaw: 0 },
     cardSide: 'right',

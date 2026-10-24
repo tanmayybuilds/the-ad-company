@@ -17,7 +17,7 @@
 - **Tagline:** *"Committed to commitments."*
 - **Target Launch Date:** November 1, 2026.
 - **Audience:** Brand managers, marketing teams, business owners, and campaign decision-makers.
-- **Creative Direction:** Youthful, Gen Z energy, creative, bold, playful, and premium. Contrast between Warm Ivory (`#F5F1E8`), Charcoal Ink (`#20201E`), Electric Orange (`#F45B32`), and Acid Lime (`#D7ED64`).
+- **Creative Direction:** Youthful, creative, bold, playful, and premium. V4 uses the approved Porcelain & Teal palette: Porcelain (`#F7F9F8`), Pale Teal (`#E5EFF0`), Logo Teal (`#12546B`), Gold (`#D9A328`), and Dark Text (`#102F38`). Use this fixed palette throughout; do not restore the theme picker or add white backings to the transparent logo.
 
 ---
 
@@ -54,7 +54,7 @@
 ## 4. Pending Business Deliverables & Launch Blockers
 
 Before public deployment, the following assets and approvals are required:
-1. **Brand Assets:** Vector SVG / transparent PNG logo and approved brand guidelines.
+1. **Brand Assets:** The supplied transparent logo is installed in `public/brand/`; approved brand guidelines are still pending.
 2. **Contact Coordinates:**
    - Confirmed business email: `ad@theadcompany.com`.
    - Confirmed phone and WhatsApp: `+91 77150 01514` (link format `917715001514`).

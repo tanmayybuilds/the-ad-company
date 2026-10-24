@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { clients, work } from "@/content/site";
 import { gsap, MOTION, MQ, useGSAP } from "@/lib/motion";
 import { loopOffset } from "@/lib/brand-motion.mjs";
+import { Wordmark } from "./primitives";
 
 const asset = (src: string) => src.startsWith("/") ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
 
@@ -344,7 +345,7 @@ export function ClientStrip() {
 
             <div className="brand-modal-footer">
               <div className="brand-modal-note">
-                <span>THE AD COMPANY</span> · <em>Committed to commitments.</em>
+                <Wordmark />
               </div>
               <a href="#contact" className="brand-modal-cta" onClick={closePreview}>
                 <span>Discuss a campaign like this</span>
