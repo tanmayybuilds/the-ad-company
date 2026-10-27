@@ -31,3 +31,11 @@ Tests cover complete readable SSR, all six panel labels and optional-image handl
 ## Follow-up: assembly begins on scroll
 
 The user subsequently requested that the opening stay scattered until a small scroll, with a designed background rather than a blank white page. This supersedes the automatic entrance described above. Assembly now scrubs over a short first-scroll range, after a small lead-in, and the onward movement begins only when assembly finishes. The opening canvas uses static brand-tinted lighting, street/route linework and a scroll cue. Header/navigation remain available. Panels and supporting actions use visibility-aware fades so invisible controls are not keyboard targets. Reduced motion retains the completed composition.
+
+## Full-screen opening refinement — October 27
+
+The user requested a complete scattered first screen, a first scroll that assembles the main homepage, and subsequent ordinary page scrolling. Keep the approved porcelain/teal/gold and Syne typography. Distribute all 25 letters and all six artwork panels across viewport coordinates, including on mobile, rather than offsetting them around their final layout positions. Reuse the actual elements so assembly has no duplicate-image crossfade or jump.
+
+Approach: one GSAP ScrollTrigger pins the natural-height hero at its top for one viewport of scroll, with endpoint snapping after input settles. Use transform/opacity animation and an eased scrub; then release to normal document flow. This also allows the full mobile collage to remain naturally scrollable after assembly. A second page/overlay would duplicate the headline/artwork and risk a visible swap; wheel interception would make touch and keyboard scrolling less predictable. Reduced-motion users keep the completed static hero with no pin or snapping. Existing sections, navigation and company copy remain intact.
+
+Scope: Hero.tsx, hero-home.css, hero-motion.mjs, its motion tests, README and project status. Verify deterministic viewport coverage, visible starting panels, one-viewport pin/snap, responsive resizing, reduced-motion cleanup, desktop/mobile composition and release to subsequent sections.

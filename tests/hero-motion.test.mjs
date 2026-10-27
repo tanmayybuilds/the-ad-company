@@ -5,22 +5,27 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-test('letter scatter is deterministic, varied and bounded at phone and desktop sizes', () => {
+test('the opening scatters letters and artwork across the whole viewport, deterministically', () => {
   for (const [width, height] of [[360, 740], [1440, 900], [2560, 1440]]) {
-    const positions = Array.from({ length: 30 }, (_, index) => heroScatter(index, width, height));
-    assert.deepEqual(positions, positions.map((_, index) => heroScatter(index, width, height)));
-    assert.equal(new Set(positions.map(position => `${position.x},${position.y}`)).size, 30);
-    for (const { x, y, rotation } of positions) {
-      assert.ok(Number.isFinite(x) && Math.abs(x) <= width * .3);
-      assert.ok(Number.isFinite(y) && Math.abs(y) <= height * .25);
-      assert.ok(Number.isFinite(rotation) && Math.abs(rotation) <= 65);
+    for (const [type, count] of [['letter', 25], ['panel', 6]]) {
+      const points = Array.from({ length: count }, (_, index) => heroScatter(index, width, height, type));
+      assert.deepEqual(points, points.map((_, index) => heroScatter(index, width, height, type)));
+      assert.ok(Math.min(...points.map(p => p.x)) < width * .3);
+      assert.ok(Math.max(...points.map(p => p.x)) > width * .7);
+      assert.ok(Math.min(...points.map(p => p.y)) < height * .3);
+      assert.ok(Math.max(...points.map(p => p.y)) > height * .7);
+      for (const { x, y, rotation } of points) {
+        assert.ok(x >= width * .05 && x <= width * .95);
+        assert.ok(y >= height * .14 && y <= height * .88);
+        assert.ok(Number.isFinite(rotation) && Math.abs(rotation) <= 65);
+      }
     }
   }
 });
 
-test('hero motion uses separate entrance and scrub layers, cleans up, and respects reduced motion', async () => {
+test('one smooth pinned assembly settles on the homepage, then releases, including on mobile', async () => {
   const previous = globalThis.__heroMotionTest;
-  const originalGlobals = Object.fromEntries(['window', 'document', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame', 'getComputedStyle'].map(key => [key, globalThis[key]]));
+  const originalGlobals = Object.fromEntries(['window', 'document', 'getComputedStyle', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame'].map(key => [key, globalThis[key]]));
   const server = await createServer({ server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom', plugins: [{
     name: 'hero-motion-boundaries', enforce: 'pre',
     resolveId(id) { if (id === 'virtual:hero-hooks' || id === 'virtual:hero-gsap') return '\0' + id; },
@@ -28,11 +33,11 @@ test('hero motion uses separate entrance and scrub layers, cleans up, and respec
       if (id === '\0virtual:hero-hooks') return 'export const useRef = value => { const ref = { current: value }; globalThis.__heroMotionTest.refs.push(ref); return ref; };';
       if (id === '\0virtual:hero-gsap') return `
         export const MQ = { motion: 'motion' };
-        export const ScrollTrigger = { refresh: () => { globalThis.__heroMotionTest.refreshes++; } };
+        export const ScrollTrigger = { refresh() {} };
         export const useGSAP = setup => { globalThis.__heroMotionTest.setup = setup; };
         export const gsap = {
           set: (targets, values) => { globalThis.__heroMotionTest.initial.push({ targets, values }); },
-          utils: { selector: () => selector => selector === '.home-hero-bottom' ? [{ offsetTop: 880, offsetHeight: 28 }] : [selector] },
+          utils: { selector: () => selector => [selector] },
           matchMedia: () => {
             let cleanup;
             return { add: (_, setup) => { cleanup = setup({ conditions: globalThis.__heroMotionTest.conditions }); },
@@ -52,54 +57,42 @@ test('hero motion uses separate entrance and scrub layers, cleans up, and respec
   }] });
   try {
     const { Hero } = await server.ssrLoadModule('/src/components/site/Hero.tsx');
-    for (const conditions of [{ motion: false, desktop: true, tall: true, height: 1080 }, { motion: true, desktop: true, tall: true, height: 1080 }, { motion: true, desktop: true, tall: true, height: 800 }, { motion: true, desktop: false, tall: false, height: 844 }]) {
-      const harness = globalThis.__heroMotionTest = { refs: [], timelines: [], initial: [], reverted: 0, refreshes: 0, conditions };
+    for (const conditions of [{ motion: false, desktop: true }, { motion: true, desktop: true }, { motion: true, desktop: false }]) {
+      const harness = globalThis.__heroMotionTest = { refs: [], timelines: [], initial: [], reverted: 0, conditions };
       renderToStaticMarkup(createElement(Hero));
       harness.refs[0].current = { dataset: {} };
-      harness.refs[1].current = { clientWidth: 1440, clientHeight: 930, scrollHeight: 930 };
-      const listeners = new Map(), frames = new Map();
-      let frame = 0;
-      globalThis.window = { innerHeight: conditions.height, addEventListener: (name, callback) => listeners.set(name, callback), removeEventListener: name => listeners.delete(name) };
-      globalThis.document = { fonts: { ready: Promise.resolve() } };
+      harness.refs[1].current = { clientWidth: conditions.desktop ? 1440 : 390 };
+      globalThis.window = { innerHeight: conditions.desktop ? 900 : 844, addEventListener() {}, removeEventListener() {} };
+      globalThis.document = {};
       globalThis.getComputedStyle = () => ({ paddingBottom: '22px' });
-      globalThis.ResizeObserver = class { constructor(callback) { harness.resize = callback; } observe() {} disconnect() { harness.disconnected = true; } };
-      globalThis.requestAnimationFrame = callback => { frames.set(++frame, callback); return frame; };
-      globalThis.cancelAnimationFrame = id => frames.delete(id);
+      globalThis.ResizeObserver = class { observe() {} disconnect() {} };
+      globalThis.requestAnimationFrame = () => 1;
+      globalThis.cancelAnimationFrame = () => {};
       const cleanup = harness.setup();
       if (conditions.motion) {
-        assert.equal(harness.timelines.length, 2);
-        assert.equal(harness.initial.length, 3, 'All letters, panels and support copy must receive their initial state before any scroll');
-        assert.ok(harness.initial.some(set => set.targets.includes('[data-home-letter]') && typeof set.values.x === 'function'));
-        assert.ok(harness.initial.some(set => set.targets.includes('[data-home-panel-enter]') && set.values.autoAlpha === 0));
-        const [entrance, scroll] = harness.timelines;
-        const fits = conditions.desktop && conditions.tall && conditions.height >= 930;
-        assert.ok(entrance.options.scrollTrigger, 'Assembly must be controlled by scrolling rather than start automatically');
-        assert.equal(entrance.options.scrollTrigger.start(), fits ? 'top -40' : 'top -16', 'Hold the scattered canvas until the first small scroll');
-        assert.equal(entrance.options.scrollTrigger.end(), fits ? '+=240' : '+=64');
-        assert.equal(entrance.options.scrollTrigger.scrub, .45);
-        assert.ok(entrance.calls.every(call => !call[2]?.clearProps), 'Scrubbed assembly must retain its styles when refreshed or reversed');
-        assert.equal(scroll.options.scrollTrigger.start(), fits ? 'top -280' : 'top -80', 'Gentle movement starts after the letters have assembled');
-        assert.equal(scroll.options.scrollTrigger.scrub, .65);
-        assert.equal(harness.refs[0].current.dataset.sticky, String(fits), 'Sticky must be disabled when the content is taller than the viewport');
-        assert.equal(scroll.options.scrollTrigger.end(), fits ? 'bottom bottom' : 'bottom top');
-        assert.ok(!scroll.options.scrollTrigger.pin, 'Native sticky must not create another GSAP pin spacer');
-        const entryTargets = entrance.calls.flatMap(call => call[0]);
-        const scrollTargets = scroll.calls.flatMap(call => call[0]);
-        assert.ok(entryTargets.every(target => !scrollTargets.includes(target)), 'Entrance and scroll must not animate the same nodes');
-        const headlineScroll = scroll.calls.find(call => call[0].includes('[data-home-letter-scroll]'));
-        assert.ok(headlineScroll[1].opacity === undefined || headlineScroll[1].opacity >= 1, 'The visible headline must retain full contrast throughout scrolling');
+        assert.equal(harness.timelines.length, 1, 'The full first scroll must assemble before ordinary site scrolling begins');
+        const entrance = harness.timelines[0];
+        const trigger = entrance.options.scrollTrigger;
+        assert.equal(trigger.pin, harness.refs[1].current, 'Keep the hero at the top throughout assembly, on phones too');
+        assert.equal(trigger.start, 'top top');
+        assert.equal(trigger.end(), `+=${window.innerHeight}`, 'The opening occupies one full viewport of scroll');
+        assert.ok(trigger.scrub >= .7, 'Smooth the response to coarse mouse-wheel input');
+        assert.deepEqual(trigger.snap.snapTo, [0, 1], 'A first scroll settles on one complete scene');
+        assert.equal(trigger.snap.inertia, false);
+        assert.equal(trigger.invalidateOnRefresh, true);
+        const artwork = harness.initial.find(set => set.targets.includes('[data-home-panel-enter]'));
+        assert.equal(artwork.values.autoAlpha, 1, 'Artwork must be visible throughout the scattered opening');
+        assert.ok(artwork.values.scale > 0 && artwork.values.scale < 1);
+        assert.equal(harness.refs[0].current.dataset.assembly, 'true');
+        assert.ok(entrance.calls.every(call => !call[2]?.clearProps), 'Scrubbed transforms must survive refresh/reversal');
         window.innerHeight = 700;
-        harness.resize();
-        assert.equal(harness.refs[0].current.dataset.sticky, 'false');
-        assert.equal(scroll.options.scrollTrigger.end(), 'bottom top');
+        assert.equal(trigger.end(), '+=700', 'Resize updates the full-page boundary');
         cleanup();
-        assert.ok(harness.timelines.every(timeline => timeline.killed === 1));
-        assert.equal(harness.refs[0].current.dataset.sticky, undefined);
-        assert.equal(listeners.size, 0);
-        assert.equal(frames.size, 0);
-        assert.equal(harness.disconnected, true);
+        assert.equal(entrance.killed, 1);
+        assert.equal(harness.refs[0].current.dataset.assembly, undefined);
       } else {
-        assert.equal(harness.timelines.length, 0, 'Reduced motion must create no entrance or scroll timeline');
+        assert.equal(harness.timelines.length, 0, 'Reduced motion must create no pin, snap or animation');
+        assert.equal(harness.initial.length, 0);
         cleanup();
       }
       assert.equal(harness.reverted, 1);
