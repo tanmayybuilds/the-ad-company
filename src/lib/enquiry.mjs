@@ -10,5 +10,5 @@ export function validateEnquiry(input) {
   return {data, errors, valid: Object.keys(errors).length === 0};
 }
 export function formatBrief(data) {
-  return ['THE AD COMPANY — CAMPAIGN BRIEF', 'Prepared locally. This brief has not been sent.', '', `Name: ${data.name}`, `Phone: ${data.phone}`, `Email: ${data.email || 'Not provided'}`, `Company: ${data.company || 'Not provided'}`, `Interest: ${data.service || 'Let’s discuss'}`, '', 'CAMPAIGN', data.message, '', 'The city is our canvas.'].join('\n');
+  return ['THE AD COMPANY — CAMPAIGN BRIEF', 'Prepared locally. This brief has not been sent.', '', `Name: ${data.name}`, `Phone: ${data.phone}`, `Email: ${data.email || 'Not provided'}`, `Company: ${data.company || 'Not provided'}`, `Interest: ${data.service || 'Let’s discuss'}`, '', 'CAMPAIGN', data.message, '', 'The world is our canvas.'].join('\n');
 }

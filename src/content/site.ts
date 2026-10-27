@@ -44,7 +44,7 @@ export const company = {
   name: "The Ad Company",
   wordmark: "THE AD COMPANY",
   tagline: "Committed to commitments.",
-  concept: "The city is our canvas.",
+  concept: "The world is our canvas.",
   description: "End-to-end advertising across ATL, BTL, OOH, digital and branded content platforms.",
   contact: {
     email: "ad@theadcompany.com",
@@ -296,7 +296,7 @@ export const about = {
     { title: "Transparent pricing", copy: "Clear costs and an agreed scope before your campaign moves forward." },
     { title: "End-to-end support", copy: "Support from the first brief through media buying and campaign execution." },
   ],
-  brandVisual: { src: "/brand/billboard.jpg", width: 1080, height: 1350, alt: "The Ad Company logo on a freestanding billboard in a city street, shown as an illustrative brand placement.", caption: "The city is our canvas.", note: "Brand visual · illustrative placement" },
+  brandVisual: { src: "/brand/billboard.jpg", width: 1080, height: 1350, alt: "The Ad Company logo on a freestanding billboard in a city street, shown as an illustrative brand placement.", caption: "The world is our canvas.", note: "Brand visual · illustrative placement" },
   photoPlaceholder: "Team or execution photograph to be added",
   /** Proposed process — copy kept plain and editable. */
   process: [

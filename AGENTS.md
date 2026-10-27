@@ -13,7 +13,7 @@
 
 ## 1. Project Context & Identity
 - **Company:** The Ad Company (Indian offline advertising and on-ground marketing company).
-- **Core Concept:** *"The city is our canvas."*
+- **Core Concept:** *"The world is our canvas."*
 - **Tagline:** *"Committed to commitments."*
 - **Target Launch Date:** November 1, 2026.
 - **Audience:** Brand managers, marketing teams, business owners, and campaign decision-makers.
@@ -43,7 +43,7 @@
 | **3. Client Logos** | `src/components/site/ClientStrip.tsx` |  Implemented | Displays 16 confirmed client logos, downloaded from official websites into `public/clients/`. Sources and native dimensions are recorded in `docs/client-logos.md`. |
 | **4. Services** | `src/components/site/Services.tsx` |  Implemented | 5 categories: (1) Residential & community (primary focus), (2) Corporate & coworking, (3) Outdoor & transit, (4) Cinema, airports & in-flight, (5) Delivery & in-app. Interactive tabbed preview with persistent format lists and illustrations. |
 | **5. Selected Work** | `src/components/site/Sections.tsx` (`Work`) |  Implemented (Pack Pending) | Featured layout with accessible `<dialog>` detail modal. Currently uses illustrative format previews. Real execution photographs and verified metrics pending client handoff. |
-| **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The city is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
+| **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The world is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
 | **7. Geographic Coverage** | `src/components/site/Sections.tsx` (`Coverage`) |  Implemented | Interactive selector for 7 regions: Mumbai, Pune, Bengaluru, Hyderabad, Dharashiv, Latur, and Gujarat (Region). No invented claims or inaccurate map pins. |
 | **8. Team** | `src/components/site/TeamTour.tsx` | Implemented | Five supplied profiles in order: Yash Nile, Akshay Daundkar, Dilip Janaskar, Mansi Jha, Ashika Jha. Local optimized portraits, bidirectional pointer tour, complete biography dialogs and reduced-motion layout. |
 | **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Offline Mode) | Accessible form with validation (Name, Phone, Company, Email, Service, Brief). Currently prepares client-side brief file for download with clear disclaimer. Email, call and WhatsApp links use confirmed details from src/content/site.ts. Automatic form delivery still needs a secure destination. |

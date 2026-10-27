@@ -247,7 +247,7 @@ function drawMural(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.fillStyle = C.ink;
   ctx.font = `800 104px ${SYNE}`;
   ctx.fillText("THE", 44, 170);
-  ctx.fillText("CITY", 44, 280);
+  ctx.fillText("WORLD", 44, 280, 424);
   ctx.fillText("IS OUR", 44, 390);
   ctx.fillStyle = C.ink;
   ctx.fillText("CANVAS.", 44, 500);
@@ -369,7 +369,7 @@ function Residential() {
       <Box args={[0.62, 0.62, 0.05]} color={C.ink} position={[0.72, 0.31, 1.01]} shadow={false} />
       <Box args={[1.0, 0.07, 0.5]} color={C.orange} position={[0.72, 0.72, 1.24]} />
 
-      {/* Side wall (+x) ad mural: THE CITY IS OUR CANVAS. */}
+      {/* Side wall (+x) ad mural: THE WORLD IS OUR CANVAS. */}
       <mesh position={[1.156, 2.35, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[1.65, 2.9]} />
         <meshStandardMaterial map={mural} roughness={0.9} />
