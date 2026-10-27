@@ -18,6 +18,6 @@ test('the homepage has a readable heading, six campaign panels and honest option
     assert.equal([...markup.matchAll(/Artwork placeholder/g)].length, 5);
     assert.match(markup, /href="#work"/);
     assert.match(markup, /href="#contact"/);
-    assert.doesNotMatch(markup, /<video|<canvas|src="(?:null|undefined)"/);
+    assert.doesNotMatch(markup, /<video|<canvas|src="(?:null|undefined)"|A little scroll|data-home-cue|Scroll to set things in motion/);
   } finally { await server.close(); }
 });

@@ -22,15 +22,16 @@ export function Hero() {
   const stage = useRef<HTMLDivElement>(null);
   useGSAP(() => {
     const mm = gsap.matchMedia();
-    mm.add({ motion: MQ.motion, desktop: '(min-width: 1024px)' }, context => {
-      const { motion, desktop } = context.conditions as { motion: boolean; desktop: boolean };
+    mm.add({ motion: MQ.motion }, context => {
+      const { motion } = context.conditions as { motion: boolean };
       if (!motion) return;
+      const desktop = stage.current!.clientWidth >= 1024;
       const q = gsap.utils.selector(root);
       const element = root.current!;
       element.dataset.assembly = 'true';
       const scatter = (type: 'letter' | 'panel') => {
         const point = (i: number) => heroScatter(i, stage.current!.clientWidth, window.innerHeight, type);
-        // Layout offsets ignore transforms, including an in-progress assembly on resize.
+        // Layout offsets give the final position independently of the entrance transforms.
         const center = (target: HTMLElement, axis: 'x' | 'y') => {
           let value = (axis === 'x' ? target.offsetWidth : target.offsetHeight) / 2;
           for (let node: HTMLElement | null = target; node && node !== stage.current; node = node.offsetParent as HTMLElement | null) {
@@ -47,19 +48,14 @@ export function Hero() {
       const scattered = { ...scatter('letter'), opacity: .65 };
       const panelStart = { ...scatter('panel'), scale: desktop ? .68 : .52, autoAlpha: 1 };
       const supportStart = { y: 12, autoAlpha: 0 };
-      // A staggered paused tween initializes only its first item without these sets.
+      // Initialize every staggered item before the opening pause.
       gsap.set(q('[data-home-letter]'), scattered);
       gsap.set(q('[data-home-panel-enter]'), panelStart);
       gsap.set(q('[data-home-enter]'), supportStart);
-      const entrance = gsap.timeline({ defaults: { ease: 'power2.inOut' }, scrollTrigger: {
-        trigger: element, pin: stage.current, start: 'top top', end: () => `+=${window.innerHeight}`,
-        scrub: .85, anticipatePin: 1, invalidateOnRefresh: true,
-        snap: { snapTo: [0, 1], duration: { min: .55, max: 1 }, delay: .15, ease: 'power2.inOut', inertia: false },
-      } });
+      const entrance = gsap.timeline({ defaults: { ease: 'power2.inOut' }, delay: .4, repeat: 0 });
       entrance.fromTo(q('[data-home-letter]'), scattered, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 1.5, stagger: { amount: .16, from: 'center' } }, .08)
         .fromTo(q('[data-home-panel-enter]'), panelStart, { x: 0, y: 0, scale: 1, rotation: 0, autoAlpha: 1, duration: 1.5, stagger: .025 }, .12)
         .fromTo(q('[data-home-enter]'), supportStart, { y: 0, autoAlpha: 1, duration: .45, stagger: .04 }, 1.3)
-        .fromTo(q('[data-home-cue]'), { autoAlpha: 1 }, { autoAlpha: 0, duration: .3 }, 0)
         .fromTo(q('[data-home-backdrop]'), { opacity: 1 }, { opacity: .4, duration: 1.5 }, 0)
         .fromTo(q('[data-home-route]'), { strokeDashoffset: 1400 }, { strokeDashoffset: 0, duration: .7 }, 1);
       return () => {
@@ -73,7 +69,6 @@ export function Hero() {
   return <section id="top" ref={root} className="home-hero" aria-labelledby="hero-title">
     <div ref={stage} className="home-hero-stage">
       <div className="home-canvas-backdrop" data-home-backdrop aria-hidden="true"><svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none"><path d="M-80 260H470Q590 260 590 380V560Q590 660 720 660H1500M120-40V410Q120 490 220 490H380Q470 490 470 590V960M1040-50V220Q1040 330 1150 330H1510M860 940V470Q860 390 930 390H1500" /><path className="home-canvas-gold-route" d="M-50 760C180 760 240 570 430 570S740 760 850 480 1090 130 1500 130" /><circle cx="430" cy="570" r="12" /><circle cx="1060" cy="201" r="12" /><path d="M390 140h28m-14-14v28M1210 650h28m-14-14v28M795 200h20m-10-10v20" /></svg></div>
-      <p className="home-canvas-cue" data-home-cue aria-hidden="true"><Plus size={18} /><span>{hero.canvasPrompt}</span><ArrowDown size={18} /></p>
       <div className="home-hero-topbar home-contained"><span><i />{hero.locationLabel}</span><span>{company.concept}</span></div>
       <div className="home-story home-contained">
         <p className="home-hero-eyebrow" data-home-enter>{hero.eyebrow}</p>

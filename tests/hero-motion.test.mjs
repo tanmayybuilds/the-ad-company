@@ -23,7 +23,7 @@ test('the opening scatters letters and artwork across the whole viewport, determ
   }
 });
 
-test('one smooth pinned assembly settles on the homepage, then releases, including on mobile', async () => {
+test('the landing animation plays automatically once, without pinning or controlling scrolling', async () => {
   const previous = globalThis.__heroMotionTest;
   const originalGlobals = Object.fromEntries(['window', 'document', 'getComputedStyle', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame'].map(key => [key, globalThis[key]]));
   const server = await createServer({ server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom', plugins: [{
@@ -40,7 +40,7 @@ test('one smooth pinned assembly settles on the homepage, then releases, includi
           utils: { selector: () => selector => [selector] },
           matchMedia: () => {
             let cleanup;
-            return { add: (_, setup) => { cleanup = setup({ conditions: globalThis.__heroMotionTest.conditions }); },
+            return { add: (queries, setup) => { globalThis.__heroMotionTest.queries = queries; cleanup = setup({ conditions: globalThis.__heroMotionTest.conditions }); },
               revert: () => { cleanup?.(); globalThis.__heroMotionTest.reverted++; } };
           },
           timeline: options => {
@@ -70,23 +70,18 @@ test('one smooth pinned assembly settles on the homepage, then releases, includi
       globalThis.cancelAnimationFrame = () => {};
       const cleanup = harness.setup();
       if (conditions.motion) {
-        assert.equal(harness.timelines.length, 1, 'The full first scroll must assemble before ordinary site scrolling begins');
+        assert.equal(harness.timelines.length, 1, 'One automatic entrance assembles the homepage');
         const entrance = harness.timelines[0];
-        const trigger = entrance.options.scrollTrigger;
-        assert.equal(trigger.pin, harness.refs[1].current, 'Keep the hero at the top throughout assembly, on phones too');
-        assert.equal(trigger.start, 'top top');
-        assert.equal(trigger.end(), `+=${window.innerHeight}`, 'The opening occupies one full viewport of scroll');
-        assert.ok(trigger.scrub >= .7, 'Smooth the response to coarse mouse-wheel input');
-        assert.deepEqual(trigger.snap.snapTo, [0, 1], 'A first scroll settles on one complete scene');
-        assert.equal(trigger.snap.inertia, false);
-        assert.equal(trigger.invalidateOnRefresh, true);
+        assert.equal(entrance.options.scrollTrigger, undefined, 'No scroll input, spacer, pin or snap may drive the landing animation');
+        assert.notEqual(entrance.options.paused, true);
+        assert.equal(entrance.options.repeat, 0, 'The completed homepage must stay assembled');
+        assert.deepEqual(harness.queries, { motion: 'motion' }, 'Resizing across a layout breakpoint must not replay the entrance');
+        assert.ok(entrance.options.delay > 0 && entrance.options.delay <= .6);
         const artwork = harness.initial.find(set => set.targets.includes('[data-home-panel-enter]'));
         assert.equal(artwork.values.autoAlpha, 1, 'Artwork must be visible throughout the scattered opening');
         assert.ok(artwork.values.scale > 0 && artwork.values.scale < 1);
         assert.equal(harness.refs[0].current.dataset.assembly, 'true');
-        assert.ok(entrance.calls.every(call => !call[2]?.clearProps), 'Scrubbed transforms must survive refresh/reversal');
-        window.innerHeight = 700;
-        assert.equal(trigger.end(), '+=700', 'Resize updates the full-page boundary');
+        assert.ok(entrance.calls.every(call => !call[0].includes('[data-home-cue]')), 'Do not tell visitors to scroll to start an automatic animation');
         cleanup();
         assert.equal(entrance.killed, 1);
         assert.equal(harness.refs[0].current.dataset.assembly, undefined);
