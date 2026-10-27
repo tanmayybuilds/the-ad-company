@@ -193,7 +193,7 @@ function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingConte
     let cancelled = false;
     const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
     if (!fonts) return;
-    Promise.all([fonts.load('800 80px "Syne"'), fonts.load('700 40px "JetBrains Mono"')])
+    Promise.all([fonts.load('800 80px "Outfit"'), fonts.load('400 40px "RX100"')])
       .catch(() => undefined)
       .then(() => {
         if (cancelled) return;
@@ -213,8 +213,8 @@ function useCanvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingConte
   return texture;
 }
 
-const SYNE = '"Syne", "Arial Black", sans-serif';
-const MONO = '"JetBrains Mono", monospace';
+const DISPLAY = '"Outfit", "Satoshi", sans-serif';
+const MONO = '"RX100", monospace';
 
 function drawScreen(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.fillStyle = C.ink;
@@ -223,13 +223,13 @@ function drawScreen(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.fillRect(36, 36, 440, 330);
   ctx.drawImage(logo, 64, 60, 384, 384 * companyLogo.height / companyLogo.width);
   ctx.fillStyle = C.ink;
-  ctx.font = `800 36px ${SYNE}`;
+  ctx.font = `800 36px ${DISPLAY}`;
   ctx.fillText("OUT IN THE", 64, 300);
   ctx.fillText("REAL WORLD.", 64, 342);
   ctx.fillStyle = C.ivory;
   ctx.fillRect(36, 396, 440, 288);
   ctx.fillStyle = C.ink;
-  ctx.font = `800 34px ${SYNE}`;
+  ctx.font = `800 34px ${DISPLAY}`;
   ctx.fillText("COMMITTED TO", 64, 462);
   ctx.fillText("COMMITMENTS.", 64, 504);
   ctx.fillStyle = C.lime;
@@ -237,7 +237,7 @@ function drawScreen(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.arc(400, 610, 44, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = C.ink;
-  ctx.font = `700 22px ${MONO}`;
+  ctx.font = `400 22px ${MONO}`;
   ctx.fillText("[ON-GROUND]", 64, 620);
 }
 
@@ -245,7 +245,7 @@ function drawMural(ctx: CanvasRenderingContext2D, logo: CanvasImageSource) {
   ctx.fillStyle = C.beige;
   ctx.fillRect(0, 0, 512, 900);
   ctx.fillStyle = C.ink;
-  ctx.font = `800 104px ${SYNE}`;
+  ctx.font = `800 104px ${DISPLAY}`;
   ctx.fillText("THE", 44, 170);
   ctx.fillText("WORLD", 44, 280, 424);
   ctx.fillText("IS OUR", 44, 390);
@@ -267,7 +267,7 @@ function drawBanner(ctx: CanvasRenderingContext2D) {
   ctx.translate(86, 480);
   ctx.rotate(-Math.PI / 2);
   ctx.fillStyle = C.ink;
-  ctx.font = `800 58px ${SYNE}`;
+  ctx.font = `800 58px ${DISPLAY}`;
   ctx.fillText("YOUR BRAND", 0, 0);
   ctx.restore();
 }

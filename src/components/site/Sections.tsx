@@ -12,7 +12,7 @@ export function About() {
       <div data-reveal>
         <Eyebrow className="mb-4">[04 // Why The Ad Company]</Eyebrow>
         <h2 id="about-title" className="text-display-md">Committed to<br /><span className="text-signal">commitments.</span></h2>
-        <p className="mt-5 max-w-xl font-display text-xl font-semibold text-signal">{about.positioning}</p>
+        <p className="mt-5 max-w-xl font-editorial text-xl font-medium leading-relaxed text-signal">{about.positioning}</p>
         <p className="mt-7 max-w-xl text-lg font-medium leading-relaxed">{about.copy}</p>
         <p className="mt-4 max-w-xl leading-relaxed text-ink/65">{about.story}</p>
         <p className="mt-4 max-w-xl leading-relaxed text-ink/65">{about.services}</p>
@@ -21,7 +21,7 @@ export function About() {
       </div>
       <figure className="border-2 border-ink bg-sand shadow-hard" data-reveal>
         <img src={`${import.meta.env.BASE_URL}${about.brandVisual.src.slice(1)}`} width={about.brandVisual.width} height={about.brandVisual.height} alt={about.brandVisual.alt} loading="lazy" decoding="async" className="block h-auto w-full" />
-        <figcaption className="border-t border-ink/20 p-5"><p className="font-display text-xl font-bold uppercase">{about.brandVisual.caption}</p><p className="mt-2 text-xs leading-relaxed text-ink/65">{about.brandVisual.note}</p></figcaption>
+        <figcaption className="border-t border-ink/20 p-5"><p className="font-editorial text-xl font-medium leading-snug">{about.brandVisual.caption}</p><p className="mt-2 text-xs leading-relaxed text-ink/65">{about.brandVisual.note}</p></figcaption>
       </figure>
     </div>
     <ul aria-label={about.reasonsLabel} className="mt-12 grid gap-6 border-y border-ink/20 py-7 sm:grid-cols-2 lg:grid-cols-5">

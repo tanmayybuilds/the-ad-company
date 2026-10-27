@@ -63,7 +63,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 border-b bg-ivory transition-[border-color] duration-300",
+        "fixed inset-x-0 top-0 z-50 border-b bg-ivory font-ui transition-[border-color] duration-300",
         scrolled ? "border-ink/15" : "border-ink/10",
       )}
     >
@@ -138,7 +138,7 @@ export function Header() {
                 <a
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="flex items-baseline justify-between py-4 font-display text-3xl font-extrabold uppercase tracking-tight transition-colors hover:text-lime"
+                  className="flex items-baseline justify-between py-4 font-ui text-3xl font-extrabold uppercase tracking-tight transition-colors hover:text-lime"
                 >
                   {item.label}
                   <span className="text-label-index text-on-inverse/70">[0{i + 1}]</span>

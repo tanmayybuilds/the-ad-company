@@ -21,7 +21,7 @@
 .team-heading { position: absolute; inset: calc(var(--header-h) + 22px) 0 auto; z-index: 40; pointer-events: none; }
 .team-eyebrow { color: var(--signal); font: 600 .85rem/1.4 var(--font-mono); letter-spacing: .06em; }
 .team-heading-row { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-top: 14px; }
-.team-heading h2 { font: 800 clamp(2rem, 4.2vw, 3.8rem)/.94 var(--font-display); text-transform: uppercase; letter-spacing: -.02em; }
+.team-heading h2 { font: 700 clamp(2rem, 4.2vw, 3.8rem)/1.05 var(--font-geometric); text-transform: uppercase; letter-spacing: -.02em; }
 .team-tour-mark { display: flex; align-items: center; gap: 18px; font: 64px/1 var(--font-display); color: var(--signal); }
 .team-tour-mark small { font: 11px/1.6 var(--font-mono); color: var(--muted-foreground); }
 .team-heading-controls { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 22px; }
@@ -61,7 +61,7 @@
 .team-role-bar strong { flex: 1; font-weight: 700; }
 .team-role-bar > span:last-child { font-size: 22px; }
 .team-role-body { padding: 18px; }
-.team-role h3 { font: 800 1.2rem/1.1 var(--font-display); text-transform: uppercase; }
+.team-role h3 { font: 700 1.2rem/1.15 var(--font-ui); text-transform: uppercase; }
 .team-role-badge { display: inline-block; margin-top: 12px; padding: 6px 9px; background: var(--sand); border-radius: 20px; font: 10px/1.4 var(--font-mono); }
 .team-node-lime .team-role-badge, .team-node-charcoal .team-role-badge { background: var(--gold); color: var(--on-accent); }
 .team-responsibility { margin-top: 14px; font: .78rem/1.5 var(--font-mono); color: var(--signal); }

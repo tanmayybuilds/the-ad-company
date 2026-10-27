@@ -23,7 +23,7 @@
 
 ## 2. Technical Stack & Architecture
 - **Framework & Runtime:** React 19, TypeScript, Vite 8 (with `@vitejs/plugin-react`).
-- **Styling:** Tailwind CSS v4 (`@tailwindcss/vite`), custom typography (`Syne` display font, `Inter` body, `Space Mono` indexing labels), hard shadow borders, and editorial layouts.
+- **Styling:** Tailwind CSS v4 (`@tailwindcss/vite`), approved typography (`Outfit` display, `General Sans` body, `Satoshi` UI, `RX100` indices, plus `Rajdhani`, `Sora`, `Zodiak` and `Kalam` in defined roles; see `docs/typography.md`), hard shadow borders, and editorial layouts.
 - **Animation & Motion:** GSAP 3 with `@gsap/react` and `matchMedia` for responsive animations and full `prefers-reduced-motion` compliance.
 - **3D Visualization:** React Three Fiber (`@react-three/fiber` v9) and Three.js (v0.186).
   - Earlier orthographic sculptural micro-city retained in source; V5's active hero uses CSS artwork and GSAP without importing WebGL.

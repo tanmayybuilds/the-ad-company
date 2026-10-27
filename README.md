@@ -6,6 +6,8 @@ Stack: React 19, TypeScript, Vite 8, Tailwind CSS 4, GSAP + ScrollTrigger, Three
 
 Commands: `npm install`, `npm run dev`, `npm test`, `npm run build`.
 
+Typography uses only the eight selected families: Outfit, General Sans, Satoshi, RX100, Rajdhani, Sora, Zodiak and Kalam. Original WOFF2 files and supplied licenses are local; only the heading and body faces are preloaded. Font roles and sources are documented in [typography](docs/typography.md).
+
 V4 uses the client-approved Porcelain & Teal palette across the interface: porcelain `#F7F9F8`, pale teal `#E5EFF0`, logo teal `#12546B`, gold `#D9A328`, and dark text `#102F38`. The palette is fixed in `src/styles.css`; there is no theme picker or stored theme preference. Dark feature sections use deeper teal shades with readable gold accents. Existing client marks, photos, and videos keep their original colors.
 
 The supplied transparent logo is retained in `public/brand/logo.png`. Its SVG wrapper embeds the original PNG pixels and trims only empty margins. Header, footer, campaign preview, site icon, and 3D signs use the artwork directly over their existing backgrounds, without a white backing.
