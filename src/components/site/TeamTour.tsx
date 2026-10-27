@@ -4,6 +4,7 @@ import { ScrollTrigger } from '@/lib/motion';
 import { teamCamera, teamPath, teamProgress, teamScrollTop, teamWindow, teamFraming } from '@/lib/team-tour.mjs';
 import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from '@/lib/reverse-pin.mjs';
 import './team-tour.css';
+import { TeamBiography } from './TeamBiography';
 
 const positions = team.members.map(node => node.worldPos);
 
@@ -13,7 +14,7 @@ function StagePills({ label, active, onJump }: { label: string; active: number; 
   )}</nav>;
 }
 
-function RoleCard({ node }: { node: TeamPointerNode }) {
+function RoleCard({ node, onRead }: { node: TeamPointerNode; onRead: () => void }) {
   return <div className="team-role">
     <div className="team-role-bar"><span>{node.number}</span><strong>{node.stageTitle}</strong><span aria-hidden="true">↗</span></div>
     <div className="team-role-body">
@@ -21,6 +22,7 @@ function RoleCard({ node }: { node: TeamPointerNode }) {
       <p className="team-role-badge">{node.roleTitle}</p>
       <p className="team-responsibility">{node.responsibility}</p>
       <p className="team-intro">{node.introCopy}</p>
+      <button type="button" className="team-read-bio" onClick={onRead} aria-haspopup="dialog" aria-label={`${team.readBio}: ${node.memberName}`}>{team.readBio} ↗</button>
     </div>
   </div>;
 }
@@ -33,7 +35,11 @@ export function TeamTour() {
   const target = useRef(0);
   const current = useRef(0);
   const jump = useRef<(index: number) => void>(() => {});
-  const [active, setActive] = useState(0);
+  const [selectedIndex, setActive] = useState(0);
+  const [profile, setProfile] = useState<number | null>(null);
+  const last = team.members.length - 1;
+  const active = Math.max(0, Math.min(last, selectedIndex));
+  const total = String(team.members.length).padStart(2, '0');
 
   useEffect(() => {
     const section = root.current!, stage = world.current!;
@@ -163,6 +169,7 @@ export function TeamTour() {
     }
 
     jump.current = index => {
+      index = Math.max(0, Math.min(positions.length - 1, index));
       if (reduced.matches) {
         setActive(index);
         nodes.current[index]?.scrollIntoView({ behavior: 'instant', block: 'center' });
@@ -297,11 +304,11 @@ export function TeamTour() {
     };
   }, []);
 
-  return <section id="team" ref={root} className="team-tour" aria-labelledby="team-title">
+  return <section id="team" ref={root} className="team-tour" aria-labelledby="team-title" style={{ '--tour-height': `${100 + team.members.length * 75}vh` } as CSSProperties}>
     <div className="team-viewport">
       <header className="team-heading container-page">
         <p className="team-eyebrow">{team.eyebrow}</p>
-        <div className="team-heading-row"><h2 id="team-title">{team.heading[0]}<br />{team.heading[1]}</h2><span className="team-tour-mark" aria-hidden="true">↳<small>01—06<br />Campaign pathway</small></span></div>
+        <div className="team-heading-row"><h2 id="team-title">{team.heading[0]}<br />{team.heading[1]}</h2><span className="team-tour-mark" aria-hidden="true">↳<small>01—{total}<br />Campaign pathway</small></span></div>
         <div className="team-heading-controls"><p>{team.hint}</p><StagePills label="Jump to a campaign stage" active={active} onJump={index => jump.current(index)} /></div>
       </header>
 
@@ -318,19 +325,20 @@ export function TeamTour() {
           {team.members.map((node, index) => <article key={node.id} id={node.id} ref={element => { nodes.current[index] = element; }} className={`team-node team-node-${node.theme} team-card-${node.cardSide}`} data-active={active === index} style={{ '--node-yaw': `${node.worldPos.yaw}deg`, transform: `translate3d(${node.worldPos.x}px,0,${node.worldPos.z}px) rotateY(${node.worldPos.yaw}deg)` } as CSSProperties} aria-label={`${node.number}: ${node.stageTitle} ${node.memberName}`}>
             <button className="team-pedestal" type="button" onClick={() => jump.current(index)} aria-label={`Go to ${node.number}: ${node.stageTitle}`}><span className="team-target-ring" /><span className="team-beak" style={{ rotate: `${index < positions.length - 1 ? -teamPath(node.worldPos, positions[index + 1]).angle - node.worldPos.yaw : 90}deg` }} /><span className="team-pedestal-number">{node.number}</span></button>
             <div className="team-standee" aria-hidden="true"><div className="team-portrait"><span>{node.memberName.split(' ').map(name => name[0]).join('')}</span><img src={node.cutoutUrl.startsWith('/') ? `${import.meta.env.BASE_URL}${node.cutoutUrl.slice(1)}` : node.cutoutUrl} alt="" width="190" height="260" loading="eager" decoding="async" onError={event => { event.currentTarget.hidden = true; }} /></div><span className="team-mount" /></div>
-            <RoleCard node={node} />
+            <RoleCard node={node} onRead={() => setProfile(index)} />
           </article>)}
         </div>
         </div>
       </div>
 
-      <div className={`team-mobile-role team-node-${team.members[active].theme}`}><RoleCard node={team.members[active]} /></div>
+      <div className={`team-mobile-role team-node-${team.members[active].theme}`}><RoleCard node={team.members[active]} onRead={() => setProfile(active)} /></div>
 
       <div className="team-bottom container-page">
-        <div className="team-bottom-row"><button type="button" className="team-step" disabled={active === 0} onClick={() => jump.current(Math.max(0, active - 1))}><span aria-hidden="true">←</span> {team.previous}</button><div className="team-stage-status"><StagePills label="Campaign pathway progress" active={active} onJump={index => jump.current(index)} /><p className="team-current" aria-live="polite" aria-atomic="true"><span>{team.members[active].number} / 06</span> {team.members[active].stageTitle}</p></div><button type="button" className="team-step" disabled={active === 5} onClick={() => jump.current(Math.min(5, active + 1))}>{team.next} <span aria-hidden="true">→</span></button></div>
+        <div className="team-bottom-row"><button type="button" className="team-step" disabled={active === 0} onClick={() => jump.current(Math.max(0, active - 1))}><span aria-hidden="true">←</span> {team.previous}</button><div className="team-stage-status"><StagePills label="Campaign pathway progress" active={active} onJump={index => jump.current(index)} /><p className="team-current" aria-live="polite" aria-atomic="true"><span>{team.members[active].number} / {total}</span> {team.members[active].stageTitle}</p></div><button type="button" className="team-step" disabled={active === last} onClick={() => jump.current(Math.min(last, active + 1))}>{team.next} <span aria-hidden="true">→</span></button></div>
         <div className="team-progress" aria-hidden="true"><span /></div>
         <div className="team-footnotes"><p>{team.note}</p><a href="#contact">{team.skip} <span aria-hidden="true">↘</span></a></div>
       </div>
     </div>
+    <TeamBiography node={profile === null ? null : team.members[profile]} onClose={() => setProfile(null)} />
   </section>;
 }

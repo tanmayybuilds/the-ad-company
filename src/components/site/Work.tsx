@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { X } from 'lucide-react';
-import { work } from '@/content/site';
+import { services, work } from '@/content/site';
 import { ActionLink, Eyebrow } from './primitives';
 
 const videoSource = (src: string) => `${import.meta.env.BASE_URL}${src.slice(1)}#t=0.001`;
@@ -61,7 +61,7 @@ function BentoCard({ index, active, reduced, onActivate, onExplore }: {
 
   return <article className={`bento-card bento-card-${index + 1}`} data-active={active}>
     <button ref={media} type="button" className="diorama-popout-container"
-      aria-label={`${active ? work.pauseLabel : work.playLabel}: ${item.type}`} aria-pressed={active}
+      aria-label={`${work.exploreLabel}: ${item.type}`} aria-haspopup="dialog"
       onPointerEnter={event => {
         if (event.pointerType !== 'mouse' || reduced) return;
         tiltMedia(event);
@@ -71,7 +71,7 @@ function BentoCard({ index, active, reduced, onActivate, onExplore }: {
       onPointerMove={tiltMedia}
       onPointerLeave={event => { stopHover(); if (event.pointerType === 'mouse') onActivate(null); }}
       onBlur={() => { stopHover(); if (active) onActivate(null); }}
-      onClick={() => { clearTimeout(dwell.current); onActivate(active ? null : index); }}>
+      onClick={() => { stopHover(); onActivate(null); onExplore(); }}>
       <span className="diorama-screen">
         <video ref={video} src={videoSource(item.video)} muted playsInline loop preload="metadata" aria-label={item.alt}
           onLoadedMetadata={event => { if (!active) event.currentTarget.currentTime = .001; }}
@@ -131,9 +131,32 @@ export function Work() {
       </div>
     </div>
     <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog" aria-labelledby={project ? 'project-title' : undefined}>
-      {project && <><button type="button" onClick={() => dialog.current?.close()} className="dialog-close" aria-label={work.closeLabel} autoFocus><X /></button>
-        <video key={project.video} src={videoSource(project.video)} muted playsInline controls preload="metadata" aria-label={project.alt} className="aspect-video w-full object-cover" />
-        <div className="p-6 sm:p-9"><Eyebrow className="mb-3">{work.detailLabel}</Eyebrow><h2 id="project-title" className="font-display text-3xl font-extrabold uppercase">{project.title}</h2><p className="my-5 leading-relaxed">{project.copy}</p><ul className="mb-6 flex flex-wrap gap-2">{project.formats.map(format => <li key={format} className="border border-ink/20 px-3 py-2 text-sm">{format}</li>)}</ul><ActionLink href="#contact" size="md" onClick={() => dialog.current?.close()}>{work.contactLabel}</ActionLink></div></>}
+      {project && <>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-ink/20 bg-paper px-5 py-3">
+          <p className="text-sm font-semibold">{work.detailsLabel}</p>
+          <button type="button" onClick={() => dialog.current?.close()} className="flex items-center gap-2 border border-ink px-3 py-2 text-xs" autoFocus>{work.closeLabel}<X size={16} aria-hidden="true" /></button>
+        </div>
+        <video key={project.video} src={videoSource(project.video)} autoPlay muted playsInline controls preload="metadata" aria-label={project.alt} className="aspect-video w-full object-cover" />
+        <div className="p-6 sm:p-9">
+          <Eyebrow className="mb-3">{work.detailLabel}</Eyebrow>
+          <h2 id="project-title" className="font-display text-3xl font-extrabold uppercase">{project.title}</h2>
+          <p className="my-5 leading-relaxed">{project.copy}</p>
+          <ul className="mb-8 flex flex-wrap gap-2">{project.formats.map(format => <li key={format} className="border border-ink/20 px-3 py-2 text-sm">{format}</li>)}</ul>
+          <h3 className="font-display text-2xl font-bold uppercase">{services.catalogueHeading}</h3>
+          <p className="mt-3 text-sm leading-relaxed text-ink/70">{services.catalogueIntro} {work.catalogueHint}</p>
+          <div className="my-6 border-t border-ink/20">
+            {services.catalogue.map(service => <details key={`${project.video}-${service.id}`} open={project.serviceIds.includes(service.id)} className="border-b border-ink/20">
+              <summary className="cursor-pointer py-5 font-display text-base font-bold uppercase">{service.title}</summary>
+              <div className="pb-6">
+                <h4 className="font-semibold text-signal">{service.lead}</h4>
+                <p className="mt-2 text-sm leading-relaxed text-ink/70">{service.copy}</p>
+                <ul className="mt-4 grid list-disc gap-x-8 gap-y-2 pl-4 text-sm leading-relaxed marker:text-signal sm:grid-cols-2">{service.formats.map(format => <li key={format}>{format}</li>)}</ul>
+              </div>
+            </details>)}
+          </div>
+          <ActionLink href="#contact" size="md" onClick={() => dialog.current?.close()}>{work.contactLabel}</ActionLink>
+        </div>
+      </>}
     </dialog>
   </section>;
 }

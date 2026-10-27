@@ -697,6 +697,7 @@
   }
 
   html {
+    overflow-x: clip;
     scroll-padding-top: calc(var(--header-h) + 1rem);
     -webkit-text-size-adjust: 100%;
   }

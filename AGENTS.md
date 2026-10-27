@@ -45,7 +45,7 @@
 | **5. Selected Work** | `src/components/site/Sections.tsx` (`Work`) |  Implemented (Pack Pending) | Featured layout with accessible `<dialog>` detail modal. Currently uses illustrative format previews. Real execution photographs and verified metrics pending client handoff. |
 | **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The city is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
 | **7. Geographic Coverage** | `src/components/site/Sections.tsx` (`Coverage`) |  Implemented | Interactive selector for 7 regions: Mumbai, Pune, Bengaluru, Hyderabad, Dharashiv, Latur, and Gujarat (Region). No invented claims or inaccurate map pins. |
-| **8. Team** | `src/components/site/Sections.tsx` (`Team`) |  Implemented (Roster Pending) | 6-card grid with numbered graphic badges ("The brief", "The plan", "The places", etc.). Real portraits, names, and roles to be inserted once approved. |
+| **8. Team** | `src/components/site/TeamTour.tsx` | Implemented | Five supplied profiles in order: Yash Nile, Akshay Daundkar, Dilip Janaskar, Mansi Jha, Ashika Jha. Local optimized portraits, bidirectional pointer tour, complete biography dialogs and reduced-motion layout. |
 | **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Offline Mode) | Accessible form with validation (Name, Phone, Company, Email, Service, Brief). Currently prepares client-side brief file for download with clear disclaimer. Email, call and WhatsApp links use confirmed details from src/content/site.ts. Automatic form delivery still needs a secure destination. |
 | **10. Footer** | `src/components/site/Sections.tsx` (`Footer`) |  Implemented | Brand wordmark, tagline, navigation anchors, enquiry CTA, privacy notice modal link, and copyright notice. |
 
@@ -62,7 +62,7 @@ Before public deployment, the following assets and approvals are required:
 3. **Client & Work Assets:**
    - Official client logos are installed; see `docs/client-logos.md` for sources and native formats.
    - Real campaign execution photography and approved case study metrics.
-4. **Team Roster:** 6 confirmed names, roles, descriptions, and high-resolution portraits.
+4. **Team Roster:** Five names, roles, biographies and portraits supplied October 26, 2026; installed in the existing tour. See `docs/team-portraits.md`.
 5. **Enquiry Destination:**
    - Google Sheet integration (secure webhook/proxy without exposing private credentials in frontend code).
    - Confirmation on whether email notification triggers are required.

@@ -58,8 +58,8 @@ async function withTour(run) {
     renderToStaticMarkup(createElement(TeamTour));
     harness.refs[0].current = { ...element(), dataset: {}, offsetHeight: 4950, getBoundingClientRect: () => ({ top: 2000 - window.scrollY }) };
     harness.refs[1].current = element();
-    const nodes = harness.refs[2].current = Array.from({ length: 6 }, element);
-    const paths = harness.refs[3].current = Array.from({ length: 5 }, element);
+    const nodes = harness.refs[2].current = Array.from({ length: 5 }, element);
+    const paths = harness.refs[3].current = Array.from({ length: 4 }, element);
     cleanup = harness.effects[0]();
     observer([{ isIntersecting: true }]);
     settle();
@@ -74,23 +74,22 @@ async function withTour(run) {
   } finally { cleanup?.(); await server.close(); Object.assign(globalThis, original); }
 }
 
-test('moving from pointer 03 to 04 reveals 05, 06 and their paths before the camera settles', () => withTour(({ harness, nodes, paths, jump, startTravel, tick, frames }) => {
-    jump(2);
-    assert.equal(harness.selection, 2);
-    assert.equal(nodes[5].hidden, true);
-    assert.equal(nodes[5].prepared, 0);
-    startTravel(3);
+test('moving from pointer 02 to 03 prepares the next two people before the camera settles', () => withTour(({ harness, nodes, paths, jump, startTravel, tick, frames }) => {
+    jump(1);
+    assert.equal(harness.selection, 1);
+    assert.equal(nodes[4].hidden, true);
+    assert.equal(nodes[4].prepared, 0);
+    startTravel(2);
     tick();
     assert.equal(nodes[4].hidden, false);
-    assert.equal(nodes[5].hidden, false, 'Pointer 06 must be revealed at the start of travel to 04, not at the final camera snap');
-    assert.ok(nodes[5].prepared > 0, 'The portrait must be decoded ahead of the arriving pointer');
-    assert.equal(paths[4].hidden, false, 'The 05 → 06 path must already be part of the scene');
+    assert.ok(nodes[4].prepared > 0, 'The portrait must be decoded ahead of the arriving pointer');
+    assert.equal(paths[3].hidden, false, 'The 04 → 05 path must already be part of the scene');
     while (frames.size) {
       tick();
-      assert.equal(nodes[5].hidden, false);
+      assert.equal(nodes[4].hidden, false);
       assert.ok(nodes.filter(node => !node.hidden).length <= 4, 'Lookahead must remain bounded during travel');
     }
-    assert.equal(harness.selection, 3);
+    assert.equal(harness.selection, 2);
     assert.equal(nodes.filter(node => !node.hidden).length, 3);
 }));
 
@@ -100,7 +99,12 @@ test('active team input steps backward and forward, then releases and skips repl
   assert.equal(wheel(-100, 1000).defaultPrevented, true);
   settle();
   assert.equal(harness.selection, 2, 'Upward scrolling at 04 must go to 03, not reset the tour');
-  assert.equal(window.scrollY, 3620);
+  assert.equal(window.scrollY, 4025);
+  document.body.style.overflow = 'hidden';
+  assert.equal(wheel(100, 1600).defaultPrevented, false, 'Reading a biography must not move the team tour');
+  input('keydown', { key: 'ArrowDown' });
+  settle(); assert.equal(harness.selection, 2);
+  document.body.style.overflow = '';
   wheel(100, 2200); settle();
   assert.equal(harness.selection, 3);
   assert.equal(input('keydown', { key: 'ArrowUp' }).defaultPrevented, true);
@@ -120,12 +124,12 @@ test('active team input steps backward and forward, then releases and skips repl
   assert.equal(harness.selection, 1);
   jump(0);
   assert.equal(wheel(-100, 3400).defaultPrevented, false, 'Pointer 01 must allow leaving upward');
-  jump(5);
-  assert.equal(wheel(100, 4600).defaultPrevented, false, 'Pointer 06 must allow leaving downward');
+  jump(4);
+  assert.equal(wheel(100, 4600).defaultPrevented, false, 'The last person must allow leaving downward');
   window.scrollY = 6200; input('scroll');
   wheel(-100, 5800); window.scrollY = 6000; input('scroll'); settle();
-  assert.equal(harness.selection, 4, 'The released but still visible stage must remain reversible');
-  jump(5);
+  assert.equal(harness.selection, 3, 'The released but still visible stage must remain reversible');
+  jump(4);
   window.scrollY = 7000; input('scroll');
   assert.equal(wheel(-100, 7000).defaultPrevented, false, 'Offscreen input belongs to the website');
   window.scrollY = 6000; input('scroll'); settle();

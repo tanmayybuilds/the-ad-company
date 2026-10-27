@@ -5,7 +5,7 @@
   --active-card-scale: 1.44;
   --active-portrait-scale: 1.26;
   position: relative;
-  height: 550vh;
+  height: var(--tour-height, 475vh);
   color: var(--ink);
   background: var(--paper);
   border-bottom: 1px solid color-mix(in oklab, var(--ink) 18.82%, transparent);
@@ -51,7 +51,7 @@
 .team-standee { position: absolute; left: -95px; bottom: 12px; width: 190px; height: 260px; transform-origin: bottom center; transform: rotateY(calc(-1 * var(--node-yaw, 0deg))) rotateX(var(--tour-pitch)); transform-style: preserve-3d; pointer-events: none; }
 .team-portrait { position: relative; width: 100%; height: 100%; border: 4px solid var(--paper); border-radius: 95px 95px 15px 15px; background: var(--node-bg); overflow: hidden; transform-origin: bottom center; transition: transform .25s ease; }
 .team-portrait > span { position: absolute; inset: 0; display: grid; place-items: center; font: 800 56px var(--font-display); color: var(--node-text); }
-.team-portrait img { position: relative; width: 100%; height: 100%; object-fit: cover; object-position: center 32%; }
+.team-portrait img { position: relative; width: 100%; height: 100%; object-fit: contain; background: var(--paper); }
 .team-mount { position: absolute; left: 50%; bottom: -9px; width: 94px; height: 14px; background: var(--ink); border: 2px solid var(--paper); transform: translateX(-50%) rotateX(35deg); box-shadow: 0 4px 0 var(--ink); }
 .team-node[data-active=true] .team-portrait { transform: scale(var(--active-portrait-scale)); }
 .team-role { position: absolute; width: 320px; left: 155px; bottom: 40px; border: 2px solid var(--ink); background: var(--paper); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); transform: translateZ(35px) rotateY(calc(-1 * var(--node-yaw, 0deg))) rotateX(var(--tour-pitch)); transform-origin: bottom left; transition: scale .25s ease; }
@@ -66,6 +66,14 @@
 .team-node-lime .team-role-badge, .team-node-charcoal .team-role-badge { background: var(--gold); color: var(--on-accent); }
 .team-responsibility { margin-top: 14px; font: .78rem/1.5 var(--font-mono); color: var(--signal); }
 .team-intro { margin-top: 10px; font: .9rem/1.45 var(--font-sans); color: var(--muted-foreground); }
+.team-read-bio { margin-top: 12px; padding-block: 8px; min-height: 44px; color: var(--brand); font: 700 12px/1.4 var(--font-mono); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.team-bio { overscroll-behavior: contain; }
+.team-bio-content { padding: 72px 32px 32px; }
+.team-bio-content h2 { font: 800 clamp(1.8rem, 5vw, 2.8rem)/1.1 var(--font-display); }
+.team-bio-content p, .team-bio-content blockquote { margin-top: 20px; line-height: 1.7; }
+.team-bio-content .team-bio-role { margin: 0 0 12px; color: var(--brand); font: 700 12px/1.5 var(--font-mono); }
+.team-bio-headline { font-weight: 700; }
+.team-bio-content blockquote { padding-left: 16px; border-left: 3px solid var(--accent); font-style: italic; }
 .team-path { position: absolute; height: 56px; left: 0; top: -28px; transform-origin: 0 50%; border-block: 1px solid color-mix(in oklab, var(--brand) 14.9%, transparent); background: color-mix(in oklab, var(--brand) 3.14%, transparent); pointer-events: none; }
 .team-path-fill { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in oklab, var(--brand) 25.1%, transparent), color-mix(in oklab, var(--gold) 70.2%, transparent)); transform: scaleX(var(--path-progress, 0)); transform-origin: left; }
 .team-chevrons { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-around; color: var(--signal); font-size: 32px; }
@@ -86,6 +94,28 @@
 .team-footnotes a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .team-mobile-role { display: none; }
 
+@media (min-width: 1024px) {
+  .team-viewport {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 16px;
+    padding-block: calc(var(--header-h) + 22px) 18px;
+  }
+  .team-heading, .team-bottom { position: relative; inset: auto; }
+  .team-heading h2 { font-size: clamp(2rem, 3.4vw, 3rem); }
+  .team-scene { position: relative; inset: auto; min-height: 0; overflow: hidden; }
+  .team-world-fit { top: calc(100% - 76px); }
+  .team-node .team-intro { display: none; }
+}
+@media (min-width: 1024px) and (max-height: 730px) {
+  .team-viewport { gap: 12px; padding-top: calc(var(--header-h) + 12px); }
+  .team-eyebrow, .team-tour-mark, .team-heading-controls > p { display: none; }
+  .team-heading-row { margin-top: 0; }
+  .team-heading h2 { font-size: 1.75rem; }
+  .team-heading-controls { margin-top: 12px; justify-content: flex-end; }
+  .team-role-body { padding: 14px; }
+  .team-role-bar { padding-block: 8px; }
+}
 @media (max-width: 1023px) {
   .team-heading { top: calc(var(--header-h) + 14px); }
   .team-eyebrow { font-size: 10px; }
@@ -121,9 +151,9 @@
 }
 @media (prefers-reduced-motion: reduce), print {
   .team-tour { height: auto; }
-  .team-viewport { position: relative; height: auto; overflow: visible; padding-block: calc(var(--header-h) + 24px) 28px; }
+  .team-viewport { display: block; position: relative; height: auto; overflow: visible; padding-block: calc(var(--header-h) + 24px) 28px; }
   .team-heading { position: relative; inset: auto; }
-  .team-scene { position: relative; perspective: none; margin-top: 36px; }
+  .team-scene { position: relative; perspective: none; margin-top: 36px; overflow: visible; }
   .team-world-fit { position: static; transform: none; }
   .team-world { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 26px; width: min(1200px, calc(100% - 40px)); height: auto; margin: auto; transform: none !important; }
   .team-node, .team-node[hidden] { --node-opacity: 1 !important; position: relative; display: flex; flex-direction: column; align-items: center; width: auto; height: auto; padding-top: 24px; transform: none !important; }
@@ -131,6 +161,7 @@
   .team-node .team-standee { position: relative; inset: auto; width: 152px; height: 208px; margin-bottom: 20px; transform: none; }
   .team-node .team-portrait { transform: none !important; animation: none !important; }
   .team-node .team-role { display: block; position: relative; inset: auto; width: 100%; height: 100%; transform: none; scale: 1 !important; transition: none; }
+  .team-node .team-intro { display: block; }
   .team-bottom { position: relative; inset: auto; margin-top: 32px; }
   .team-progress { display: none; }
   .team-node { scroll-margin-top: calc(var(--header-h) + 20px); }

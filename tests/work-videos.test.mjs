@@ -13,15 +13,15 @@ test('the three bento illustrations bind to real MP4s under the Pages base path'
     const markup = renderToStaticMarkup(createElement(Work));
     const sources = [...markup.matchAll(/<video[^>]+src="([^"]+)"/g)].map(match => match[1]);
     assert.equal(sources.length, 3);
-    assert.equal([...markup.matchAll(/aria-pressed="false"/g)].length, 3);
-    assert.equal([...markup.matchAll(/aria-haspopup="dialog"/g)].length, 3);
+    assert.equal([...markup.matchAll(/aria-haspopup="dialog"/g)].length, 6, 'Both each animation and its View more button must open details');
+    assert.equal([...markup.matchAll(/aria-label="View more:/g)].length, 6);
     assert.equal([...markup.matchAll(/preload="metadata"/g)].length, 3);
     assert.doesNotMatch(markup, /autoplay|poster=|<img\b/i);
     assert.doesNotMatch(markup, /bento-view-cursor/);
     assert.match(markup, /Illustrative formats; campaign stories to follow/);
     assert.ok(readdirSync(new URL('../public/', import.meta.url)).includes('videos'), 'Directory case must match production URLs');
     for (const [index, source] of sources.entries()) {
-      assert.equal(source, `/the-ad-company/videos/card_0${index + 1}.mp4#t=0.001`);
+      assert.equal(source, `/the-ad-company/videos/Card_0${index + 1}_New.mp4#t=0.001`);
       const bytes = readFileSync(new URL(`../public${work.examples[index].video}`, import.meta.url));
       assert.equal(bytes.toString('ascii', 4, 8), 'ftyp');
     }
