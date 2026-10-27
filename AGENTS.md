@@ -26,7 +26,7 @@
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/vite`), custom typography (`Syne` display font, `Inter` body, `Space Mono` indexing labels), hard shadow borders, and editorial layouts.
 - **Animation & Motion:** GSAP 3 with `@gsap/react` and `matchMedia` for responsive animations and full `prefers-reduced-motion` compliance.
 - **3D Visualization:** React Three Fiber (`@react-three/fiber` v9) and Three.js (v0.186).
-  - Orthographic sculptural micro-city hero visual.
+  - Earlier orthographic sculptural micro-city retained in source; V5's active hero uses CSS artwork and GSAP without importing WebGL.
   - Demand frameloop rendering (low power, no unnecessary GPU cycles, pauses when tab is hidden or element is off-screen).
   - Progressive enhancement: high-res static illustration fallback for mobile devices, slow connections, or WebGL-disabled environments.
 - **Testing:** Node.js native test runner (`node --test tests/*.test.mjs`) covering enquiry validation and brief formatting.
@@ -39,7 +39,7 @@
 | Section | Component | Status | Notes & Data Sources |
 |---|---|---|---|
 | **1. Navigation** | `src/components/site/Header.tsx` |  Implemented | Sticky header, brand wordmark, anchor links (`#services`, `#work`, `#about`, `#coverage`, `#team`), "Let's talk" CTA, accessible mobile drawer with keyboard focus trap. |
-| **2. Hero** | `src/components/site/Hero.tsx`<br/>`HeroArt.tsx`, `HeroCity3D.tsx` |  Implemented | Split layout (55% text / 45% visual). Staggered entrance, tagline highlight, dual CTAs. Live 3D micro-city with interactive tilt on desktop + static fallback on mobile. |
+| **2. Hero** | `src/components/site/Hero.tsx`<br/>`hero-home.css`, `src/lib/hero-motion.mjs` | Implemented (V5) | Accessible split-letter assembly, six CSS campaign panels with optional images, reversible scroll movement, native sticky on tall desktops and normal mobile flow. Reduced motion stays static. All copy and image fields live in `src/content/site.ts`. |
 | **3. Client Logos** | `src/components/site/ClientStrip.tsx` |  Implemented | Displays 16 confirmed client logos, downloaded from official websites into `public/clients/`. Sources and native dimensions are recorded in `docs/client-logos.md`. |
 | **4. Services** | `src/components/site/Services.tsx` |  Implemented | 5 categories: (1) Residential & community (primary focus), (2) Corporate & coworking, (3) Outdoor & transit, (4) Cinema, airports & in-flight, (5) Delivery & in-app. Interactive tabbed preview with persistent format lists and illustrations. |
 | **5. Selected Work** | `src/components/site/Sections.tsx` (`Work`) |  Implemented (Pack Pending) | Featured layout with accessible `<dialog>` detail modal. Currently uses illustrative format previews. Real execution photographs and verified metrics pending client handoff. |

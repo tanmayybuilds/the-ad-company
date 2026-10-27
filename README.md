@@ -1,4 +1,4 @@
-# The Ad Company — first build
+# The Ad Company — version 5 homepage
 
 Lovable's exported components and artwork, completed against the approved Stitch design. Original exports remain untouched in Downloads.
 
@@ -10,7 +10,9 @@ V4 uses the client-approved Porcelain & Teal palette across the interface: porce
 
 The supplied transparent logo is retained in `public/brand/logo.png`. Its SVG wrapper embeds the original PNG pixels and trims only empty margins. Header, footer, campaign preview, site icon, and 3D signs use the artwork directly over their existing backgrounds, without a white backing.
 
-Editable business content is in `src/content/site.ts`. Shared motion settings live in `src/lib/motion.ts`. The desktop city is lazy-loaded and renders on demand; mobile and reduced-motion users receive the existing static artwork. All retained imagery is local.
+Editable business content is in `src/content/site.ts`. Shared motion settings live in `src/lib/motion.ts`. Version 5 on `home-page` replaces the active WebGL hero with a CSS campaign collage: a short letter-assembly entrance, six illustrative panels and reversible scroll movement. Desktop viewports at least 1024px wide and 800px tall use a native sticky stage for a short 85vh scroll sequence; smaller screens flow normally. Reduced-motion users receive the completed static composition. All retained imagery is local.
+
+Hero panel images are editable in `hero.panels` in `src/content/site.ts`. Five `image: null` entries show intentional artwork placeholders; replace a null with a local `/...` image path to add campaign imagery. The outdoor panel uses the supplied illustrative billboard. The hero loads no videos or live 3D scene. Separate entrance/scroll wrappers avoid competing transforms, and media-query changes clean up their timelines. All other homepage sections and the second work video's three-second trim are retained.
 
 Section 06 uses a scroll-driven CSS 3D team pathway with five supplied profiles: Yash Nile, Akshay Daundkar, Dilip Janaskar, Mansi Jha and Ashika Jha. Optimized local portraits, jump controls and a reduced-motion layout are included. Compact cards open the complete supplied biographies in a scrollable dialog that locks the underlying tour and restores focus when closed. See [tour implementation](docs/team-tour.md) and [portrait sources](docs/team-portraits.md).
 

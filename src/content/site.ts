@@ -67,10 +67,34 @@ export const nav: NavItem[] = [
   { label: "Team", href: "#team" },
 ];
 
+export type HeroPanel = { id: string; channel: string; title: string[]; caption: string; image: string | null };
+
 export const hero = {
   eyebrow: "ATL. BTL. OOH. Digital. Branded content.",
-  headline: ["Your brand.", "Out in the", "real world."],
-  copy: "We connect what your brand promises with what people want. From neighbourhood activations and outdoor media to television, digital and branded content, we plan, buy and execute campaigns across India.",
+  headline: ["Your brand.", "Where it matters."],
+  copy: "From neighbourhood activations to nationwide media campaigns, we bring strategy, creativity and execution together.",
+  locationLabel: "Across India. On the ground.",
+  scrollLabel: "Scroll to set things in motion",
+  placementNote: "Illustrative placements. A little room for your next big idea.",
+  placeholderLabel: "Artwork placeholder",
+  panelAction: "Explore",
+  artwork: {
+    community: ["Your", "brand", "here."],
+    digital: ["Right", "here."],
+    ticketLabel: "Admit one good idea",
+    ticket: ["Big", "screen.", "Big", "energy."],
+    record: ["Stay in", "the conversation."],
+    routeStart: "The brief.",
+    routeEnd: ["The right", "direction."],
+  },
+  panels: [
+    { id: "community", channel: "BTL / Community", title: ["Close to", "your people."], caption: "Societies. Activations. Everyday connections.", image: null },
+    { id: "outdoor", channel: "OOH / Transit", title: ["Out there.", "On their way."], caption: "Streets, stations and moving journeys.", image: "/brand/billboard.jpg" },
+    { id: "digital", channel: "Digital / Screens", title: ["Right place.", "Bright ideas."], caption: "Your brand, in the frame.", image: null },
+    { id: "atl", channel: "ATL / Mass media", title: ["Think big.", "Show up."], caption: "Broadcast. Print. Cinema.", image: null },
+    { id: "content", channel: "Branded content", title: ["Part of the", "conversation."], caption: "Stories worth being part of.", image: null },
+    { id: "planning", channel: "Media planning", title: ["A plan", "behind it all."], caption: "The audience. The medium. The moment.", image: null },
+  ] satisfies HeroPanel[],
   primaryCta: { label: "Explore our work", href: "#work" },
   secondaryCta: { label: "Let’s talk", href: "#contact" },
   artNotes: { top: "↳ Built for everyday places.", bottom: "Made to get noticed." },
