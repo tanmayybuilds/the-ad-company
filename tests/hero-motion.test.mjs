@@ -31,6 +31,7 @@ test('hero motion uses separate entrance and scrub layers, cleans up, and respec
         export const ScrollTrigger = { refresh: () => { globalThis.__heroMotionTest.refreshes++; } };
         export const useGSAP = setup => { globalThis.__heroMotionTest.setup = setup; };
         export const gsap = {
+          set: (targets, values) => { globalThis.__heroMotionTest.initial.push({ targets, values }); },
           utils: { selector: () => selector => selector === '.home-hero-bottom' ? [{ offsetTop: 880, offsetHeight: 28 }] : [selector] },
           matchMedia: () => {
             let cleanup;
@@ -52,7 +53,7 @@ test('hero motion uses separate entrance and scrub layers, cleans up, and respec
   try {
     const { Hero } = await server.ssrLoadModule('/src/components/site/Hero.tsx');
     for (const conditions of [{ motion: false, desktop: true, tall: true, height: 1080 }, { motion: true, desktop: true, tall: true, height: 1080 }, { motion: true, desktop: true, tall: true, height: 800 }, { motion: true, desktop: false, tall: false, height: 844 }]) {
-      const harness = globalThis.__heroMotionTest = { refs: [], timelines: [], reverted: 0, refreshes: 0, conditions };
+      const harness = globalThis.__heroMotionTest = { refs: [], timelines: [], initial: [], reverted: 0, refreshes: 0, conditions };
       renderToStaticMarkup(createElement(Hero));
       harness.refs[0].current = { dataset: {} };
       harness.refs[1].current = { clientWidth: 1440, clientHeight: 930, scrollHeight: 930 };
@@ -67,9 +68,18 @@ test('hero motion uses separate entrance and scrub layers, cleans up, and respec
       const cleanup = harness.setup();
       if (conditions.motion) {
         assert.equal(harness.timelines.length, 2);
+        assert.equal(harness.initial.length, 3, 'All letters, panels and support copy must receive their initial state before any scroll');
+        assert.ok(harness.initial.some(set => set.targets.includes('[data-home-letter]') && typeof set.values.x === 'function'));
+        assert.ok(harness.initial.some(set => set.targets.includes('[data-home-panel-enter]') && set.values.autoAlpha === 0));
         const [entrance, scroll] = harness.timelines;
-        assert.equal(scroll.options.scrollTrigger.scrub, .65);
         const fits = conditions.desktop && conditions.tall && conditions.height >= 930;
+        assert.ok(entrance.options.scrollTrigger, 'Assembly must be controlled by scrolling rather than start automatically');
+        assert.equal(entrance.options.scrollTrigger.start(), fits ? 'top -40' : 'top -16', 'Hold the scattered canvas until the first small scroll');
+        assert.equal(entrance.options.scrollTrigger.end(), fits ? '+=240' : '+=64');
+        assert.equal(entrance.options.scrollTrigger.scrub, .45);
+        assert.ok(entrance.calls.every(call => !call[2]?.clearProps), 'Scrubbed assembly must retain its styles when refreshed or reversed');
+        assert.equal(scroll.options.scrollTrigger.start(), fits ? 'top -280' : 'top -80', 'Gentle movement starts after the letters have assembled');
+        assert.equal(scroll.options.scrollTrigger.scrub, .65);
         assert.equal(harness.refs[0].current.dataset.sticky, String(fits), 'Sticky must be disabled when the content is taller than the viewport');
         assert.equal(scroll.options.scrollTrigger.end(), fits ? 'bottom bottom' : 'bottom top');
         assert.ok(!scroll.options.scrollTrigger.pin, 'Native sticky must not create another GSAP pin spacer');

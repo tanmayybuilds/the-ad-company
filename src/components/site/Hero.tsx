@@ -26,8 +26,6 @@ export function Hero() {
       const { motion, desktop, tall } = context.conditions as { motion: boolean; desktop: boolean; tall: boolean };
       if (!motion) return;
       const q = gsap.utils.selector(root);
-      const width = stage.current!.clientWidth;
-      const height = stage.current!.clientHeight;
       const element = root.current!;
       const footer = q('.home-hero-bottom')[0] as HTMLElement;
       let refresh = 0;
@@ -48,18 +46,32 @@ export function Hero() {
       resize.observe(q('.home-story')[0]);
       window.addEventListener('resize', measure);
       document.fonts?.ready.then(measure);
-      const entrance = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      entrance.fromTo(q('[data-home-letter]'), {
-        x: (i: number) => heroScatter(i, width, height).x,
-        y: (i: number) => heroScatter(i, width, height).y,
-        rotation: (i: number) => heroScatter(i, width, height).rotation,
-        opacity: .12,
-      }, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 1.25, stagger: { each: .012, from: 'center' }, clearProps: 'transform,opacity' }, .05)
-        .fromTo(q('[data-home-panel-enter]'), { y: desktop ? 155 : 55, rotation: (i: number) => (i - 2.5) * 11, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 1.15, stagger: .065, clearProps: 'transform,opacity' }, .2)
-        .fromTo(q('[data-home-enter]'), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: .65, stagger: .08, clearProps: 'transform,opacity' }, .65);
-      // Scroll owns outer wrappers; the entrance never competes for their transforms.
+      const scattered = {
+        x: (i: number) => heroScatter(i, stage.current!.clientWidth, window.innerHeight).x,
+        y: (i: number) => heroScatter(i, stage.current!.clientWidth, window.innerHeight).y,
+        rotation: (i: number) => heroScatter(i, stage.current!.clientWidth, window.innerHeight).rotation,
+        opacity: .45,
+      };
+      const panelStart = { y: desktop ? 155 : 55, rotation: (i: number) => (i - 2.5) * 11, autoAlpha: 0 };
+      const supportStart = { y: 12, autoAlpha: 0 };
+      // A staggered paused tween initializes only its first item without these sets.
+      gsap.set(q('[data-home-letter]'), scattered);
+      gsap.set(q('[data-home-panel-enter]'), panelStart);
+      gsap.set(q('[data-home-enter]'), supportStart);
+      const entrance = gsap.timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: {
+        trigger: element,
+        start: () => `top -${element.dataset.sticky === 'true' ? 40 : 16}`,
+        end: () => `+=${element.dataset.sticky === 'true' ? 240 : 64}`,
+        scrub: .45, invalidateOnRefresh: true,
+      } });
+      entrance.fromTo(q('[data-home-letter]'), scattered, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 1.25, stagger: { each: .012, from: 'center' } }, .05)
+        .fromTo(q('[data-home-panel-enter]'), panelStart, { y: 0, rotation: 0, autoAlpha: 1, duration: 1.15, stagger: .065 }, .2)
+        .fromTo(q('[data-home-enter]'), supportStart, { y: 0, autoAlpha: 1, duration: .65, stagger: .08 }, .65)
+        .fromTo(q('[data-home-cue]'), { autoAlpha: 1 }, { autoAlpha: 0, duration: .3 }, 0)
+        .fromTo(q('[data-home-backdrop]'), { opacity: 1 }, { opacity: .4, duration: 1 }, 0);
+      // Assembly and onward movement own separate wrappers and scroll ranges.
       const scroll = gsap.timeline({ scrollTrigger: {
-        trigger: root.current, start: 'top top', end: () => element.dataset.sticky === 'true' ? 'bottom bottom' : 'bottom top',
+        trigger: root.current, start: () => `top -${element.dataset.sticky === 'true' ? 280 : 80}`, end: () => element.dataset.sticky === 'true' ? 'bottom bottom' : 'bottom top',
         scrub: .65, invalidateOnRefresh: true,
       } });
       scroll.to(q('[data-home-panel-scroll]'), {
@@ -83,7 +95,9 @@ export function Hero() {
 
   return <section id="top" ref={root} className="home-hero" aria-labelledby="hero-title">
     <div ref={stage} className="home-hero-stage">
-      <div className="home-hero-topbar home-contained" data-home-enter><span><i />{hero.locationLabel}</span><span>{company.concept}</span></div>
+      <div className="home-canvas-backdrop" data-home-backdrop aria-hidden="true"><svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none"><path d="M-80 260H470Q590 260 590 380V560Q590 660 720 660H1500M120-40V410Q120 490 220 490H380Q470 490 470 590V960M1040-50V220Q1040 330 1150 330H1510M860 940V470Q860 390 930 390H1500" /><path className="home-canvas-gold-route" d="M-50 760C180 760 240 570 430 570S740 760 850 480 1090 130 1500 130" /><circle cx="430" cy="570" r="12" /><circle cx="1060" cy="201" r="12" /><path d="M390 140h28m-14-14v28M1210 650h28m-14-14v28M795 200h20m-10-10v20" /></svg></div>
+      <p className="home-canvas-cue" data-home-cue aria-hidden="true"><Plus size={18} /><span>{hero.canvasPrompt}</span><ArrowDown size={18} /></p>
+      <div className="home-hero-topbar home-contained"><span><i />{hero.locationLabel}</span><span>{company.concept}</span></div>
       <div className="home-story home-contained">
         <p className="home-hero-eyebrow" data-home-enter>{hero.eyebrow}</p>
         <div data-home-heading-scroll><h1 id="hero-title" className="home-title" aria-label={hero.headline.join(' ')}>
@@ -96,16 +110,16 @@ export function Hero() {
       </div>
       <div className="home-deck home-contained">
         <svg className="home-deck-route" viewBox="0 0 1200 260" fill="none" aria-hidden="true"><path data-home-route d="M0 170C210 20 300 260 560 120S940 10 1200 140" /></svg>
-        {hero.panels.map((panel, index) => <a key={panel.id} href="#work" className={`home-panel-slot home-panel-slot--${index}`} aria-label={`${hero.panelAction} ${panel.channel}`}>
-          <div data-home-panel-scroll><div data-home-panel-enter><article className={`home-panel home-panel--${panel.id}`}>
+        {hero.panels.map((panel, index) => <a key={panel.id} href="#work" className={`home-panel-slot home-panel-slot--${index}`} data-home-panel-enter aria-label={`${hero.panelAction} ${panel.channel}`}>
+          <div data-home-panel-scroll><article className={`home-panel home-panel--${panel.id}`}>
             <div className="home-panel-label"><span>{panel.channel}</span><ArrowUpRight size={13} aria-hidden="true" /></div>
             <PanelArtwork panel={panel} />
             <div className="home-panel-caption"><h2>{panel.title.map(line => <span key={line}>{line}</span>)}</h2><p>{panel.image ? panel.caption : hero.placeholderLabel}</p></div>
-          </article></div></div>
+          </article></div>
         </a>)}
         <span className="home-commitment" data-home-enter>{company.tagline}<Plus size={16} aria-hidden="true" /></span>
       </div>
-      <div className="home-hero-bottom home-contained" data-home-enter><p>{hero.placementNote}</p><a href="#services">{hero.scrollLabel}<ArrowDown size={15} aria-hidden="true" /></a></div>
+      <div className="home-hero-bottom home-contained"><p>{hero.placementNote}</p><a href="#services">{hero.scrollLabel}<ArrowDown size={15} aria-hidden="true" /></a></div>
     </div>
   </section>;
 }

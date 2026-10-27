@@ -27,3 +27,7 @@ The previous discussion compared entirely scroll-controlled assembly with a shor
 ## Verification
 
 Tests cover complete readable SSR, all six panel labels and optional-image handling, valid site anchors/assets, deterministic bounded motion geometry, reduced-motion/no-scroll setup and cleanup. Run the full existing suite and production build. Inspect the local homepage at desktop and mobile sizes and exercise scrolling, anchors and work dialogs as part of the user's requested preview. Do not promise lag-free performance on untested devices. Push only the home-page source branch; do not publish GitHub Pages.
+
+## Follow-up: assembly begins on scroll
+
+The user subsequently requested that the opening stay scattered until a small scroll, with a designed background rather than a blank white page. This supersedes the automatic entrance described above. Assembly now scrubs over a short first-scroll range, after a small lead-in, and the onward movement begins only when assembly finishes. The opening canvas uses static brand-tinted lighting, street/route linework and a scroll cue. Header/navigation remain available. Panels and supporting actions use visibility-aware fades so invisible controls are not keyboard targets. Reduced motion retains the completed composition.

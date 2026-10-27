@@ -75,6 +75,7 @@ export const hero = {
   copy: "From neighbourhood activations to nationwide media campaigns, we bring strategy, creativity and execution together.",
   locationLabel: "Across India. On the ground.",
   scrollLabel: "Scroll to set things in motion",
+  canvasPrompt: "A little scroll. A big impression.",
   placementNote: "Illustrative placements. A little room for your next big idea.",
   placeholderLabel: "Artwork placeholder",
   panelAction: "Explore",
