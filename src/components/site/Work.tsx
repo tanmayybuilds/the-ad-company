@@ -139,7 +139,7 @@ export function Work() {
         <video key={project.video} src={videoSource(project.video)} autoPlay muted playsInline controls preload="metadata" aria-label={project.alt} className="aspect-video w-full object-cover" />
         <div className="p-6 sm:p-9">
           <Eyebrow className="mb-3">{work.detailLabel}</Eyebrow>
-          <h2 id="project-title" className="font-display text-3xl font-extrabold uppercase">{project.title}</h2>
+          <h2 id="project-title" className="font-display text-[clamp(1.5rem,5vw,1.875rem)] font-bold uppercase">{project.title}</h2>
           <p className="my-5 leading-relaxed">{project.copy}</p>
           <ul className="mb-8 flex flex-wrap gap-2">{project.formats.map(format => <li key={format} className="border border-ink/20 px-3 py-2 text-sm">{format}</li>)}</ul>
           <h3 className="font-display text-2xl font-bold uppercase">{services.catalogueHeading}</h3>

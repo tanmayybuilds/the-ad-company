@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { ArrowDown, ArrowUpRight, Plus } from 'lucide-react';
 import { company, hero, type HeroPanel } from '@/content/site';
-import { gsap, MQ, useGSAP } from '@/lib/motion';
+import { gsap, MQ, ScrollTrigger, useGSAP } from '@/lib/motion';
 import { heroScatter } from '@/lib/hero-motion.mjs';
 import { ActionLink } from './primitives';
 import './hero-home.css';
@@ -28,6 +28,26 @@ export function Hero() {
       const q = gsap.utils.selector(root);
       const width = stage.current!.clientWidth;
       const height = stage.current!.clientHeight;
+      const element = root.current!;
+      const footer = q('.home-hero-bottom')[0] as HTMLElement;
+      let refresh = 0;
+      let disposed = false;
+      const measure = () => {
+        if (disposed) return;
+        // Layout offsets ignore the transforms used by the entrance and scroll.
+        const contentHeight = footer.offsetTop + footer.offsetHeight + parseFloat(getComputedStyle(stage.current!).paddingBottom);
+        const sticky = String(desktop && tall && contentHeight <= window.innerHeight + 1);
+        if (element.dataset.sticky === sticky) return;
+        element.dataset.sticky = sticky;
+        cancelAnimationFrame(refresh);
+        refresh = requestAnimationFrame(() => ScrollTrigger.refresh());
+      };
+      measure();
+      const resize = new ResizeObserver(measure);
+      resize.observe(stage.current!);
+      resize.observe(q('.home-story')[0]);
+      window.addEventListener('resize', measure);
+      document.fonts?.ready.then(measure);
       const entrance = gsap.timeline({ defaults: { ease: 'power3.out' } });
       entrance.fromTo(q('[data-home-letter]'), {
         x: (i: number) => heroScatter(i, width, height).x,
@@ -39,7 +59,7 @@ export function Hero() {
         .fromTo(q('[data-home-enter]'), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: .65, stagger: .08, clearProps: 'transform,opacity' }, .65);
       // Scroll owns outer wrappers; the entrance never competes for their transforms.
       const scroll = gsap.timeline({ scrollTrigger: {
-        trigger: root.current, start: 'top top', end: desktop && tall ? 'bottom bottom' : 'bottom top',
+        trigger: root.current, start: 'top top', end: () => element.dataset.sticky === 'true' ? 'bottom bottom' : 'bottom top',
         scrub: .65, invalidateOnRefresh: true,
       } });
       scroll.to(q('[data-home-panel-scroll]'), {
@@ -47,9 +67,16 @@ export function Hero() {
         y: (i: number) => (i % 2 ? -1 : 1) * (desktop ? 42 : 14),
         rotation: (i: number) => (i - 2.5) * (desktop ? 4 : 1.5), ease: 'none', duration: 1,
       }, 0).to(q('[data-home-heading-scroll]'), { y: desktop ? -35 : -12, scale: .96, ease: 'none', duration: 1 }, 0)
-        .to(q('[data-home-letter-scroll]'), { y: (i: number) => Math.sin(i * 1.4) * (desktop ? 30 : 8), rotation: (i: number) => Math.sin(i * 2) * 9, opacity: .2, stagger: { each: .004, from: 'edges' }, ease: 'none', duration: .35 }, .65)
+        .to(q('[data-home-letter-scroll]'), { y: (i: number) => Math.sin(i * 1.4) * (desktop ? 14 : 4), rotation: (i: number) => Math.sin(i * 2) * 4, stagger: { each: .004, from: 'edges' }, ease: 'none', duration: .35 }, .65)
         .to(q('[data-home-route]'), { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
-      return () => { entrance.kill(); scroll.kill(); };
+      return () => {
+        disposed = true;
+        resize.disconnect();
+        window.removeEventListener('resize', measure);
+        cancelAnimationFrame(refresh);
+        delete element.dataset.sticky;
+        entrance.kill(); scroll.kill();
+      };
     });
     return () => mm.revert();
   }, { scope: root });
