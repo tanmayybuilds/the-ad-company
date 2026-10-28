@@ -1012,7 +1012,7 @@
 .about-poster { --ink: var(--on-accent); --signal: var(--brand); position:relative; min-height:450px; overflow:hidden; padding:24px; border:2px solid var(--ink); background:var(--lime); color:var(--on-accent); box-shadow:7px 7px 0 var(--shadow); }
 .about-brand-visual { width: 100%; max-width: 400px; justify-self: center; }
 .about-commitment-title { display: inline-grid; max-width: 100%; }
-.about-commitment-to { text-align: center; }
+.about-commitment-to { text-align: left; }
 .about-poster blockquote { margin-top:38px; }
 .about-poster > div:first-child { position:relative; z-index:1; gap:20px; }
 .poster-city { position:absolute; right:0; bottom:0; display:flex; align-items:flex-end; gap:8px; transform:skewY(-13deg) translate(50px,20px); }
