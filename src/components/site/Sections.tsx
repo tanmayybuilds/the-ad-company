@@ -11,7 +11,7 @@ export function About() {
     <div className="grid items-center gap-12 lg:grid-cols-2">
       <div data-reveal>
         <Eyebrow className="mb-4">[04 // Why The Ad Company]</Eyebrow>
-        <h2 id="about-title" className="text-display-md">Committed to<br /><span className="text-signal">commitments.</span></h2>
+        <h2 id="about-title" className="about-commitment-title text-display-md"><span>Committed</span><span className="about-commitment-to">to</span><span className="text-signal">commitments.</span></h2>
         <p className="mt-5 max-w-xl font-editorial text-xl font-medium leading-relaxed text-signal">{about.positioning}</p>
         <p className="mt-7 max-w-xl text-lg font-medium leading-relaxed">{about.copy}</p>
         <p className="mt-4 max-w-xl leading-relaxed text-ink/65">{about.story}</p>

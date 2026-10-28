@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Header } from '@/components/site/Header';
+import { SectionNavigation } from '@/components/site/SectionNavigation';
 import { Hero } from '@/components/site/Hero';
 import { ClientStrip } from '@/components/site/ClientStrip';
 import { Services } from '@/components/site/Services';
@@ -17,7 +18,7 @@ if (typeof window !== 'undefined') {
 }
 
 export function App({ residentialPrototype = false }: { residentialPrototype?: boolean } = {}) {
-  return <><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip />{residentialPrototype ? <ResidentialJourney /> : <Services />}<Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
+  return <><SectionNavigation /><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip />{residentialPrototype ? <ResidentialJourney /> : <Services />}<Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
 }
 if (typeof document !== 'undefined') {
   createRoot(document.getElementById('root')!).render(<StrictMode><App residentialPrototype={new URLSearchParams(window.location.search).get('prototype') === 'residential'} /></StrictMode>);

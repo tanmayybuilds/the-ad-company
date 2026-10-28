@@ -28,7 +28,7 @@ test('gallery filters, keyboard viewer and client photo buttons work without los
     const { gallery, clients } = await server.ssrLoadModule('/src/content/site.ts');
     let tree = render(Gallery, { initialBrand: 'all' });
     const heroLinks = nodes(tree).filter(node => node.props?.className === 'gallery-hero-card');
-    assert.equal(heroLinks.length, 5);
+    assert.equal(heroLinks.length, 10);
     assert.ok(heroLinks.every(node => node.type === 'a' && node.props.href === '#campaign-wall'), 'The hover fan must also be usable by keyboard and touch');
     assert.ok(!nodes(tree).find(node => node.props?.className === 'gallery-hero-art').props['aria-hidden']);
     heroLinks[0].props.onClick();

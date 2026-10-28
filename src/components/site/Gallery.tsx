@@ -5,6 +5,7 @@ import { gallery } from "@/content/site";
 import { galleryItems } from "@/lib/gallery.mjs";
 import { gsap, MQ, useGSAP } from "@/lib/motion";
 import { Header } from "./Header";
+import { SectionNavigation } from "./SectionNavigation";
 import { Footer } from "./Sections";
 import { ActionLink } from "./primitives";
 import './gallery.css';
@@ -22,7 +23,7 @@ export function Gallery({ initialBrand = 'all' }: { initialBrand?: string } = {}
   const photos = galleryItems(campaigns.brands, filter);
   const photo = selected === null ? null : photos[selected];
   const isOpen = selected !== null;
-  const heroPhotos = campaigns.brands.filter(brand => ['malabar', 'maruti-suzuki', 'truemeds', 'tdf', 'milkbasket'].includes(brand.id));
+  const heroPhotos = campaigns.brands.filter(brand => ['malabar', 'maruti-suzuki', 'truemeds', 'tdf', 'milkbasket', 'vihan', 'jgp', 'wockhardt', 'nova', 'decathlon'].includes(brand.id));
   const move = (direction: number) => setSelected(value => ((value ?? 0) + direction + photos.length) % photos.length);
   const selectBrand = (id: string) => {
     setSelected(null);
@@ -59,6 +60,7 @@ export function Gallery({ initialBrand = 'all' }: { initialBrand?: string } = {}
   }, { scope: wall, dependencies: [filter], revertOnUpdate: true });
 
   return <div ref={root} className="campaign-gallery">
+    <SectionNavigation />
     <Header homePath={base} />
     <main id="main" tabIndex={-1}>
       <section id="top" className="gallery-hero" aria-labelledby="gallery-title">
@@ -70,7 +72,7 @@ export function Gallery({ initialBrand = 'all' }: { initialBrand?: string } = {}
         </div>
         <div className="gallery-hero-art">
           <div ref={fan} className="gallery-hero-fan">
-            {heroPhotos.map((brand, index) => <a key={brand.id} href="#campaign-wall" onClick={() => selectBrand(brand.id)} aria-label={`${gallery.viewBrand}: ${brand.name}`} className="gallery-hero-card" style={{ '--print-index': index } as CSSProperties}>
+            {heroPhotos.map((brand, index) => <a key={brand.id} href="#campaign-wall" onClick={() => selectBrand(brand.id)} aria-label={`${gallery.viewBrand}: ${brand.name}`} className="gallery-hero-card" style={{ '--print-index': index % 5, '--print-row': Math.floor(index / 5) } as CSSProperties}>
               <div className="gallery-hero-arrival"><figure className="gallery-hero-print">
                 <img src={asset(brand.photos[0].thumbnail)} alt="" width={brand.photos[0].width} height={brand.photos[0].height} decoding="async" />
                 <figcaption>{brand.label}</figcaption>
