@@ -1,0 +1,92 @@
+{
+  "hoardings": {
+    "src": "/service-executions/hoardings.webp",
+    "thumbnail": "/service-executions/hoardings-thumb.webp",
+    "thumbnailWidth": 640,
+    "width": 1280,
+    "height": 960,
+    "alt": "The Diamond Factory outdoor hoarding displayed beside a neighbourhood road.",
+    "client": "The Diamond Factory",
+    "description": "Outdoor hoarding placement."
+  },
+  "lift-posters": {
+    "src": "/service-executions/lift-posters.webp",
+    "thumbnail": "/service-executions/lift-posters-thumb.webp",
+    "thumbnailWidth": 480,
+    "width": 960,
+    "height": 1280,
+    "alt": "Jewellery advertisement displayed beside the lifts in a residential lobby.",
+    "description": "Lift-lobby advertising placement."
+  },
+  "pole-kiosks": {
+    "src": "/service-executions/pole-kiosks.webp",
+    "thumbnail": "/service-executions/pole-kiosks-thumb.webp",
+    "thumbnailWidth": 640,
+    "width": 1280,
+    "height": 960,
+    "alt": "Nova IVF Fertility pole kiosk advertisements displayed along a road.",
+    "client": "Nova IVF Fertility",
+    "description": "Roadside pole kiosk advertising."
+  },
+  "community": {
+    "src": "/service-executions/community.webp",
+    "thumbnail": "/service-executions/community-thumb.webp",
+    "thumbnailWidth": 480,
+    "width": 960,
+    "height": 1280,
+    "alt": "Truemeds team at a branded health-checkup activity in a residential society.",
+    "client": "Truemeds",
+    "location": "Pune, Maharashtra",
+    "description": "Society BTL health-checkup activity."
+  },
+  "tagging": {
+    "src": "/service-executions/tagging.webp",
+    "thumbnail": "/service-executions/tagging-thumb.webp",
+    "thumbnailWidth": 360,
+    "width": 720,
+    "height": 1280,
+    "alt": "Promotional tag attached to the windscreen of a parked vehicle.",
+    "location": "Kalyan, Maharashtra",
+    "description": "Promotional vehicle tagging activity."
+  },
+  "van": {
+    "src": "/service-executions/van.webp",
+    "thumbnail": "/service-executions/van-thumb.webp",
+    "thumbnailWidth": 640,
+    "width": 1440,
+    "height": 1080,
+    "alt": "The Diamond Factory campaign displayed across the side of a branded van.",
+    "client": "The Diamond Factory",
+    "description": "Mobile van branding campaign."
+  },
+  "auto": {
+    "src": "/service-executions/auto.webp",
+    "thumbnail": "/service-executions/auto-thumb.webp",
+    "thumbnailWidth": 480,
+    "width": 960,
+    "height": 1280,
+    "alt": "Nova IVF Fertility campaign covering the rear panel of an auto rickshaw.",
+    "client": "Nova IVF Fertility",
+    "description": "Auto rickshaw branding."
+  },
+  "cab": {
+    "src": "/service-executions/cab.webp",
+    "thumbnail": "/service-executions/cab-thumb.webp",
+    "thumbnailWidth": 640,
+    "width": 1200,
+    "height": 673,
+    "alt": "Nova IVF Fertility advertising displayed across the side panels of a cab.",
+    "client": "Nova IVF Fertility",
+    "description": "Cab branding campaign."
+  },
+  "outdoor-digital": {
+    "src": "/service-executions/outdoor-digital.webp",
+    "thumbnail": "/service-executions/outdoor-digital-thumb.webp",
+    "thumbnailWidth": 640,
+    "width": 1296,
+    "height": 972,
+    "alt": "The Diamond Factory advertisement on an outdoor digital hoarding beside a busy road.",
+    "client": "The Diamond Factory",
+    "description": "Digital hoarding placement."
+  }
+}

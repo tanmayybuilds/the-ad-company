@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -10,13 +11,15 @@ test('the execution showcase covers every offered service and keeps truthful pho
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
     const { serviceShowcase, services, nav: links } = await server.ssrLoadModule('/src/content/site.ts');
     assert.ok(serviceShowcase, 'The city cards must be replaced by a service execution catalogue');
-    assert.equal(serviceShowcase.items.length, 37);
+    assert.equal(serviceShowcase.items.length, 40);
     assert.equal(new Set(serviceShowcase.items.map(item => item.id)).size, serviceShowcase.items.length);
     const formats = new Set(serviceShowcase.items.flatMap(item => item.formats));
     for (const group of [...services.catalogue, ...services.items]) {
       for (const format of group.formats) assert.ok(formats.has(format), `Missing offered service: ${format}`);
     }
-    assert.ok(serviceShowcase.items.every(item => item.execution === null), 'No unprovided execution may be presented as completed work');
+    const photographed = ['hoardings', 'lift-posters', 'pole-kiosks', 'community', 'tagging', 'van', 'auto', 'cab', 'outdoor-digital'];
+    assert.deepEqual(serviceShowcase.items.filter(item => item.execution).map(item => item.id), photographed);
+    assert.deepEqual(serviceShowcase.items.slice(0, 9).map(item => item.id), photographed, 'Supplied executions must appear before pending photo slots');
     assert.ok(links.some(link => link.label === 'Executions' && link.href === '#coverage'));
     const markup = renderToStaticMarkup(createElement(CoverflowCoverage));
     const options = markup.match(/<select\b[\s\S]*?<\/select>/)?.[0];
@@ -32,12 +35,13 @@ test('the execution showcase covers every offered service and keeps truthful pho
       assert.ok(markup.includes(`aria-describedby="execution-info-${item.id}"`), 'Each card must expose its execution status and details to assistive technology');
       assert.ok(markup.includes(`id="execution-info-${item.id}"`));
     }
-    assert.doesNotMatch(markup, /cov-city-art|Illustrative city scene|Mumbai|Pune/);
+    assert.doesNotMatch(markup, /cov-city-art|Illustrative city scene/);
     for (const button of markup.matchAll(/<button\b[\s\S]*?<\/button>/g)) {
       assert.doesNotMatch(button[0], /<a\b/, 'A card button must not contain another interactive control');
     }
     assert.equal([...markup.matchAll(/class="cov-photo-placeholder"/g)].length, serviceShowcase.items.length);
     const execution = { src: '/campaigns/malabar/01.webp', thumbnail: '/campaigns/malabar/01-thumb.webp', thumbnailWidth: 480, width: 1152, height: 648, alt: 'Confirmed hoarding execution', client: 'Confirmed brand', location: 'Confirmed location', description: 'Approved campaign details' };
+    const originals = serviceShowcase.items.map(item => item.execution);
     try {
       for (const item of serviceShowcase.items) item.execution = execution;
       const withPhotos = renderToStaticMarkup(createElement(CoverflowCoverage));
@@ -50,7 +54,7 @@ test('the execution showcase covers every offered service and keeps truthful pho
       assert.match(withPhotos, /Confirmed location/);
       assert.match(withPhotos, /Approved campaign details/);
       assert.match(withPhotos, /id="execution-info-hoardings"[^>]*>[\s\S]*?Confirmed hoarding execution[\s\S]*?Confirmed brand[\s\S]*?Confirmed location[\s\S]*?Approved campaign details/);
-    } finally { for (const item of serviceShowcase.items) item.execution = null; }
+    } finally { serviceShowcase.items.forEach((item, index) => item.execution = originals[index]); }
   } finally { await server.close(); }
 });
 
@@ -72,10 +76,11 @@ test('the service picker reaches every stop, leaves native keys alone and recove
   }] });
   const nodes = value => !value ? [] : Array.isArray(value) ? value.flatMap(nodes) : typeof value === 'object' ? [value, ...nodes(value.props?.children)] : [];
   const render = Component => { fixture.cursor = fixture.refCursor = 0; return Component(); };
-  let items;
+  let items, originals;
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
     ({ items } = (await server.ssrLoadModule('/src/content/site.ts')).serviceShowcase);
+    originals = items.map(item => item.execution);
     let tree = render(CoverflowCoverage);
     const requested = [];
     fixture.refs[5].current = index => { requested.push(index); fixture.refs[4].current = fixture.states[0] = index; };
@@ -100,7 +105,34 @@ test('the service picker reaches every stop, leaves native keys alone and recove
     images[0].props.onError({ currentTarget: failed });
     assert.ok(failed.hidden && revealed, 'A broken image must reveal the unavailable-image fallback');
   } finally {
-    if (items) for (const item of items) item.execution = null;
+    if (items) items.forEach((item, index) => item.execution = originals[index]);
     await server.close(); globalThis.__executionControls = original;
   }
+});
+
+test('all nine supplied execution photos have accurate responsive WebP dimensions and bounded transfer sizes', () => {
+  const file = new URL('../src/content/service-executions.json', import.meta.url);
+  assert.ok(existsSync(file), 'The supplied service photos must be imported');
+  const executions = JSON.parse(readFileSync(file, 'utf8'));
+  assert.deepEqual(Object.keys(executions), ['hoardings', 'lift-posters', 'pole-kiosks', 'community', 'tagging', 'van', 'auto', 'cab', 'outdoor-digital']);
+  let fullBytes = 0, previewBytes = 0;
+  for (const [id, execution] of Object.entries(executions)) {
+    assert.ok(execution.alt.length > 15, id);
+    assert.equal(execution.src, `/service-executions/${id}.webp`);
+    assert.equal(execution.thumbnail, `/service-executions/${id}-thumb.webp`);
+    for (const [path, width, height, budget] of [[execution.src, execution.width, execution.height, 350_000], [execution.thumbnail, execution.thumbnailWidth, null, 100_000]]) {
+      const image = new URL(`../public${path}`, import.meta.url);
+      const bytes = readFileSync(image);
+      assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+      assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+      assert.equal(bytes.toString('ascii', 12, 16), 'VP8 ');
+      assert.equal(bytes.readUInt16LE(26) & 0x3fff, width, path);
+      if (height) assert.equal(bytes.readUInt16LE(28) & 0x3fff, height, path);
+      assert.ok(statSync(image).size < budget, `${id} exceeds image budget`);
+      if (height) fullBytes += bytes.length; else previewBytes += bytes.length;
+    }
+    assert.ok(Math.max(execution.width, execution.height) <= 1440);
+  }
+  assert.ok(fullBytes < 2_500_000);
+  assert.ok(previewBytes < 700_000);
 });

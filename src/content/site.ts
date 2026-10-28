@@ -6,6 +6,7 @@
  */
 
 import campaigns from './campaigns.json';
+import serviceExecutions from './service-executions.json';
 
 export type NavItem = { label: string; href: `#${string}` | 'gallery.html' };
 
@@ -181,14 +182,14 @@ export const services = {
       title: "BTL media",
       lead: "Targeted brand engagement",
       copy: "Meet people in their communities, at work and through the deliveries they receive.",
-      formats: ["Residential & corporate activations", "Door-to-door & community campaigns", "Sampling distribution", "Swiggy Instamart inserts", "Zepto inserts", "Blinkit inserts"],
+      formats: ["Residential & corporate activations", "Door-to-door & community campaigns", "Sampling distribution", "Tagging activity", "Swiggy Instamart inserts", "Zepto inserts", "Blinkit inserts"],
     },
     {
       id: "ooh",
       title: "OOH media",
       lead: "High-impact outdoor visibility",
       copy: "Keep your brand in view across streets, transport networks and everyday journeys.",
-      formats: ["Bus branding", "Metro advertising", "Train branding", "Auto & cab branding", "Airport media", "Pole kiosks", "Transit media", "Signage branding"],
+      formats: ["Bus branding", "Metro advertising", "Train branding", "Auto & cab branding", "Van branding", "Airport media", "Pole kiosks", "Transit media", "Signage branding"],
     },
     {
       id: "branded-content",
@@ -209,7 +210,7 @@ export const services = {
       title: "Digital & indoor media",
       lead: "Visibility across screens",
       copy: "Connect your on-ground presence with digital promotions and screens in everyday spaces.",
-      formats: ["Digital branding & promotions", "Outdoor digital advertising", "Residential & indoor digital screens", "In-app advertising"],
+      formats: ["Digital branding & promotions", "Outdoor digital advertising", "Residential & indoor digital screens", "Lift posters", "In-app advertising"],
     },
   ],
   environmentOptionsLabel: "Advertising environments",
@@ -223,6 +224,7 @@ export const services = {
       formats: [
         "Residential society advertising",
         "Residential digital screens",
+        "Lift posters",
         "Door-to-door campaigns",
         "Flyer distribution",
         "Community activations",
@@ -247,7 +249,7 @@ export const services = {
       index: "03",
       title: "Outdoor & transit",
       lead: "Build visibility across streets and moving journeys.",
-      formats: ["Outdoor digital advertising", "Transit advertising", "Auto branding", "Cab branding"],
+      formats: ["Outdoor digital advertising", "Transit advertising", "Auto branding", "Cab branding", "Van branding"],
       visualLabel: "Outdoor & transit",
       badge: "High visibility",
       focusLabel: "Citywide reach",
@@ -393,9 +395,17 @@ export const serviceShowcase = {
   previous: "Previous service",
   next: "Next service",
   skip: "Skip service executions",
-  pendingNote: "Execution photographs are being curated for this showcase.",
+  pendingNote: "Real executions across our services. More campaign photographs to follow.",
   items: [
-    { id: "hoardings", title: "Hoardings", category: "ATL media", formats: ["Hoardings"], execution: null },
+    { id: "hoardings", title: "Hoardings", category: "ATL media", formats: ["Hoardings"], execution: serviceExecutions.hoardings },
+    { id: "lift-posters", title: "Lift posters", category: "Residential & community", formats: ["Lift posters"], execution: serviceExecutions['lift-posters'] },
+    { id: "pole-kiosks", title: "Pole kiosks", category: "OOH media", formats: ["Pole kiosks"], execution: serviceExecutions['pole-kiosks'] },
+    { id: "community", title: "Society BTL activity", category: "Residential & community", formats: ["Community activations", "Residential & corporate activations", "Society BTL activity"], execution: serviceExecutions.community },
+    { id: "tagging", title: "Tagging activity", category: "BTL media", formats: ["Tagging activity"], execution: serviceExecutions.tagging },
+    { id: "van", title: "Van branding", category: "OOH media", formats: ["Van branding"], execution: serviceExecutions.van },
+    { id: "auto", title: "Auto branding", category: "OOH media", formats: ["Auto branding", "Auto & cab branding"], execution: serviceExecutions.auto },
+    { id: "cab", title: "Cab branding", category: "OOH media", formats: ["Cab branding", "Auto & cab branding"], execution: serviceExecutions.cab },
+    { id: "outdoor-digital", title: "Digital hoardings", category: "Digital & indoor media", formats: ["Outdoor digital advertising", "Digital hoardings"], execution: serviceExecutions['outdoor-digital'] },
     { id: "television", title: "Television", category: "ATL media", formats: ["Television"], execution: null },
     { id: "radio", title: "Radio", category: "ATL media", formats: ["Radio"], execution: null },
     { id: "cinema", title: "Cinema advertising", category: "ATL media", formats: ["Cinema advertising"], execution: null },
@@ -404,7 +414,6 @@ export const serviceShowcase = {
     { id: "indoor-screens", title: "Residential & indoor digital screens", category: "Residential & community", formats: ["Residential & indoor digital screens", "Residential digital screens"], execution: null },
     { id: "door-to-door", title: "Door-to-door campaigns", category: "Residential & community", formats: ["Door-to-door campaigns", "Door-to-door & community campaigns"], execution: null },
     { id: "flyers", title: "Flyer distribution", category: "Residential & community", formats: ["Flyer distribution"], execution: null },
-    { id: "community", title: "Community activations", category: "Residential & community", formats: ["Community activations", "Residential & corporate activations"], execution: null },
     { id: "office", title: "Corporate office advertising", category: "Corporate & coworking", formats: ["Corporate office advertising"], execution: null },
     { id: "coworking", title: "Coworking space campaigns", category: "Corporate & coworking", formats: ["Coworking space campaigns"], execution: null },
     { id: "workspace", title: "Workspace activations", category: "Corporate & coworking", formats: ["Workspace activations", "Residential & corporate activations"], execution: null },
@@ -412,10 +421,7 @@ export const serviceShowcase = {
     { id: "bus", title: "Bus branding", category: "OOH media", formats: ["Bus branding"], execution: null },
     { id: "metro", title: "Metro advertising", category: "OOH media", formats: ["Metro advertising"], execution: null },
     { id: "train", title: "Train branding", category: "OOH media", formats: ["Train branding"], execution: null },
-    { id: "auto", title: "Auto branding", category: "OOH media", formats: ["Auto branding", "Auto & cab branding"], execution: null },
-    { id: "cab", title: "Cab branding", category: "OOH media", formats: ["Cab branding", "Auto & cab branding"], execution: null },
     { id: "airport", title: "Airport advertising", category: "OOH media", formats: ["Airport advertising", "Airport media"], execution: null },
-    { id: "pole-kiosks", title: "Pole kiosks", category: "OOH media", formats: ["Pole kiosks"], execution: null },
     { id: "transit", title: "Transit advertising", category: "OOH media", formats: ["Transit advertising", "Transit media"], execution: null },
     { id: "signage", title: "Signage branding", category: "OOH media", formats: ["Signage branding"], execution: null },
     { id: "in-flight", title: "In-flight advertising", category: "Travel media", formats: ["In-flight advertising"], execution: null },
@@ -430,7 +436,6 @@ export const serviceShowcase = {
     { id: "mapping", title: "Location & audience mapping", category: "Media planning & buying", formats: ["Location & audience mapping"], execution: null },
     { id: "buying", title: "Cost-effective media buying", category: "Media planning & buying", formats: ["Cost-effective media buying"], execution: null },
     { id: "digital-branding", title: "Digital branding & promotions", category: "Digital & indoor media", formats: ["Digital branding & promotions"], execution: null },
-    { id: "outdoor-digital", title: "Outdoor digital advertising", category: "Digital & indoor media", formats: ["Outdoor digital advertising"], execution: null },
     { id: "in-app", title: "In-app advertising", category: "Digital & indoor media", formats: ["In-app advertising"], execution: null },
   ] as ShowcaseService[],
 };
