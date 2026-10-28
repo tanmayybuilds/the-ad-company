@@ -132,7 +132,8 @@ export const clients = {
 /** Includes offerings supplied in the company's October 2026 introduction slides. */
 export const services = {
   eyebrow: "[02 // Where your brand can show up]",
-  journeyHint: "Interactive 3D environment journey — scroll or click any vertical to explore.",
+  journeyHint: "Scroll to journey through five advertising environments, or select a service to explore.",
+  previewAlt: "Illustrative advertising environment:",
   loadingLabel: "Loading environment sequence",
   unavailable: "Some animation frames could not load. Showing the available illustration.",
   heading: ["Real places.", "Real brand presence."],
@@ -245,6 +246,26 @@ export const services = {
       focusLabel: "Instant commerce",
     },
   ] satisfies Service[],
+};
+
+export const residentialJourney = {
+  title: 'Your brand. In their everyday.',
+  chapter: 'Residential & community',
+  prototype: 'Residential journey · prototype',
+  note: 'Illustrative placements. People and locations are animated concepts.',
+  hint: 'Scroll to explore. Scroll back to retrace.',
+  returnLabel: 'Original services',
+  skipLabel: 'Continue to the website',
+  stillLabel: 'Still preview',
+  loading: 'Preparing your neighbourhood…',
+  progressLabel: 'Explore a residential placement',
+  stops: [
+    { title: 'At the main gate.', format: 'Society entrance branding', detail: 'A branded welcome, seen by residents, visitors and arriving vehicles.', scene: 'gate' },
+    { title: 'While they wait.', format: 'Lift & lobby digital screens', detail: 'A clear screen at eye level, part of the everyday wait for the lift.', scene: 'lift' },
+    { title: 'Right to their door.', format: 'Door-to-door campaigns', detail: 'A branded leaflet delivered personally, with time for a conversation.', scene: 'door' },
+    { title: 'A moment of connection.', format: 'Flyer distribution', detail: 'A friendly handoff along the paths people already walk.', scene: 'flyer' },
+    { title: 'Make it an experience.', format: 'Community activations', detail: 'A branded stand, a product conversation and neighbours gathering together.', scene: 'activation' },
+  ],
 };
 
 export const work = {

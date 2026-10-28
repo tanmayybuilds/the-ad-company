@@ -8,6 +8,7 @@ import { Work, About, Team, Footer } from '@/components/site/Sections';
 import { CoverflowCoverage } from '@/components/site/CoverflowCoverage';
 import { Contact } from '@/components/site/Contact';
 import { ScrollTrigger } from '@/lib/motion';
+import { ResidentialJourney } from '@/components/site/ResidentialJourney';
 import './styles.css';
 
 if (typeof window !== 'undefined') {
@@ -15,10 +16,10 @@ if (typeof window !== 'undefined') {
   document.fonts?.ready?.then(() => ScrollTrigger.refresh());
 }
 
-export function App() {
-  return <><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip /><Services /><Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
+export function App({ residentialPrototype = false }: { residentialPrototype?: boolean } = {}) {
+  return <><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip />{residentialPrototype ? <ResidentialJourney /> : <Services />}<Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
 }
 if (typeof document !== 'undefined') {
-  createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+  createRoot(document.getElementById('root')!).render(<StrictMode><App residentialPrototype={new URLSearchParams(window.location.search).get('prototype') === 'residential'} /></StrictMode>);
 }
 

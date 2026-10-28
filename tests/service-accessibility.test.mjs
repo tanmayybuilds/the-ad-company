@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
+import { TOTAL_FRAMES, ZONE_STARTS, sequenceZone } from '../src/lib/service-sequence.mjs';
 
 test('Services scrubs both ways during a visit, skips upward re-entry after leaving the screen, and keeps static categories reachable', async () => {
   const hooks = `
@@ -65,7 +66,7 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
       const navigate = harness.refs[8].current;
       navigate(4);
       assert.equal(harness.selection, 4);
-      assert.equal(frames.at(-1), 206);
+      assert.equal(frames.at(-1), ZONE_STARTS[4]);
       navigate(0);
       assert.equal(harness.selection, 0);
       assert.equal(frames.at(-1), 0);
@@ -99,7 +100,7 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     const cleanup = harness.effects[0]();
     const trigger = harness.trigger;
     const navigate = harness.refs[8].current;
-    const goal = zone => zone === 4 ? 265 : [0, 42, 99, 156][zone];
+    const goal = zone => ZONE_STARTS[zone];
     const advance = (fraction, zone) => {
       const travel = harness.travel;
       assert.ok(!travel.killed);
@@ -160,17 +161,17 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     trigger.vars.onLeaveBack();
     assert.equal(harness.selection, 4, 'Stale GSAP direction at completion must not reset the sequence');
     wheel(-100);
-    assert.equal(window.scrollY, Math.round(trigger.end), 'Reversing while the stage is visible must not jump to the website above it');
+    assert.equal(window.scrollY, Math.round(trigger.start + ZONE_STARTS[4] / (TOTAL_FRAMES - 1) * (trigger.end - trigger.start)), 'Reversing while the stage is visible must not jump to the website above it');
     const scrub = progress => {
       window.scrollY = Math.round(trigger.start + progress * (trigger.end - trigger.start));
       trigger.progress = progress;
       trigger.vars.onUpdate(trigger);
       settle();
-      assert.equal(frames.at(-1), Math.round(progress * 265));
+      assert.equal(frames.at(-1), Math.round(progress * (TOTAL_FRAMES - 1)));
     };
     trigger.direction = -1;
     scrub(.6);
-    assert.equal(harness.selection, 3);
+    assert.equal(harness.selection, sequenceZone(Math.round(.6 * (TOTAL_FRAMES - 1))));
     const beforeRefresh = frames.length;
     trigger.vars.onRefreshInit();
     trigger.progress = 0;
@@ -180,9 +181,9 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     assert.equal(frames.length, beforeRefresh, 'Temporary zero progress during layout refresh must not rewind or reload the frame window');
     trigger.progress = .6;
     trigger.vars.onRefresh(trigger);
-    assert.equal(frames.at(-1), 159);
+    assert.equal(frames.at(-1), Math.round(.6 * (TOTAL_FRAMES - 1)));
     wheel(100); trigger.direction = 1; scrub(.8);
-    assert.equal(harness.selection, 4);
+    assert.equal(harness.selection, sequenceZone(Math.round(.8 * (TOTAL_FRAMES - 1))));
     scrub(1);
     // Passing the pin endpoint still leaves the released stage visible; reversal is still allowed.
     window.scrollY = trigger.end + 300;

@@ -1,0 +1,39 @@
+{
+  "fps": 24,
+  "width": 1080,
+  "height": 608,
+  "transitionFrames": 18,
+  "totalFrames": 1269,
+  "clips": [
+    {
+      "id": "residential",
+      "source": "residential and community.mp4",
+      "frames": 240,
+      "sha256": "3bc6e07cfda529edcf94872b88098aec3f76e1dc84587fc8563f3c51aa15b9e4"
+    },
+    {
+      "id": "corporate",
+      "source": "Corporate and coworking.mp4",
+      "frames": 239,
+      "sha256": "e7a1996ea56666e1e8c53a92b6a92605f2f9c3807bb57ea7e3f86b3984a8ee55"
+    },
+    {
+      "id": "outdoor",
+      "source": "Outdoor and Transit.mp4",
+      "frames": 239,
+      "sha256": "57386be91943c2731cf3b8f8eed9d1773e1126d35a0e278d549eb812c458af12"
+    },
+    {
+      "id": "cinema",
+      "source": "Cinema airports and inflight.mp4",
+      "frames": 240,
+      "sha256": "2e410afefb120ff264242ba661e45ad1d879f0ba5caf510b9280875fd5154dc8"
+    },
+    {
+      "id": "delivery",
+      "source": "Delivery and in app.mp4",
+      "frames": 239,
+      "sha256": "1ed6156e130f4a32315998f35568291543a05cec0e4d69bc0ff84d91e8b78329"
+    }
+  ]
+}

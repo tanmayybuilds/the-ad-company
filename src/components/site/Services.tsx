@@ -82,7 +82,10 @@ export function Services() {
         progress.current.setAttribute('aria-valuenow', String(loaded.length));
         progress.current.hidden = drawnFrame.current >= 0 || loaded.length > 0;
       }
-      const index = loaded[0];
+      // A late decode must stay between the last drawn frame and the scroll target.
+      const index = loaded.find(index => drawnFrame.current < 0 || (target >= drawnFrame.current
+        ? index >= drawnFrame.current && index <= target
+        : index <= drawnFrame.current && index >= target));
       if (index === undefined || drawnFrame.current === index) return;
       const image = frames.get(index)!;
       if (element.width !== image.naturalWidth || element.height !== image.naturalHeight) {
@@ -331,7 +334,7 @@ export function Services() {
         activeZone.current = targetZone;
         setActive(targetZone);
         ScrollTrigger.refresh();
-        const destination = targetZone === services.items.length - 1 ? TOTAL_FRAMES - 1 : ZONE_STARTS[targetZone];
+        const destination = ZONE_STARTS[targetZone];
         const alignScroll = () => {
           scrollPinTo(trigger.start + destination / (TOTAL_FRAMES - 1) * (trigger.end - trigger.start));
           ScrollTrigger.update();
@@ -395,7 +398,7 @@ export function Services() {
                 <span>Illustration // [{current.index}]</span>
               </div>
               <div className="service-screen">
-                <img className="service-poster" src={sequenceSource(0, import.meta.env.BASE_URL)} alt="Illustrative miniature city with advertising placements." width="1080" height="608" />
+                <img className="service-poster" src={sequenceSource(ZONE_STARTS[active], import.meta.env.BASE_URL)} alt={`${services.previewAlt} ${current.title}.`} width="1080" height="608" />
                 <canvas ref={canvas} width="1080" height="608" role="img" aria-label={`Illustrative 3D environment: ${current.title}`} />
                 <span className="service-screen-label">[{current.index}] {current.title}</span>
                 <div ref={progress} className="service-loading" role="progressbar" aria-label={services.loadingLabel} aria-valuemin={0} aria-valuemax={TOTAL_FRAMES} aria-valuenow={0} />
