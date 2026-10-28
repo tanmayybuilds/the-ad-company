@@ -6,5 +6,5 @@ export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  build: { sourcemap: false },
+  build: { sourcemap: false, rolldownOptions: { input: { main: fileURLToPath(new URL('./index.html', import.meta.url)), gallery: fileURLToPath(new URL('./gallery.html', import.meta.url)) } } },
 });

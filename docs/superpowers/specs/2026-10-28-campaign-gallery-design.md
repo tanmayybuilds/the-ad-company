@@ -1,0 +1,9 @@
+# Curated campaign snapshots and separate gallery
+
+Use no more than three selected photographs per brand, per the user's latest instruction. Selection prioritizes legible brand artwork, sharpness, useful context and different placements over near-duplicate angles. Source folder aliases map to the existing client names. Decathlon and SBI folders are empty; retain their existing pending state. Highland is included in the gallery using its supplied name, without inventing a logo or changing the existing logo roster. Exclude the Highland folder's Wockhardt-branded shot and use photographs only.
+
+Existing client dialogs get manual previous/next photo controls and a link to the same brand's gallery filter. The full gallery is a separate `gallery.html` entry, so GitHub Pages supports direct links and refreshes without a router or server fallback. Add Gallery to desktop/mobile navigation and footer; gallery navigation returns to homepage sections correctly.
+
+Visual direction: a wall of photographic prints with a single animated fan collage opening, natural portrait/landscape proportions, responsive masonry, brand filters and keyboard-accessible full-screen browsing. Reuse Porcelain #F7F9F8, Pale Teal #E5EFF0, Logo Teal #12546B, Gold #D9A328 and Dark Text #102F38; use the approved Outfit, General Sans, Satoshi and Kalam font roles. Keep surrounding controls quiet. Motion responds to entry/filter selection and respects reduced motion; no scroll trapping or idle animation loops.
+
+Approaches: putting the wall on the landing page conflicts with the request; adding a routing library is unnecessary for two static pages. A Vite multi-page build reuses shared header/footer and the existing React/GSAP stack. Optimized 640 px previews and 1440 px full images keep the recent loading improvements; full images load only when opened. Keep source files untouched, preserve full image framing, and record selection provenance.

@@ -4,7 +4,8 @@ import { nav } from "@/content/site";
 import { cn } from "@/lib/utils";
 import { ActionLink, Wordmark } from "./primitives";
 
-export function Header() {
+export function Header({ homePath = '' }: { homePath?: string } = {}) {
+  const link = (href: string) => href.startsWith('#') ? `${homePath}${href}` : `${import.meta.env.BASE_URL}${href}`;
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -13,7 +14,7 @@ export function Header() {
 
   // Highlight the section currently in view.
   useEffect(() => {
-    const ids = nav.map((n) => n.href.slice(1));
+    const ids = nav.filter(n => n.href.startsWith('#')).map((n) => n.href.slice(1));
     const sections = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => !!el);
@@ -74,7 +75,7 @@ export function Header() {
         Skip to content
       </a>
       <div className="container-page flex h-[var(--header-h)] items-center justify-between gap-6">
-        <a href="#top" aria-label="The Ad Company — back to top" className="shrink-0">
+        <a href={link('#top')} aria-label="The Ad Company — back to top" className="shrink-0">
           <Wordmark />
         </a>
 
@@ -82,11 +83,12 @@ export function Header() {
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-6">
               {nav.map((item) => {
-                const isActive = active === item.href.slice(1);
+                const isActive = item.href === 'gallery.html' ? !!homePath : active === item.href.slice(1);
                 return (
                   <li key={item.href}>
                     <a
-                      href={item.href}
+                      href={link(item.href)}
+                      aria-current={item.href === 'gallery.html' && homePath ? 'page' : undefined}
                       className={cn(
                         "relative py-2 text-sm font-semibold uppercase tracking-wider transition-colors",
                         "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:bg-orange after:transition-transform after:duration-300",
@@ -103,7 +105,7 @@ export function Header() {
             </ul>
           </nav>
 
-          <ActionLink href="#contact" variant="signal" size="sm" className="hidden sm:inline-flex">
+          <ActionLink href={link('#contact')} variant="signal" size="sm" className="hidden sm:inline-flex">
             Let’s talk
           </ActionLink>
 
@@ -136,7 +138,8 @@ export function Header() {
             {nav.map((item, i) => (
               <li key={item.href} className="border-b hairline-ivory">
                 <a
-                  href={item.href}
+                  href={link(item.href)}
+                  aria-current={item.href === 'gallery.html' && homePath ? 'page' : undefined}
                   onClick={() => setOpen(false)}
                   className="flex items-baseline justify-between py-4 font-ui text-3xl font-extrabold uppercase tracking-tight transition-colors hover:text-lime"
                 >
@@ -147,7 +150,7 @@ export function Header() {
             ))}
           </ul>
           <ActionLink
-            href="#contact"
+            href={link('#contact')}
             variant="signal"
             size="lg"
             className="mt-6 w-full"

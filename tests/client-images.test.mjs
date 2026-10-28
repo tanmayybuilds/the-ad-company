@@ -31,13 +31,13 @@ test('client logos resolve to real assets when hosted under the GitHub Pages pat
       assert.ok(statSync(new URL(`../public/${url.pathname.slice('/the-ad-company/'.length)}`, import.meta.url)).size < 64_000, `Logo is unnecessarily heavy: ${source}`);
     }
     // A supplied campaign must bind only to its named brand and retain Pages-relative media URLs.
-    work.projects.push({ id: 'test-campaign', client: clients.items[0].name, title: 'Fixture campaign', description: 'Fixture description', photos: [{ src: '/campaigns/fixture.jpg', alt: 'Fixture execution' }], deliverables: ['Fixture deliverable'] });
+    work.projects.push({ id: 'test-campaign', client: clients.items[6].name, title: 'Fixture campaign', description: 'Fixture description', photos: [{ src: '/campaigns/fixture.jpg', alt: 'Fixture execution' }], deliverables: ['Fixture deliverable'] });
     try {
-      const withCampaign = renderToStaticMarkup(createElement(CampaignPreview, { clientName: clients.items[0].name, active: false, motion: false }));
+      const withCampaign = renderToStaticMarkup(createElement(CampaignPreview, { clientName: clients.items[6].name, active: false, motion: false }));
       assert.equal([...withCampaign.matchAll(/Fixture campaign/g)].length, 1);
       assert.equal([...withCampaign.matchAll(/src="\/the-ad-company\/campaigns\/fixture.jpg"/g)].length, 1);
       assert.match(withCampaign, /Fixture deliverable/);
-      const otherBrand = renderToStaticMarkup(createElement(CampaignPreview, { clientName: clients.items[1].name, active: false, motion: false }));
+      const otherBrand = renderToStaticMarkup(createElement(CampaignPreview, { clientName: clients.items[15].name, active: false, motion: false }));
       assert.match(otherBrand, /Campaign showcase coming soon/);
       assert.doesNotMatch(otherBrand, /Fixture campaign/);
     } finally {

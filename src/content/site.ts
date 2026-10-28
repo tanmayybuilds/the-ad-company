@@ -5,7 +5,9 @@
  * business. Replace placeholders here — components read only from this file.
  */
 
-export type NavItem = { label: string; href: `#${string}` };
+import campaigns from './campaigns.json';
+
+export type NavItem = { label: string; href: `#${string}` | 'gallery.html' };
 
 export type Service = {
   id: string;
@@ -31,11 +33,12 @@ export type Project = {
   location: string | null;
   description: string | null;
   /** Real campaign photographs only. Leave empty until a project pack is supplied. */
-  photos: { src: string; alt: string }[];
+  photos: { src: string; alt: string; thumbnail?: string; width?: number; height?: number }[];
   /** Verified results only — never estimates. */
   results: string[] | null;
   /** Extra execution notes revealed by an on-page disclosure when present. */
   details: string[] | null;
+  galleryId?: string;
 };
 
 export type Location = { name: string; kind: "City" | "State / region"; state?: string };
@@ -62,6 +65,7 @@ export const company = {
 export const nav: NavItem[] = [
   { label: "Services", href: "#services" },
   { label: "Work", href: "#work" },
+  { label: "Gallery", href: "gallery.html" },
   { label: "About", href: "#about" },
   { label: "Coverage", href: "#coverage" },
   { label: "Team", href: "#team" },
@@ -109,6 +113,9 @@ export const clients = {
   pause: "Pause brand animation",
   resume: "Resume brand animation",
   preview: "Preview",
+  previousPhoto: "Previous campaign photo",
+  nextPhoto: "Next campaign photo",
+  viewGallery: "View brand gallery",
   items: [
     { name: "Malabar Gold and Diamonds", logo: "/clients/malabar-gold-diamonds.svg", width: 255, height: 52, background: "#20201E" },
     { name: "TDF Diamonds & Gold", logo: "/clients/tdf-diamonds-gold.webp", width: 152, height: 152 },
@@ -294,10 +301,27 @@ export const work = {
     description: "Campaign details coming soon",
   },
   projects: [
-    { id: "p1", featured: true, client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
-    { id: "p2", client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
-    { id: "p3", client: null, service: null, location: null, description: null, photos: [], results: null, details: null },
+    ...campaigns.brands.map(brand => ({ id: brand.id, galleryId: brand.id, title: `${brand.name} campaigns`, client: brand.name, service: null, location: null, description: null, photos: brand.photos, results: null, details: null })),
   ] as Project[],
+};
+
+export const gallery = {
+  name: 'Campaign gallery',
+  title: ['Out there.', 'For real.'],
+  intro: 'A closer look at the campaigns, people and places behind the brands.',
+  note: 'A few favourites from the field.',
+  explore: 'Explore the photo wall',
+  all: 'All brands',
+  filterLabel: 'Filter campaign photos by brand',
+  wallTitle: 'The photo wall',
+  photoCount: 'campaign snapshots',
+  openPhoto: 'Open campaign photo',
+  closePhoto: 'Close photo viewer',
+  previousPhoto: 'Previous photo',
+  nextPhoto: 'Next photo',
+  photoHint: 'Select a photo for a closer look.',
+  endTitle: 'Your brand could be next.',
+  endCta: 'Let’s make it happen',
 };
 
 export const about = {

@@ -12,16 +12,20 @@ export function CampaignPreview({ clientName, active, motion }: { clientName: st
   const [slide, setSlide] = useState(0);
   const photos = projects.flatMap(project => project.photos);
   const video = projects.find(project => project.video)?.video;
-  useEffect(() => {
-    if (!active || !motion || photos.length < 2) return;
-    const timer = setInterval(() => setSlide(value => (value + 1) % photos.length), 3000);
-    return () => clearInterval(timer);
-  }, [active, motion, photos.length]);
   const photo = photos[slide % photos.length];
+  const galleryId = projects.find(project => project.galleryId)?.galleryId;
   return <>
-    {active && motion && video ? <video src={asset(video.src)} poster={video.poster ? asset(video.poster) : undefined} aria-label={video.alt} autoPlay muted loop playsInline preload="none" />
+    {photo ? <figure className="brand-campaign-photo">
+      <img src={asset(photo.thumbnail || photo.src)} alt={photo.alt} width={photo.width} height={photo.height} decoding="async" />
+      <figcaption className="brand-photo-controls">
+        <button type="button" aria-label={clients.previousPhoto} disabled={photos.length < 2} onClick={() => setSlide(value => (value - 1 + photos.length) % photos.length)}>←</button>
+        <span aria-live="polite">{slide % photos.length + 1} / {photos.length}</span>
+        <button type="button" aria-label={clients.nextPhoto} disabled={photos.length < 2} onClick={() => setSlide(value => (value + 1) % photos.length)}>→</button>
+      </figcaption>
+    </figure> : active && motion && video ? <video src={asset(video.src)} poster={video.poster ? asset(video.poster) : undefined} aria-label={video.alt} autoPlay muted loop playsInline preload="none" />
       : video?.poster ? <img src={asset(video.poster)} alt={video.alt} loading="lazy" />
-      : photo ? <img src={asset(photo.src)} alt={photo.alt} loading="lazy" /> : null}
+      : null}
+    {galleryId && <a className="brand-gallery-link" href={`${import.meta.env.BASE_URL}gallery.html?brand=${galleryId}`}>{clients.viewGallery}<span aria-hidden="true">↗</span></a>}
     <span className="brand-project-copy">
       {projects.length ? projects.map(project => <span key={project.id} className="brand-project">
         {(project.title || project.service) && <strong>{project.title || project.service}</strong>}

@@ -1,0 +1,324 @@
+{
+  "brands": [
+    {
+      "id": "malabar",
+      "name": "Malabar Gold and Diamonds",
+      "label": "Malabar",
+      "folder": "Malabar Gold and Diamonds",
+      "files": [
+        {
+          "file": "PHOTO-2025-02-24-12-52-52(1).jpg",
+          "sha256": "73127ac285d8cc0810c7dc9b0df514479d1ec94f744863a2991b25aae013012d",
+          "alt": "Malabar Gold and Diamonds: branded campaign van on a city street."
+        },
+        {
+          "file": "PHOTO-2025-02-19-18-40-41.jpg",
+          "sha256": "cd5bab3dbc5d5cf8d943ebfe8d0ac9162aac81d3999b6a1ea4b379678c329c1e",
+          "alt": "Malabar Gold and Diamonds: jewellery campaign at a residential entrance."
+        },
+        {
+          "file": "PHOTO-2025-12-09-12-02-08(3).jpg",
+          "sha256": "604e62e09f2b9d58d74a2ad2a5916ad3c9d2a9aefc6f056e0edf6439e19752f6",
+          "alt": "Malabar Gold and Diamonds: jewellery campaign displayed inside a lift."
+        }
+      ]
+    },
+    {
+      "id": "maruti-suzuki",
+      "name": "Maruti Suzuki India",
+      "label": "Maruti Suzuki",
+      "folder": "Maruti Suzuki",
+      "files": [
+        {
+          "file": "1793105338675.jpg",
+          "sha256": "ef54eecbbd90077da71760c6dc69d77ccf48bdc15acdbf0f4b98e022c21dcd64",
+          "alt": "Maruti Suzuki India: campaign team with display vehicles."
+        },
+        {
+          "file": "1793105338665.jpg",
+          "sha256": "8c48116618b209e46887d37880707d91ee948ba6a5fa6bb45dc0343304bd7c1d",
+          "alt": "Maruti Suzuki India: vehicle display in a residential courtyard."
+        },
+        {
+          "file": "1793105338684.jpg",
+          "sha256": "7cd3ff1dc38a8a5012c4d7055a40a3e2acc9d9bce025102ce1d2623686a87639",
+          "alt": "Maruti Suzuki India: residential vehicle display from a side angle."
+        }
+      ]
+    },
+    {
+      "id": "truemeds",
+      "name": "Truemeds",
+      "label": "Truemeds",
+      "folder": "True Meds",
+      "files": [
+        {
+          "file": "1793102472358.jpg",
+          "sha256": "dce06e6d8400f2ebf2fca126c6fb14e5d32325e0b5ef7a70004cf612d3954a82",
+          "alt": "Truemeds: branded health-check booth and campaign team."
+        },
+        {
+          "file": "1793102472374.jpg",
+          "sha256": "bb0e896fd230494adbb408d30dd116a861cb8adf3e9ce48e56e823b71d1ac4a5",
+          "alt": "Truemeds: outdoor health-check activation."
+        },
+        {
+          "file": "1793102472397.jpg",
+          "sha256": "c2ff1da50b06882140c698ccd284bdd55006e37478b45b45f2d5ffb99228fcda",
+          "alt": "Truemeds: health-check campaign canopy and standees."
+        }
+      ]
+    },
+    {
+      "id": "tdf",
+      "name": "TDF Diamonds & Gold",
+      "label": "TDF",
+      "folder": "The Diamond Factory",
+      "files": [
+        {
+          "file": "1793098832765.jpg",
+          "sha256": "c237e5fac3fe81728f92ed2a95c008ebf0e04c054fd42fdd6adc6002ae35ae62",
+          "alt": "TDF Diamonds & Gold: branded mobile advertising van."
+        },
+        {
+          "file": "1793098832777.jpg",
+          "sha256": "0c3c46f0afda7d622dd5450cc932b25992c0f0594e99b31701ea6546156c7bfa",
+          "alt": "TDF Diamonds & Gold: jewellery campaign on a digital screen."
+        },
+        {
+          "file": "1793098832823.jpg",
+          "sha256": "f09878c62f39755d580f71b832501ceabcaca5fdde926628f516ad9f0d347f13",
+          "alt": "TDF Diamonds & Gold: illuminated mobile jewellery campaign."
+        }
+      ]
+    },
+    {
+      "id": "vihan",
+      "name": "Vihan Modular",
+      "label": "Vihan",
+      "folder": "Vihan",
+      "files": [
+        {
+          "file": "1793102306535.jpg",
+          "sha256": "52a110988f70782487fbb66ce9b9da10ce706f19106232971b6ab6b8c5e0c4bf",
+          "alt": "Vihan Modular: product campaign displayed in a lift."
+        },
+        {
+          "file": "1793102306551.jpg",
+          "sha256": "33c51c2252d517210c042897210d72372ccd5067a76c5a2cfc1db5258da83345",
+          "alt": "Vihan Modular: lift advertising with campaign artwork."
+        },
+        {
+          "file": "1793102306559.jpg",
+          "sha256": "5b2f9369390071eba081398e9be0efff09fd9709d08f735f7396d804c265fb08",
+          "alt": "Vihan Modular: close view of the branded campaign poster."
+        }
+      ]
+    },
+    {
+      "id": "jgp",
+      "name": "Jagannath Gangaram Pednekar Jewellers",
+      "label": "JGP Jewellers",
+      "folder": "JGP",
+      "files": [
+        {
+          "file": "1793099401853.jpg",
+          "sha256": "db16759ac3f6df50e2fc14d16118594cc2a2a7e8b0249e8e609bc3d3d60dfcbd",
+          "alt": "Jagannath Gangaram Pednekar Jewellers: jewellery campaign screen beside a lift."
+        },
+        {
+          "file": "1793099401868.jpg",
+          "sha256": "31778e57c5b90b7703308c0a751129bac9482ffd3eb6e3f5a43158a179de18a3",
+          "alt": "Jagannath Gangaram Pednekar Jewellers: portrait campaign on an indoor digital screen."
+        },
+        {
+          "file": "1793099401882.jpg",
+          "sha256": "8b6f58544dc93c6e5e4da0740015c6de7c29e942fde7d83897df924e6caef42b",
+          "alt": "Jagannath Gangaram Pednekar Jewellers: jewellery campaign display in a building lobby."
+        }
+      ]
+    },
+    {
+      "id": "michelin",
+      "name": "Michelin",
+      "label": "Michelin",
+      "folder": "Michelin",
+      "files": [
+        {
+          "file": "1793102195324.jpg",
+          "sha256": "b7fa501c3e6637fbaf0c79b19ee2e1161d0d5734861095c3d37554af53d98008",
+          "alt": "Michelin: campaign activation and branded display collage."
+        }
+      ]
+    },
+    {
+      "id": "tyresnmore",
+      "name": "TyresNmore",
+      "label": "TyresNmore",
+      "folder": "TyersNmore",
+      "files": [
+        {
+          "file": "1793102220074.jpg",
+          "sha256": "02bcf34f94cd1444d325668887c2403a7f02c721b5cae19478ed502e85976aff",
+          "alt": "TyresNmore: campaign placement at a residential entrance."
+        },
+        {
+          "file": "1793102220081.jpg",
+          "sha256": "3ecc8b2b7de7858bff7c81be05b66b635b46a9abeafaee6e3cf12ff272cfe337",
+          "alt": "TyresNmore: close view of a branded entrance poster."
+        },
+        {
+          "file": "1793102220089.jpg",
+          "sha256": "937ff456c204f27b153daf84b13c3c76de4918fcf0a794c87856bb710787ff95",
+          "alt": "TyresNmore: tyre campaign displayed inside a lift."
+        }
+      ]
+    },
+    {
+      "id": "wockhardt",
+      "name": "Wockhardt Hospitals",
+      "label": "Wockhardt",
+      "folder": "Wockard",
+      "files": [
+        {
+          "file": "1793103000742.jpg",
+          "sha256": "6f917c6d8f194c53db231f2db4163375a6dee3b1f1fd506f052b79c2631cc3e6",
+          "alt": "Wockhardt Hospitals: hospital campaign on an auto-rickshaw."
+        },
+        {
+          "file": "1793103000787.jpg",
+          "sha256": "8ad7ff5fffa9aaedd21d044328fe361fc2c755cb07273eabf438271dcec95279",
+          "alt": "Wockhardt Hospitals: rear view of a branded campaign auto-rickshaw."
+        },
+        {
+          "file": "1793103000802.jpg",
+          "sha256": "91ef670a8432233cafc31465fd8c0f71dfd518d767d428703537cc15d6f03669",
+          "alt": "Wockhardt Hospitals: hospital campaign displayed in a lift."
+        }
+      ]
+    },
+    {
+      "id": "toyota",
+      "name": "Toyota India",
+      "label": "Toyota",
+      "folder": "Toyota",
+      "files": [
+        {
+          "file": "1793103134859.jpg",
+          "sha256": "b5e95d7fde9b1936287b4669066fc72f87f9c4223e7dacedd957f50f8bfde8c8",
+          "alt": "Toyota India: campaign vehicle from the front."
+        },
+        {
+          "file": "1793103134762.jpg",
+          "sha256": "82b4f81450345cc5aade26beed6bc1303df3be9a4cf4f981624da18030d1312a",
+          "alt": "Toyota India: toyota campaign vehicle on location."
+        },
+        {
+          "file": "1793103134806.jpg",
+          "sha256": "4b1f7a4b6119c32743446ba2897d72b6c8041ff9c1200d7b471ede2b99aa9d80",
+          "alt": "Toyota India: rear view of a toyota campaign vehicle."
+        }
+      ]
+    },
+    {
+      "id": "milkbasket",
+      "name": "Milkbasket",
+      "label": "Milkbasket",
+      "folder": "Milk Basket",
+      "files": [
+        {
+          "file": "1793103445994.jpg",
+          "sha256": "2eadf26675b2a2a3182909b12a8e2e193cff3f9d4ff69f2390ac065fbdef52a7",
+          "alt": "Milkbasket: branded campaign promoter at a residential doorway."
+        },
+        {
+          "file": "1793103446022.jpg",
+          "sha256": "be5dfa4c7398e7442f0b312a52bef4d18045386c6a8972d03d817e8298830f32",
+          "alt": "Milkbasket: doorstep campaign conversation."
+        },
+        {
+          "file": "1793103446065.jpg",
+          "sha256": "2c9a4bcffcc0527256b4ced10714f859d8262c1496c38ee1d82d17a2643e9a54",
+          "alt": "Milkbasket: campaign promoter speaking with a resident."
+        }
+      ]
+    },
+    {
+      "id": "apollo",
+      "name": "Apollo Diagnostics",
+      "label": "Apollo",
+      "folder": "Apollo Diagnostics",
+      "files": [
+        {
+          "file": "1793158489160.jpg",
+          "sha256": "7cc20faad3a4d8d92109d5de357da7c5bae2a6aeaa8c637eab885a1cd971908f",
+          "alt": "Apollo Diagnostics: community diagnostic campaign in progress."
+        },
+        {
+          "file": "1793158489170.jpg",
+          "sha256": "245ea0e75b806a49699e5c31aa563b1245fa558a19de90aff4a89aff30275003",
+          "alt": "Apollo Diagnostics: health-check team working with a visitor."
+        }
+      ]
+    },
+    {
+      "id": "suburban",
+      "name": "Suburban Diagnostics",
+      "label": "Suburban",
+      "folder": "Suburban",
+      "files": [
+        {
+          "file": "1793102517403.jpg",
+          "sha256": "030682d4aa4db6d63aa4960659821e2573512605fefb516adc9d3524e1a391ab",
+          "alt": "Suburban Diagnostics: community health-check event."
+        },
+        {
+          "file": "1793102517412.jpg",
+          "sha256": "fed91af30d4a85ef11c1829d209751b8e1d0a4f58b211f20d51126ea984845f7",
+          "alt": "Suburban Diagnostics: diagnostic team attending a visitor."
+        },
+        {
+          "file": "1793102517421.jpg",
+          "sha256": "bbcfcc14a128db0a7989ac90c2242c67ea520cb1abbb072132ad2ba8a923d0bf",
+          "alt": "Suburban Diagnostics: residents at a community health-check campaign."
+        }
+      ]
+    },
+    {
+      "id": "nova",
+      "name": "Nova IVF Fertility",
+      "label": "Nova IVF",
+      "folder": "Nova",
+      "files": [
+        {
+          "file": "1793099322994.jpg",
+          "sha256": "f9c04a64ef72bacd5f8ff65f1ea9c206b122b27c3dcdfbae31ddb6e666f4d033",
+          "alt": "Nova IVF Fertility: branded campaign cab from the left."
+        },
+        {
+          "file": "1793099323001.jpg",
+          "sha256": "c545a5ef9de2f4729cb3e30ed6b8cd86cd5d96bee342f173ce01d08a537c7d40",
+          "alt": "Nova IVF Fertility: branded campaign cab from the right."
+        }
+      ]
+    },
+    {
+      "id": "highland",
+      "name": "Highland",
+      "label": "Highland",
+      "folder": "Highland",
+      "files": [
+        {
+          "file": "1793099204815.jpg",
+          "sha256": "600250551abf039cc987773cc240479653bf29f4dcab9546df97f3d455f10fed",
+          "alt": "Highland: highland campaign on an auto-rickshaw."
+        },
+        {
+          "file": "1793099204808.jpg",
+          "sha256": "ed4a3f8bb9ba43ca21a9b07f29839000787513e548721c35bfcf7fed1ab25a02",
+          "alt": "Highland: angled view of a highland campaign auto-rickshaw."
+        }
+      ]
+    }
+  ]
+}

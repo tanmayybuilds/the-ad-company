@@ -1,0 +1,429 @@
+{
+  "brands": [
+    {
+      "id": "malabar",
+      "name": "Malabar Gold and Diamonds",
+      "label": "Malabar",
+      "photos": [
+        {
+          "id": "malabar-01",
+          "src": "/campaigns/malabar/01.webp",
+          "thumbnail": "/campaigns/malabar/01-thumb.webp",
+          "width": 1152,
+          "height": 648,
+          "alt": "Malabar Gold and Diamonds: branded campaign van on a city street."
+        },
+        {
+          "id": "malabar-02",
+          "src": "/campaigns/malabar/02.webp",
+          "thumbnail": "/campaigns/malabar/02-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Malabar Gold and Diamonds: jewellery campaign at a residential entrance."
+        },
+        {
+          "id": "malabar-03",
+          "src": "/campaigns/malabar/03.webp",
+          "thumbnail": "/campaigns/malabar/03-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Malabar Gold and Diamonds: jewellery campaign displayed inside a lift."
+        }
+      ]
+    },
+    {
+      "id": "maruti-suzuki",
+      "name": "Maruti Suzuki India",
+      "label": "Maruti Suzuki",
+      "photos": [
+        {
+          "id": "maruti-suzuki-01",
+          "src": "/campaigns/maruti-suzuki/01.webp",
+          "thumbnail": "/campaigns/maruti-suzuki/01-thumb.webp",
+          "width": 1280,
+          "height": 963,
+          "alt": "Maruti Suzuki India: campaign team with display vehicles."
+        },
+        {
+          "id": "maruti-suzuki-02",
+          "src": "/campaigns/maruti-suzuki/02.webp",
+          "thumbnail": "/campaigns/maruti-suzuki/02-thumb.webp",
+          "width": 1280,
+          "height": 720,
+          "alt": "Maruti Suzuki India: vehicle display in a residential courtyard."
+        },
+        {
+          "id": "maruti-suzuki-03",
+          "src": "/campaigns/maruti-suzuki/03.webp",
+          "thumbnail": "/campaigns/maruti-suzuki/03-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "Maruti Suzuki India: residential vehicle display from a side angle."
+        }
+      ]
+    },
+    {
+      "id": "truemeds",
+      "name": "Truemeds",
+      "label": "Truemeds",
+      "photos": [
+        {
+          "id": "truemeds-01",
+          "src": "/campaigns/truemeds/01.webp",
+          "thumbnail": "/campaigns/truemeds/01-thumb.webp",
+          "width": 1280,
+          "height": 720,
+          "alt": "Truemeds: branded health-check booth and campaign team."
+        },
+        {
+          "id": "truemeds-02",
+          "src": "/campaigns/truemeds/02.webp",
+          "thumbnail": "/campaigns/truemeds/02-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Truemeds: outdoor health-check activation."
+        },
+        {
+          "id": "truemeds-03",
+          "src": "/campaigns/truemeds/03.webp",
+          "thumbnail": "/campaigns/truemeds/03-thumb.webp",
+          "width": 1280,
+          "height": 960,
+          "alt": "Truemeds: health-check campaign canopy and standees."
+        }
+      ]
+    },
+    {
+      "id": "tdf",
+      "name": "TDF Diamonds & Gold",
+      "label": "TDF",
+      "photos": [
+        {
+          "id": "tdf-01",
+          "src": "/campaigns/tdf/01.webp",
+          "thumbnail": "/campaigns/tdf/01-thumb.webp",
+          "width": 1280,
+          "height": 720,
+          "alt": "TDF Diamonds & Gold: branded mobile advertising van."
+        },
+        {
+          "id": "tdf-02",
+          "src": "/campaigns/tdf/02.webp",
+          "thumbnail": "/campaigns/tdf/02-thumb.webp",
+          "width": 1296,
+          "height": 972,
+          "alt": "TDF Diamonds & Gold: jewellery campaign on a digital screen."
+        },
+        {
+          "id": "tdf-03",
+          "src": "/campaigns/tdf/03.webp",
+          "thumbnail": "/campaigns/tdf/03-thumb.webp",
+          "width": 1440,
+          "height": 1080,
+          "alt": "TDF Diamonds & Gold: illuminated mobile jewellery campaign."
+        }
+      ]
+    },
+    {
+      "id": "vihan",
+      "name": "Vihan Modular",
+      "label": "Vihan",
+      "photos": [
+        {
+          "id": "vihan-01",
+          "src": "/campaigns/vihan/01.webp",
+          "thumbnail": "/campaigns/vihan/01-thumb.webp",
+          "width": 817,
+          "height": 1280,
+          "alt": "Vihan Modular: product campaign displayed in a lift."
+        },
+        {
+          "id": "vihan-02",
+          "src": "/campaigns/vihan/02.webp",
+          "thumbnail": "/campaigns/vihan/02-thumb.webp",
+          "width": 817,
+          "height": 1280,
+          "alt": "Vihan Modular: lift advertising with campaign artwork."
+        },
+        {
+          "id": "vihan-03",
+          "src": "/campaigns/vihan/03.webp",
+          "thumbnail": "/campaigns/vihan/03-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Vihan Modular: close view of the branded campaign poster."
+        }
+      ]
+    },
+    {
+      "id": "jgp",
+      "name": "Jagannath Gangaram Pednekar Jewellers",
+      "label": "JGP Jewellers",
+      "photos": [
+        {
+          "id": "jgp-01",
+          "src": "/campaigns/jgp/01.webp",
+          "thumbnail": "/campaigns/jgp/01-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Jagannath Gangaram Pednekar Jewellers: jewellery campaign screen beside a lift."
+        },
+        {
+          "id": "jgp-02",
+          "src": "/campaigns/jgp/02.webp",
+          "thumbnail": "/campaigns/jgp/02-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "Jagannath Gangaram Pednekar Jewellers: portrait campaign on an indoor digital screen."
+        },
+        {
+          "id": "jgp-03",
+          "src": "/campaigns/jgp/03.webp",
+          "thumbnail": "/campaigns/jgp/03-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Jagannath Gangaram Pednekar Jewellers: jewellery campaign display in a building lobby."
+        }
+      ]
+    },
+    {
+      "id": "michelin",
+      "name": "Michelin",
+      "label": "Michelin",
+      "photos": [
+        {
+          "id": "michelin-01",
+          "src": "/campaigns/michelin/01.webp",
+          "thumbnail": "/campaigns/michelin/01-thumb.webp",
+          "width": 1280,
+          "height": 1280,
+          "alt": "Michelin: campaign activation and branded display collage."
+        }
+      ]
+    },
+    {
+      "id": "tyresnmore",
+      "name": "TyresNmore",
+      "label": "TyresNmore",
+      "photos": [
+        {
+          "id": "tyresnmore-01",
+          "src": "/campaigns/tyresnmore/01.webp",
+          "thumbnail": "/campaigns/tyresnmore/01-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "TyresNmore: campaign placement at a residential entrance."
+        },
+        {
+          "id": "tyresnmore-02",
+          "src": "/campaigns/tyresnmore/02.webp",
+          "thumbnail": "/campaigns/tyresnmore/02-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "TyresNmore: close view of a branded entrance poster."
+        },
+        {
+          "id": "tyresnmore-03",
+          "src": "/campaigns/tyresnmore/03.webp",
+          "thumbnail": "/campaigns/tyresnmore/03-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "TyresNmore: tyre campaign displayed inside a lift."
+        }
+      ]
+    },
+    {
+      "id": "wockhardt",
+      "name": "Wockhardt Hospitals",
+      "label": "Wockhardt",
+      "photos": [
+        {
+          "id": "wockhardt-01",
+          "src": "/campaigns/wockhardt/01.webp",
+          "thumbnail": "/campaigns/wockhardt/01-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Wockhardt Hospitals: hospital campaign on an auto-rickshaw."
+        },
+        {
+          "id": "wockhardt-02",
+          "src": "/campaigns/wockhardt/02.webp",
+          "thumbnail": "/campaigns/wockhardt/02-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Wockhardt Hospitals: rear view of a branded campaign auto-rickshaw."
+        },
+        {
+          "id": "wockhardt-03",
+          "src": "/campaigns/wockhardt/03.webp",
+          "thumbnail": "/campaigns/wockhardt/03-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Wockhardt Hospitals: hospital campaign displayed in a lift."
+        }
+      ]
+    },
+    {
+      "id": "toyota",
+      "name": "Toyota India",
+      "label": "Toyota",
+      "photos": [
+        {
+          "id": "toyota-01",
+          "src": "/campaigns/toyota/01.webp",
+          "thumbnail": "/campaigns/toyota/01-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "Toyota India: campaign vehicle from the front."
+        },
+        {
+          "id": "toyota-02",
+          "src": "/campaigns/toyota/02.webp",
+          "thumbnail": "/campaigns/toyota/02-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "Toyota India: toyota campaign vehicle on location."
+        },
+        {
+          "id": "toyota-03",
+          "src": "/campaigns/toyota/03.webp",
+          "thumbnail": "/campaigns/toyota/03-thumb.webp",
+          "width": 720,
+          "height": 1280,
+          "alt": "Toyota India: rear view of a toyota campaign vehicle."
+        }
+      ]
+    },
+    {
+      "id": "milkbasket",
+      "name": "Milkbasket",
+      "label": "Milkbasket",
+      "photos": [
+        {
+          "id": "milkbasket-01",
+          "src": "/campaigns/milkbasket/01.webp",
+          "thumbnail": "/campaigns/milkbasket/01-thumb.webp",
+          "width": 960,
+          "height": 1280,
+          "alt": "Milkbasket: branded campaign promoter at a residential doorway."
+        },
+        {
+          "id": "milkbasket-02",
+          "src": "/campaigns/milkbasket/02.webp",
+          "thumbnail": "/campaigns/milkbasket/02-thumb.webp",
+          "width": 810,
+          "height": 1440,
+          "alt": "Milkbasket: doorstep campaign conversation."
+        },
+        {
+          "id": "milkbasket-03",
+          "src": "/campaigns/milkbasket/03.webp",
+          "thumbnail": "/campaigns/milkbasket/03-thumb.webp",
+          "width": 1080,
+          "height": 1440,
+          "alt": "Milkbasket: campaign promoter speaking with a resident."
+        }
+      ]
+    },
+    {
+      "id": "apollo",
+      "name": "Apollo Diagnostics",
+      "label": "Apollo",
+      "photos": [
+        {
+          "id": "apollo-01",
+          "src": "/campaigns/apollo/01.webp",
+          "thumbnail": "/campaigns/apollo/01-thumb.webp",
+          "width": 1080,
+          "height": 1440,
+          "alt": "Apollo Diagnostics: community diagnostic campaign in progress."
+        },
+        {
+          "id": "apollo-02",
+          "src": "/campaigns/apollo/02.webp",
+          "thumbnail": "/campaigns/apollo/02-thumb.webp",
+          "width": 1080,
+          "height": 1440,
+          "alt": "Apollo Diagnostics: health-check team working with a visitor."
+        }
+      ]
+    },
+    {
+      "id": "suburban",
+      "name": "Suburban Diagnostics",
+      "label": "Suburban",
+      "photos": [
+        {
+          "id": "suburban-01",
+          "src": "/campaigns/suburban/01.webp",
+          "thumbnail": "/campaigns/suburban/01-thumb.webp",
+          "width": 1280,
+          "height": 960,
+          "alt": "Suburban Diagnostics: community health-check event."
+        },
+        {
+          "id": "suburban-02",
+          "src": "/campaigns/suburban/02.webp",
+          "thumbnail": "/campaigns/suburban/02-thumb.webp",
+          "width": 864,
+          "height": 1152,
+          "alt": "Suburban Diagnostics: diagnostic team attending a visitor."
+        },
+        {
+          "id": "suburban-03",
+          "src": "/campaigns/suburban/03.webp",
+          "thumbnail": "/campaigns/suburban/03-thumb.webp",
+          "width": 1280,
+          "height": 960,
+          "alt": "Suburban Diagnostics: residents at a community health-check campaign."
+        }
+      ]
+    },
+    {
+      "id": "nova",
+      "name": "Nova IVF Fertility",
+      "label": "Nova IVF",
+      "photos": [
+        {
+          "id": "nova-01",
+          "src": "/campaigns/nova/01.webp",
+          "thumbnail": "/campaigns/nova/01-thumb.webp",
+          "width": 1200,
+          "height": 673,
+          "alt": "Nova IVF Fertility: branded campaign cab from the left."
+        },
+        {
+          "id": "nova-02",
+          "src": "/campaigns/nova/02.webp",
+          "thumbnail": "/campaigns/nova/02-thumb.webp",
+          "width": 1200,
+          "height": 673,
+          "alt": "Nova IVF Fertility: branded campaign cab from the right."
+        }
+      ]
+    },
+    {
+      "id": "highland",
+      "name": "Highland",
+      "label": "Highland",
+      "photos": [
+        {
+          "id": "highland-01",
+          "src": "/campaigns/highland/01.webp",
+          "thumbnail": "/campaigns/highland/01-thumb.webp",
+          "width": 1081,
+          "height": 1440,
+          "alt": "Highland: highland campaign on an auto-rickshaw."
+        },
+        {
+          "id": "highland-02",
+          "src": "/campaigns/highland/02.webp",
+          "thumbnail": "/campaigns/highland/02-thumb.webp",
+          "width": 1081,
+          "height": 1440,
+          "alt": "Highland: angled view of a highland campaign auto-rickshaw."
+        }
+      ]
+    }
+  ]
+}
