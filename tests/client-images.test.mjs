@@ -38,7 +38,7 @@ test('client logos resolve to real assets when hosted under the GitHub Pages pat
       assert.equal([...withCampaign.matchAll(/src="\/the-ad-company\/campaigns\/fixture.jpg"/g)].length, 1);
       assert.match(withCampaign, /Fixture deliverable/);
       const otherBrand = renderToStaticMarkup(createElement(CampaignPreview, { clientName: clients.items[15].name, active: false, motion: false }));
-      assert.match(otherBrand, /Campaign showcase coming soon/);
+      assert.match(otherBrand, /\/decathlon\/01-thumb.webp/);
       assert.doesNotMatch(otherBrand, /Fixture campaign/);
     } finally {
       work.projects.pop();

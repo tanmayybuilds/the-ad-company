@@ -31,6 +31,7 @@ test('each work card opens grouped services, retains the full offering, and supp
       assert.doesNotMatch(video, /\bloop\b/i, 'The detail video must stop at the end');
       assert.match(video, /muted=""/i, 'Muted playback allows browser autoplay');
       assert.match(video, /controls=""/i, 'Manual playback controls must remain available');
+      assert.match(catalogue, /class="project-dialog-media"[\s\S]*?<video\b[\s\S]*?class="project-dialog-services"/, 'The video must be in its own left column before the service content');
       for (const offering of ['Television', 'Radio', 'Newspaper advertising &amp; inserts', 'Swiggy Instamart inserts', 'Zepto inserts', 'Blinkit inserts', 'Bus branding', 'Metro advertising', 'Train branding', 'Pole kiosks', 'Podcast integration', 'In-film branding', 'Brand ambassador &amp; celebrity endorsements', 'Location &amp; audience mapping', 'Cost-effective media buying']) {
         assert.ok(catalogue.includes(offering), `Card ${selected} loses supplied offering: ${offering}`);
       }
@@ -44,6 +45,7 @@ test('each work card opens grouped services, retains the full offering, and supp
       let opened = 0;
       const card = BentoCard({ index: selected, active: true, reduced: false, onActivate: value => assert.equal(value, null), onExplore: () => opened++ });
       const [animation, footer] = card.props.children;
+      assert.match(renderToStaticMarkup(animation), /class="bento-view-more"[^>]*>[\s\S]*?View more/, 'The animation must carry a permanently visible View more label');
       animation.props.onClick();
       footer.props.children.at(-1).props.onClick();
       assert.equal(opened, 2, 'Clicking either the animation or View more must open the details');

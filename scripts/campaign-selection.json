@@ -319,6 +319,29 @@
           "alt": "Highland: angled view of a highland campaign auto-rickshaw."
         }
       ]
+    },
+    {
+      "id": "decathlon",
+      "name": "Decathlon Sports India",
+      "label": "Decathlon",
+      "folder": "Decathlon",
+      "files": [
+        {
+          "file": "1793176896017.jpg",
+          "sha256": "24c9ffc479c49e839c42923ef6a593b8b4d298addd24a9977579623f13637bba",
+          "alt": "Decathlon Sports India: digital campaign screen beside a lift."
+        },
+        {
+          "file": "1793176896001.jpg",
+          "sha256": "11b31ee69c298addbf38b977fcd8737ca09b74a8175018ef7d569fea9a3ba516",
+          "alt": "Decathlon Sports India: close view of an in-building sale campaign screen."
+        },
+        {
+          "file": "1793176896024.jpg",
+          "sha256": "8dd69ed8234d5353f7657455a6820889b5026acbaab2a29b4d9122b7a4b1c878",
+          "alt": "Decathlon Sports India: sports campaign poster displayed in a building."
+        }
+      ]
     }
   ]
 }

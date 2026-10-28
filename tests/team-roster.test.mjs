@@ -49,6 +49,9 @@ test('full biographies open with page scroll locked and restore focus and scroll
     const { team } = await server.ssrLoadModule('/src/content/site.ts');
     const markup = renderToStaticMarkup(createElement(TeamBiography, { node: team.members[3], onClose() {} }));
     assert.match(markup, /aria-labelledby="team-bio-title"/);
+    assert.ok(markup.includes(team.members[3].cutoutUrl), 'The full biography must retain the tour portrait');
+    assert.match(markup, /class="team-bio-stage"/);
+    assert.ok(markup.includes(team.members[3].stageTitle));
     assert.match(markup, /Her ability to juggle multiple tasks/);
     assert.match(markup, /Always switched on. Always taking ownership. Always making things happen./);
     ref.current = { showModal: () => opened++, close: () => closed++ };

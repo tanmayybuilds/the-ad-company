@@ -19,7 +19,8 @@ test('curated campaign media maps to real clients, stays within budgets and neve
   try {
     const { clients, work } = await server.ssrLoadModule('/src/content/site.ts');
     const { default: catalogue } = await server.ssrLoadModule('/src/content/campaigns.json');
-    assert.equal(catalogue.brands.length, 15);
+    assert.equal(catalogue.brands.length, 16);
+    assert.equal(catalogue.brands.find(brand => brand.id === 'decathlon')?.photos.length, 3);
     const ids = new Set();
     for (const brand of catalogue.brands) {
       assert.ok(brand.photos.length >= 1 && brand.photos.length <= 3);
@@ -39,7 +40,7 @@ test('curated campaign media maps to real clients, stays within budgets and neve
         }
       }
     }
-    for (const name of ['State Bank of India (SBI)', 'Decathlon Sports India']) assert.ok(!work.projects.some(project => project.client === name));
+    assert.ok(!work.projects.some(project => project.client === 'State Bank of India (SBI)'));
     const { CampaignPreview } = await server.ssrLoadModule('/src/components/site/ClientStrip.tsx');
     for (const brand of catalogue.brands.filter(brand => brand.id !== 'highland')) {
       const markup = renderToStaticMarkup(createElement(CampaignPreview, { clientName: brand.name, active: false, motion: false }));
@@ -55,7 +56,7 @@ test('gallery is a separate page with working filters, lazy previews, a native v
   try {
     const { Gallery } = await server.ssrLoadModule('/src/components/site/Gallery.tsx');
     const { default: catalogue } = await server.ssrLoadModule('/src/content/campaigns.json');
-    for (const selected of ['all', 'malabar', 'michelin', 'highland', 'invalid']) {
+    for (const selected of ['all', 'malabar', 'michelin', 'highland', 'decathlon', 'invalid']) {
       const markup = renderToStaticMarkup(createElement(Gallery, { initialBrand: selected }));
       const expected = galleryItems(catalogue.brands, selected === 'invalid' ? 'all' : selected);
       assert.equal([...markup.matchAll(/class="gallery-photo-button"/g)].length, expected.length);

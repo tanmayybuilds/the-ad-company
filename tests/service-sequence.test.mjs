@@ -66,6 +66,9 @@ test('the environment index exposes all five categories and only the active desc
   const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, appType: 'custom' });
   try {
     const { Services } = await server.ssrLoadModule('/src/components/site/Services.tsx');
+    const { MOTION } = await server.ssrLoadModule('/src/lib/motion.ts');
+    assert.ok(Math.abs(22 / MOTION.services.scrollDistanceDesktop - 1.3) < 1e-9, 'Desktop service progress must advance 30% faster');
+    assert.ok(Math.abs(16 / MOTION.services.scrollDistanceMobile - 1.3) < 1e-9, 'Mobile service progress must advance 30% faster');
     const { services } = await server.ssrLoadModule('/src/content/site.ts');
     const markup = renderToStaticMarkup(createElement(Services));
     assert.equal([...markup.matchAll(/class="service-zone-card"/g)].length, 5);

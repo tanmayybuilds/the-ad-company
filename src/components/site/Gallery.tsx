@@ -44,7 +44,7 @@ export function Gallery({ initialBrand = 'all' }: { initialBrand?: string } = {}
   useGSAP(() => {
     const media = gsap.matchMedia();
     media.add(MQ.motion, () => {
-      gsap.from('.gallery-hero-card', { x: 180, y: 180, rotation: 0, autoAlpha: 0, duration: 1.15, stagger: .075, ease: 'power3.out', clearProps: 'transform,opacity,visibility' });
+      gsap.from('.gallery-hero-arrival', { x: 180, y: 180, rotation: -8, autoAlpha: 0, duration: 1.15, stagger: .075, ease: 'power3.out', clearProps: 'transform,opacity,visibility' });
       gsap.to(fan.current, { y: -55, rotation: -2, ease: 'none', scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: .7 } });
     });
     return () => media.revert();
@@ -68,12 +68,14 @@ export function Gallery({ initialBrand = 'all' }: { initialBrand?: string } = {}
           <p className="gallery-intro">{gallery.intro}</p>
           <a className="gallery-explore" href="#campaign-wall">{gallery.explore}<span aria-hidden="true">↓</span></a>
         </div>
-        <div className="gallery-hero-art" aria-hidden="true">
+        <div className="gallery-hero-art">
           <div ref={fan} className="gallery-hero-fan">
-            {heroPhotos.map((brand, index) => <figure key={brand.id} className="gallery-hero-card" style={{ '--print-index': index } as CSSProperties}>
-              <img src={asset(brand.photos[0].thumbnail)} alt="" width={brand.photos[0].width} height={brand.photos[0].height} decoding="async" />
-              <figcaption>{brand.label}</figcaption>
-            </figure>)}
+            {heroPhotos.map((brand, index) => <a key={brand.id} href="#campaign-wall" onClick={() => selectBrand(brand.id)} aria-label={`${gallery.viewBrand}: ${brand.name}`} className="gallery-hero-card" style={{ '--print-index': index } as CSSProperties}>
+              <div className="gallery-hero-arrival"><figure className="gallery-hero-print">
+                <img src={asset(brand.photos[0].thumbnail)} alt="" width={brand.photos[0].width} height={brand.photos[0].height} decoding="async" />
+                <figcaption>{brand.label}</figcaption>
+              </figure></div>
+            </a>)}
           </div>
           <p className="gallery-handwritten">{gallery.note}</p>
         </div>

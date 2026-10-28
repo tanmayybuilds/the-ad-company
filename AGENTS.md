@@ -56,7 +56,7 @@
 Before public deployment, the following assets and approvals are required:
 1. **Brand Assets:** The supplied transparent logo is installed in `public/brand/`; approved brand guidelines are still pending.
 2. **Contact Coordinates:**
-   - Confirmed business email: `ad@theadcompany.com`.
+   - Confirmed business email: `ad@theadcompany.in`.
    - Confirmed phone and WhatsApp: `+91 77150 01514` (link format `917715001514`).
    - Physical office address and verified Google Maps link.
 3. **Client & Work Assets:**

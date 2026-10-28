@@ -50,7 +50,7 @@ export const company = {
   concept: "The world is our canvas.",
   description: "End-to-end advertising across ATL, BTL, OOH, digital and branded content platforms.",
   contact: {
-    email: "ad@theadcompany.com",
+    email: "ad@theadcompany.in",
     phone: "+91 77150 01514",
     address: null as string | null,
     /** International format without "+" or spaces. */
@@ -307,6 +307,7 @@ export const work = {
 
 export const gallery = {
   name: 'Campaign gallery',
+  viewBrand: 'View campaign photos for',
   title: ['Out there.', 'For real.'],
   intro: 'A closer look at the campaigns, people and places behind the brands.',
   note: 'A few favourites from the field.',

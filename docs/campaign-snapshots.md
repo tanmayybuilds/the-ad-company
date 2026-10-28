@@ -2,7 +2,7 @@
 
 The user supplied 398 JPEGs and one MP4 across 17 folders, then limited the website to a maximum of three best photographs per brand. Reviewed contact sheets of all photographs; selected 40 photographs across the 15 populated brand folders. Selection prioritizes clear branding, useful context, sharpness and different placements. The video, exact duplicates, near-duplicate views, dark door-hanger shots, a spreadsheet screenshot, and photographs with minimal visible campaign artwork are excluded from the curated gallery.
 
-The two empty folders are Decathlon and State Bank of India; their existing client dialogs retain the pending notice. Highland's folder also contains a Wockhardt-branded image; it was excluded from the Highland selection. Highland is included by name in the gallery without inventing or adding a logo to the existing 16-logo roster.
+The initial Decathlon folder was empty; a later six-photo Decathlon pack now supplies three curated shots. Only State Bank of India retains the pending notice. The gallery now contains 43 photos across 16 brands. Highland's folder also contains a Wockhardt-branded image; it was excluded from the Highland selection. Highland is included by name in the gallery without inventing or adding a logo to the existing 16-logo roster.
 
 | Source folder | Website brand | Selected photos |
 | --- | --- | ---: |
@@ -21,10 +21,11 @@ The two empty folders are Decathlon and State Bank of India; their existing clie
 | Suburban | Suburban Diagnostics | 3 |
 | Nova | Nova IVF Fertility | 2 |
 | Highland | Highland | 2 |
+| Decathlon (additional pack) | Decathlon Sports India | 3 |
 
 `scripts/campaign-selection.json` records exact original filenames, SHA-256 checksums and descriptive alt text. `src/content/campaigns.json` supplies the same selected media to both the homepage client dialogs and `gallery.html`. Brand previews show one photo at a time with manual wrapping controls and brand-filtered gallery links. There is no automatic photo carousel or hidden photo-wall download on the landing page.
 
-Images retain their entire framing and their corrected orientation. Each has a 640 px WebP preview and a 1440 px full-size version (maximum long edge, no upscaling). All previews total 1,551,596 bytes; full images total 5,690,404 bytes. Gallery previews are lazy-loaded and full images are requested only when opened. There are no added runtime dependencies or original full JPEG copies in the deployment.
+Images retain their entire framing and their corrected orientation. Each has a 640 px WebP preview and a 1440 px full-size version (maximum long edge, no upscaling). All previews total 1,654,174 bytes; full images total 6,218,536 bytes. Gallery previews are lazy-loaded and full images are requested only when opened. There are no added runtime dependencies or original full JPEG copies in the deployment.
 
 To regenerate, use Python with Pillow (available in the bundled runtime):
 
@@ -33,6 +34,8 @@ python scripts/prepare-campaign-snapshots.py 'C:/Users/Tanmay/Downloads/Campaign
 ```
 
 The script checks original hashes and the three-photo cap before writing, preserves source files and refuses to overwrite an existing `public/campaigns` directory. Presentation copy remains in `src/content/site.ts`; gallery-specific styles live in `src/components/site/gallery.css`.
+
+The later Decathlon pack is imported incrementally with `python scripts/prepare-campaign-snapshots.py 'C:/Users/Tanmay/Downloads/Decathlon-20261028T110449Z-1-001' decathlon`. It preserves existing brand outputs and refuses duplicate catalogue entries. A full regeneration now requires a combined source directory containing the selected original brand folders and the later Decathlon folder; the initial pack's empty Decathlon folder is insufficient. Exceptionally detailed full images use quality 76 when quality 82 exceeds the 350 KB transfer budget.
 
 `gallery.html` is a separate build entry, so direct links, brand query strings and refreshes work on GitHub Pages without a routing library. Shared navigation resolves homepage sections correctly from either page. The gallery uses one entrance fan and a filter-triggered photo-wall reveal, with a small unpinned scroll movement. Reduced motion retains all content and controls without these animations. The native viewer handles Escape, left/right keys, focus restoration and body-scroll restoration.
 

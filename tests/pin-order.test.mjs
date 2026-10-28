@@ -63,7 +63,7 @@ test('refresh restores the expanding client strip before Services and reserves S
       resolveId(id) { if (id.startsWith('virtual:pin-')) return `\0${id}`; },
       load(id) {
         if (id === '\0virtual:pin-hooks') return `export const { useRef, useState } = globalThis.__pins; export const useEffect = () => {}; export const useCallback = fn => fn;`;
-        if (id === '\0virtual:pin-motion') return `export const { gsap, ScrollTrigger, useGSAP } = globalThis.__pins; export const MQ = {}; export const MOTION = { services: { scrollDistanceDesktop: 22, scrollDistanceMobile: 16 } };`;
+        if (id === '\0virtual:pin-motion') return `export const { gsap, ScrollTrigger, useGSAP } = globalThis.__pins; export const MQ = {}; export const MOTION = { services: { scrollDistanceDesktop: 22 / 1.3, scrollDistanceMobile: 16 / 1.3 } };`;
       },
       transform(code, id) {
         if (/\/site\/(Services|CoverflowCoverage)\.tsx$/.test(id.replaceAll('\\', '/'))) return code.replace('from "react"', 'from "virtual:pin-hooks"').replace('from "@/lib/motion"', 'from "virtual:pin-motion"');
@@ -101,10 +101,10 @@ test('refresh restores the expanding client strip before Services and reserves S
       assert.ok(coverage.start > services.end, `Coverage starts at ${coverage.start} inside Services (${services.start}–${services.end})`);
       const corporate = services.start + ZONE_STARTS[1] / (TOTAL_FRAMES - 1) * (services.end - services.start);
       assert.ok(corporate < coverage.start);
-      assert.equal(coverage.start, 26420);
+      assert.equal(coverage.start, 21343);
       // A subsequent resize/accordion refresh must preserve both ranges and their complete order.
       refresh();
-      assert.equal(coverage.start, 26420);
+      assert.equal(coverage.start, 21343);
       assert.equal(services.start, 1412, 'Repeated refresh must not move the Services pin to its compact-header position');
       serviceCleanup();
       refresh();

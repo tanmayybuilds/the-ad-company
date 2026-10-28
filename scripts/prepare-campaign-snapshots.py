@@ -3,20 +3,26 @@ from pathlib import Path
 from PIL import Image, ImageOps
 import hashlib, json, sys
 
-assert len(sys.argv) == 2, 'Usage: python scripts/prepare-campaign-snapshots.py <Campaign Snapshots directory>'
+assert len(sys.argv) in (2, 3), 'Usage: python scripts/prepare-campaign-snapshots.py <source directory> [brand-id]'
 root = Path(__file__).resolve().parents[1]
 source = Path(sys.argv[1]).resolve()
 selection = json.loads((root / 'scripts/campaign-selection.json').read_text(encoding='utf8'))
 destination = root / 'public/campaigns'
-assert not destination.exists(), 'Output already exists; preserve it or explicitly remove it before regeneration.'
-for brand in selection['brands']:
+brand_id = sys.argv[2] if len(sys.argv) == 3 else None
+brands = [brand for brand in selection['brands'] if brand_id is None or brand['id'] == brand_id]
+assert brands, 'Unknown brand id'
+catalogue = json.loads((root / 'src/content/campaigns.json').read_text(encoding='utf8')) if brand_id else {'brands': []}
+if not brand_id:
+    assert not destination.exists(), 'Output already exists; preserve it or explicitly remove it before regeneration.'
+for brand in brands:
+    assert not (destination / brand['id']).exists(), f'Brand output already exists: {brand["id"]}'
+    assert not any(existing['id'] == brand['id'] for existing in catalogue['brands']), 'Brand already exists in catalogue'
     assert 1 <= len(brand['files']) <= 3
     for photo in brand['files']:
         path = source / brand['folder'] / photo['file']
         assert path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == photo['sha256'], f'Source changed: {path.name}'
 
-catalogue = {'brands': []}
-for brand in selection['brands']:
+for brand in brands:
     directory = destination / brand['id']; directory.mkdir(parents=True)
     photos = []
     for index, photo in enumerate(brand['files'], 1):
@@ -26,6 +32,8 @@ for brand in selection['brands']:
             thumb = image.copy(); thumb.thumbnail((640, 640), Image.Resampling.LANCZOS)
             filename = f'{index:02}.webp'; thumbnail = f'{index:02}-thumb.webp'
             full.save(directory / filename, 'WEBP', quality=82, method=6)
+            if (directory / filename).stat().st_size >= 350_000:
+                full.save(directory / filename, 'WEBP', quality=76, method=6)
             thumb.save(directory / thumbnail, 'WEBP', quality=76, method=6)
             assert (directory / filename).stat().st_size < 350_000
             assert (directory / thumbnail).stat().st_size < 100_000

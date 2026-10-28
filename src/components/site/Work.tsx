@@ -79,7 +79,7 @@ function BentoCard({ index, active, reduced, onActivate, onExplore }: {
         {(failed || blocked) && <span className="bento-media-status" role="status">{failed ? work.mediaUnavailable : work.playbackBlocked}</span>}
       </span>
       <span className="bento-concept-badge">{work.conceptLabel} / 0{index + 1}</span>
-      <span className="bento-arrow-badge" aria-hidden="true">↗</span>
+      <span className="bento-view-more" aria-hidden="true">{work.exploreLabel}<span>↗</span></span>
     </button>
     <div className="card-footer">
       <p className="bento-category">{item.type}</p>
@@ -130,14 +130,18 @@ export function Work() {
         {work.examples.map((item, index) => <BentoCard key={item.video} index={index} active={active === index} reduced={reduced} onActivate={setActive} onExplore={() => { setActive(null); setSelected(index); }} />)}
       </div>
     </div>
-    <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog" aria-labelledby={project ? 'project-title' : undefined}>
+    <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog service-dialog" aria-labelledby={project ? 'project-title' : undefined}>
       {project && <>
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-ink/20 bg-paper px-5 py-3">
           <p className="text-sm font-semibold">{work.detailsLabel}</p>
           <button type="button" onClick={() => dialog.current?.close()} className="flex items-center gap-2 border border-ink px-3 py-2 text-xs" autoFocus>{work.closeLabel}<X size={16} aria-hidden="true" /></button>
         </div>
-        <video key={project.video} src={videoSource(project.video)} autoPlay muted playsInline controls preload="metadata" aria-label={project.alt} className="aspect-video w-full object-cover" />
-        <div className="p-6 sm:p-9">
+        <div className="project-dialog-layout">
+        <aside className="project-dialog-media">
+          <video key={project.video} src={videoSource(project.video)} poster={`${import.meta.env.BASE_URL}${project.poster.slice(1)}`} autoPlay muted playsInline controls preload="metadata" aria-label={project.alt} />
+          <p>{work.detailLabel}</p>
+        </aside>
+        <div className="project-dialog-services">
           <Eyebrow className="mb-3">{work.detailLabel}</Eyebrow>
           <h2 id="project-title" className="font-display text-[clamp(1.5rem,5vw,1.875rem)] font-bold uppercase">{project.title}</h2>
           <p className="my-5 leading-relaxed">{project.copy}</p>
@@ -155,6 +159,7 @@ export function Work() {
             </details>)}
           </div>
           <ActionLink href="#contact" size="md" onClick={() => dialog.current?.close()}>{work.contactLabel}</ActionLink>
+        </div>
         </div>
       </>}
     </dialog>

@@ -19,7 +19,7 @@ export function About() {
         <p className="mt-6 max-w-xl font-medium leading-relaxed">{about.strategy}</p>
         <ActionLink href="#contact" variant="outline" size="md" className="mt-7">{about.cta}</ActionLink>
       </div>
-      <figure className="border-2 border-ink bg-sand shadow-hard" data-reveal>
+      <figure className="about-brand-visual border-2 border-ink bg-sand shadow-hard" data-reveal>
         <img src={`${import.meta.env.BASE_URL}${about.brandVisual.src.slice(1)}`} width={about.brandVisual.width} height={about.brandVisual.height} alt={about.brandVisual.alt} loading="lazy" decoding="async" className="block h-auto w-full" />
         <figcaption className="border-t border-ink/20 p-5"><p className="font-editorial text-xl font-medium leading-snug">{about.brandVisual.caption}</p><p className="mt-2 text-xs leading-relaxed text-ink/65">{about.brandVisual.note}</p></figcaption>
       </figure>
