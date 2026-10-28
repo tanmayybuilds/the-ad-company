@@ -5,7 +5,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-test('the execution showcase covers every offered service and keeps truthful photo slots and native selection', async () => {
+test('the catalogue keeps every service while the showcase displays only photographed executions', async () => {
   const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom' });
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
@@ -20,18 +20,23 @@ test('the execution showcase covers every offered service and keeps truthful pho
     const photographed = ['hoardings', 'lift-posters', 'pole-kiosks', 'community', 'tagging', 'van', 'auto', 'cab', 'outdoor-digital'];
     assert.deepEqual(serviceShowcase.items.filter(item => item.execution).map(item => item.id), photographed);
     assert.deepEqual(serviceShowcase.items.slice(0, 9).map(item => item.id), photographed, 'Supplied executions must appear before pending photo slots');
+    const displayed = serviceShowcase.items.filter(item => item.execution?.src);
     assert.ok(links.some(link => link.label === 'Executions' && link.href === '#coverage'));
     const markup = renderToStaticMarkup(createElement(CoverflowCoverage));
     const options = markup.match(/<select\b[\s\S]*?<\/select>/)?.[0];
     assert.ok(options);
-    assert.equal([...options.matchAll(/<option\b/g)].length, serviceShowcase.items.length);
-    for (const item of serviceShowcase.items) assert.ok(options.includes(item.title.replaceAll('&', '&amp;')));
+    assert.equal([...options.matchAll(/<option\b/g)].length, displayed.length);
+    for (const item of displayed) assert.ok(options.includes(item.title.replaceAll('&', '&amp;')));
+    for (const item of serviceShowcase.items.filter(item => !item.execution)) {
+      assert.ok(!markup.includes(`execution-info-${item.id}"`), `Unphotographed service must not have a card: ${item.id}`);
+      assert.ok(!options.includes(item.title.replaceAll('&', '&amp;')), `Unphotographed service must not be selectable: ${item.id}`);
+    }
     assert.match(markup, /id="coverage"/);
     assert.match(markup, /for="execution-service"/);
     assert.match(markup, /id="execution-service"/);
     assert.match(markup, /href="#contact"/);
-    assert.match(markup, /Execution photograph coming soon/);
-    for (const item of serviceShowcase.items) {
+    assert.doesNotMatch(markup, /Execution photograph coming soon/);
+    for (const item of displayed) {
       assert.ok(markup.includes(`aria-describedby="execution-info-${item.id}"`), 'Each card must expose its execution status and details to assistive technology');
       assert.ok(markup.includes(`id="execution-info-${item.id}"`));
     }
@@ -39,7 +44,9 @@ test('the execution showcase covers every offered service and keeps truthful pho
     for (const button of markup.matchAll(/<button\b[\s\S]*?<\/button>/g)) {
       assert.doesNotMatch(button[0], /<a\b/, 'A card button must not contain another interactive control');
     }
-    assert.equal([...markup.matchAll(/class="cov-photo-placeholder"/g)].length, serviceShowcase.items.length);
+    assert.equal([...markup.matchAll(/class="cov-photo-placeholder"/g)].length, displayed.length);
+    assert.equal([...markup.matchAll(/class="cov-card(?: cov-card-active)?"/g)].length, displayed.length);
+    assert.match(markup, /\/ 09/);
     const execution = { src: '/campaigns/malabar/01.webp', thumbnail: '/campaigns/malabar/01-thumb.webp', thumbnailWidth: 480, width: 1152, height: 648, alt: 'Confirmed hoarding execution', client: 'Confirmed brand', location: 'Confirmed location', description: 'Approved campaign details' };
     const originals = serviceShowcase.items.map(item => item.execution);
     try {
@@ -79,7 +86,7 @@ test('the service picker reaches every stop, leaves native keys alone and recove
   let items, originals;
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
-    ({ items } = (await server.ssrLoadModule('/src/content/site.ts')).serviceShowcase);
+    items = (await server.ssrLoadModule('/src/content/site.ts')).serviceShowcase.items.filter(item => item.execution?.src);
     originals = items.map(item => item.execution);
     let tree = render(CoverflowCoverage);
     const requested = [];

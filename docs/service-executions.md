@@ -1,6 +1,6 @@
 # Service execution photographs
 
-The nine explicitly supplied October 28 service photographs populate the existing coverflow. These services appear first; the full catalogue remains available through the selector. No additional campaign photographs were taken from the source folder.
+The nine explicitly supplied October 28 service photographs populate the existing coverflow. Only services with an execution image appear in the cards, selector, categories and counter. The full catalogue remains saved in content; adding an execution image makes that service appear on the next build. No additional campaign photographs were taken from the source folder.
 
 | Service ID | Source file | Display service |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ The nine explicitly supplied October 28 service photographs populate the existin
 | cab | Cab Branding.jpg | Cab branding |
 | outdoor-digital | Digital Hoarding.jpg | Digital hoardings |
 
-Lift posters, tagging activity and van branding are new service entries. They were also added to the relevant shared service catalogue/environment lists, so service details include them; enquiries retain the existing category choices. Existing Community activations and Outdoor digital advertising labels remain as aliases for Society BTL activity and Digital hoardings. There are now 40 service stops, with 9 confirmed photo slots and 31 remaining pending.
+Lift posters, tagging activity and van branding are new service entries. They were also added to the relevant shared service catalogue/environment lists, so service details include them; enquiries retain the existing category choices. Existing Community activations and Outdoor digital advertising labels remain as aliases for Society BTL activity and Digital hoardings. There are 40 saved service entries: 9 displayed executions and 31 hidden until photographs are supplied.
 
 Brand captions use only clearly identifiable brands. Pune and Kalyan are copied from the respective photo watermarks. Venue names printed on advertising creatives are not assumed to be the photograph's location. No results or performance claims are added.
 

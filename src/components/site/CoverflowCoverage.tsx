@@ -4,8 +4,9 @@ import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
 import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from "@/lib/reverse-pin.mjs";
 
-const TOTAL = showcase.items.length;
-const categories = [...new Set(showcase.items.map(service => service.category))];
+const displayedServices = showcase.items.filter(service => service.execution?.src);
+const TOTAL = displayedServices.length;
+const categories = [...new Set(displayedServices.map(service => service.category))];
 const asset = (path: string) => path.startsWith('/') ? `${import.meta.env.BASE_URL}${path.slice(1)}` : path;
 
 export function CoverflowCoverage() {
@@ -299,10 +300,10 @@ export function CoverflowCoverage() {
       }}>
         <div className="cov-horizon" aria-hidden="true" />
         <div className="cov-watermark" aria-hidden="true">
-          {showcase.items.map((service, index) => <span key={service.id} ref={element => { titles.current[index] = element; }} style={{ opacity: index === 0 ? 1 : 0 }}>{service.title}</span>)}
+          {displayedServices.map((service, index) => <span key={service.id} ref={element => { titles.current[index] = element; }} style={{ opacity: index === 0 ? 1 : 0 }}>{service.title}</span>)}
         </div>
         <div className="cov-cards-perspective">
-          {showcase.items.map((service, index) => {
+          {displayedServices.map((service, index) => {
             const execution = service.execution;
             const showPhoto = execution && Math.abs(coverageDistance(index, active, TOTAL)) <= 1;
             return <button key={service.id} type="button"
@@ -340,10 +341,10 @@ export function CoverflowCoverage() {
       <footer className="cov-hud container-page">
         <label className="cov-service-picker" htmlFor="execution-service"><span>{showcase.choose}</span>
           <select id="execution-service" value={active} onChange={event => navigate.current(Number(event.currentTarget.value))} onKeyDown={event => event.stopPropagation()}>
-            {categories.map(category => <optgroup key={category} label={category}>{showcase.items.map((service, index) => service.category === category && <option key={service.id} value={index}>{service.title}</option>)}</optgroup>)}
+            {categories.map(category => <optgroup key={category} label={category}>{displayedServices.map((service, index) => service.category === category && <option key={service.id} value={index}>{service.title}</option>)}</optgroup>)}
           </select>
         </label>
-        <p className="sr-only" aria-live="polite">{showcase.items[active].title}, {active + 1} / {TOTAL}</p>
+        <p className="sr-only" aria-live="polite">{displayedServices[active].title}, {active + 1} / {TOTAL}</p>
         <div className="cov-bottom-row">
           <div className="cov-arrows"><button type="button" aria-label={showcase.previous} disabled={active === 0} onClick={() => navigate.current(activeRef.current - 1)}>←</button><button type="button" aria-label={showcase.next} disabled={active === TOTAL - 1} onClick={() => navigate.current(activeRef.current + 1)}>→</button></div>
           <p className="cov-footnote">{showcase.pendingNote}</p>
