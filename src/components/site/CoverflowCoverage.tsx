@@ -1,24 +1,12 @@
-import { useCallback, useRef, useState, type CSSProperties } from "react";
-import { coverage } from "@/content/site";
+import { useCallback, useRef, useState } from "react";
+import { serviceShowcase as showcase } from "@/content/site";
 import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
 import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from "@/lib/reverse-pin.mjs";
 
-const TOTAL = coverage.locations.length;
-
-function CityDiorama({ city }: { city: number }) {
-  return <span className="cov-city-art" aria-hidden="true">
-    <span className="cov-city-orbit" />
-    <span className="cov-city-board">
-      <span className="cov-city-road"><i /><i /></span>
-      {Array.from({ length: 7 }, (_, i) => <span key={i} className={`cov-tower cov-tower-${i}`} style={{ "--tower-h": `${48 + ((i * 31 + city * 17) % 95)}px`, "--tower-delay": `${i * 40}ms` } as CSSProperties}>
-        <span className="cov-tower-top" /><span className="cov-tower-front" /><span className="cov-tower-side" />
-      </span>)}
-      <span className="cov-city-billboard"><span>↗</span></span>
-      <span className="cov-city-tree cov-city-tree-one" /><span className="cov-city-tree cov-city-tree-two" />
-    </span>
-  </span>;
-}
+const TOTAL = showcase.items.length;
+const categories = [...new Set(showcase.items.map(service => service.category))];
+const asset = (path: string) => path.startsWith('/') ? `${import.meta.env.BASE_URL}${path.slice(1)}` : path;
 
 export function CoverflowCoverage() {
   const root = useRef<HTMLElement>(null);
@@ -288,18 +276,18 @@ export function CoverflowCoverage() {
 
   return <section id="coverage" ref={root} className="cov-scroll-wrapper" aria-labelledby="coverage-title">
     <div ref={stage} className="cov-stage" onKeyDown={event => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      if (!(event.target as HTMLElement).closest('select') && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
         event.preventDefault();
         const fromCard = !!(event.target as HTMLElement).closest(".cov-card");
         navigate.current((keyboardTarget.current ?? activeRef.current) + (event.key === "ArrowRight" ? 1 : -1), fromCard);
       }
     }}>
-      <a href="#team" className="cov-skip-btn" onClick={event => { event.preventDefault(); skipToTeam.current(); }} aria-label="Skip where we work section">
+      <a href="#team" className="cov-skip-btn" onClick={event => { event.preventDefault(); skipToTeam.current(); }} aria-label={showcase.skip}>
         SKIP <span>↓</span>
       </a>
       <header className="cov-header container-page">
-        <div><p className="cov-eyebrow">{coverage.label}</p><h2 id="coverage-title">{coverage.heading}</h2></div>
-        <p className="cov-intro">{coverage.intro}</p>
+        <div><p className="cov-eyebrow">{showcase.label}</p><h2 id="coverage-title">{showcase.heading}</h2></div>
+        <p className="cov-intro">{showcase.intro}</p>
       </header>
       <div className="cov-scene" onPointerDown={event => {
         if (event.pointerType === "touch") pointerStart.current = { x: event.clientX, y: event.clientY };
@@ -311,37 +299,55 @@ export function CoverflowCoverage() {
       }}>
         <div className="cov-horizon" aria-hidden="true" />
         <div className="cov-watermark" aria-hidden="true">
-          {coverage.locations.map((location, index) => <span key={location.name} ref={element => { titles.current[index] = element; }} style={{ opacity: index === 0 ? 1 : 0 }}>{location.name}</span>)}
+          {showcase.items.map((service, index) => <span key={service.id} ref={element => { titles.current[index] = element; }} style={{ opacity: index === 0 ? 1 : 0 }}>{service.title}</span>)}
         </div>
         <div className="cov-cards-perspective">
-          {coverage.locations.map((location, index) => <button key={location.name} type="button"
+          {showcase.items.map((service, index) => {
+            const execution = service.execution;
+            const showPhoto = execution && Math.abs(coverageDistance(index, active, TOTAL)) <= 1;
+            return <button key={service.id} type="button"
             ref={element => { cards.current[index] = element; }}
             className={`cov-card${index === active ? " cov-card-active" : ""}`}
             style={{ visibility: index === 0 ? "visible" : "hidden" }}
-            tabIndex={index === active ? 0 : -1} aria-label={`${location.name}, ${location.kind}`}
+            tabIndex={index === active ? 0 : -1} aria-label={`${service.title}, ${service.category}`}
+            aria-describedby={`execution-info-${service.id}`}
             aria-pressed={index === active} onClick={() => navigate.current(index)}>
             <span className="cov-card-shell">
               <span className="cov-card-copy">
-                <span className="cov-kind">{location.kind}</span>
-                <span className="cov-explore">{coverage.explore}</span>
-                <strong className="cov-city-name">{location.name}</strong>
-                <span className="cov-state">{"state" in location ? location.state : coverage.label}</span>
+                <span className="cov-kind">{service.category}</span>
+                <strong className="cov-service-name">{service.title}</strong>
                 <span className="cov-card-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}<span> / {String(TOTAL).padStart(2, "0")}</span></span>
               </span>
-              <span className="cov-art-panel"><CityDiorama city={index} /><span className="cov-visual-note">{coverage.visualNote}</span></span>
+              <span className="cov-art-panel">
+                {showPhoto && <img src={asset(execution.src)} alt={execution.alt} width={execution.width} height={execution.height}
+                  srcSet={execution.thumbnail && execution.thumbnailWidth ? `${asset(execution.thumbnail)} ${execution.thumbnailWidth}w, ${asset(execution.src)} ${execution.width}w` : undefined}
+                  sizes="(max-width: 767px) 82vw, (max-width: 1023px) 70vw, 680px"
+                  loading={index === active ? 'eager' : 'lazy'} decoding="async"
+                  onError={event => { event.currentTarget.hidden = true; event.currentTarget.nextElementSibling?.removeAttribute('hidden'); }} />}
+                <span className="cov-photo-placeholder" hidden={!!showPhoto} role="status">
+                  <span aria-hidden="true">↗</span>
+                  <span>{execution ? (showPhoto ? showcase.unavailableImage : showcase.executionLabel) : showcase.pendingImage}</span>
+                </span>
+              </span>
+              <span id={`execution-info-${service.id}`} className={execution ? 'cov-execution-caption' : 'sr-only'}>
+                {execution ? <><span className="sr-only">{execution.alt}</span><strong>{execution.client || showcase.executionLabel}</strong>{execution.location && <span>{execution.location}</span>}{execution.description && <span>{execution.description}</span>}</> : showcase.pendingImage}
+              </span>
             </span>
-          </button>)}
+          </button>; })}
         </div>
-        <p className="cov-scroll-hint">{coverage.interactionHint}</p>
+        <p className="cov-scroll-hint">{showcase.interactionHint}</p>
       </div>
       <footer className="cov-hud container-page">
-        <nav className="cov-locations" aria-label={coverage.label}>
-          {coverage.locations.map((location, index) => <button key={location.name} type="button" aria-current={active === index ? "true" : undefined} onClick={() => navigate.current(index)}>{location.name}</button>)}
-        </nav>
+        <label className="cov-service-picker" htmlFor="execution-service"><span>{showcase.choose}</span>
+          <select id="execution-service" value={active} onChange={event => navigate.current(Number(event.currentTarget.value))} onKeyDown={event => event.stopPropagation()}>
+            {categories.map(category => <optgroup key={category} label={category}>{showcase.items.map((service, index) => service.category === category && <option key={service.id} value={index}>{service.title}</option>)}</optgroup>)}
+          </select>
+        </label>
+        <p className="sr-only" aria-live="polite">{showcase.items[active].title}, {active + 1} / {TOTAL}</p>
         <div className="cov-bottom-row">
-          <div className="cov-arrows"><button type="button" aria-label={coverage.previous} disabled={active === 0} onClick={() => navigate.current(activeRef.current - 1)}>←</button><button type="button" aria-label={coverage.next} disabled={active === TOTAL - 1} onClick={() => navigate.current(activeRef.current + 1)}>→</button></div>
-          <p className="cov-footnote">{coverage.pendingNote}</p>
-          <a className="cov-cta" href="#contact">{coverage.cta}<span aria-hidden="true">↗</span></a>
+          <div className="cov-arrows"><button type="button" aria-label={showcase.previous} disabled={active === 0} onClick={() => navigate.current(activeRef.current - 1)}>←</button><button type="button" aria-label={showcase.next} disabled={active === TOTAL - 1} onClick={() => navigate.current(activeRef.current + 1)}>→</button></div>
+          <p className="cov-footnote">{showcase.pendingNote}</p>
+          <a className="cov-cta" href="#contact">{showcase.cta}<span aria-hidden="true">↗</span></a>
         </div>
       </footer>
     </div>

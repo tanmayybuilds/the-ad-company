@@ -11,8 +11,8 @@ test('the five supplied people replace sample profiles and the final pointer has
     const { team } = await server.ssrLoadModule('/src/content/site.ts');
     const { TeamTour } = await server.ssrLoadModule('/src/components/site/TeamTour.tsx');
     assert.deepEqual(team.members.map(person => [person.memberName, person.roleTitle]), [
-      ['Yash Nile', 'Director | The AD Company'], ['Akshay Daundkar', 'Media Sales Manager'],
-      ['Dilip Janaskar', 'Ad Sales Executive'], ['Mansi Jha', 'Social Media Manager'], ['Ashika Jha', 'BTL Head'],
+      ['Yash Nile', 'Director | The AD Company'], ['Akshay D', 'Media Sales Manager'],
+      ['Dilip J', 'Ad Sales Executive'], ['Mansi J', 'Social Media Manager'], ['Ashika J', 'BTL Head'],
     ]);
     for (const person of team.members) {
       assert.ok(existsSync(new URL(`../public${person.cutoutUrl}`, import.meta.url)));
@@ -81,7 +81,7 @@ test('a retained sixth-pointer selection cannot blank the page after the roster 
     const { TeamTour } = await server.ssrLoadModule('/src/components/site/TeamTour.tsx');
     const markup = renderToStaticMarkup(createElement(TeamTour));
     assert.match(markup, /05 \/ 05/);
-    assert.match(markup, /Ashika Jha/);
+    assert.match(markup, /Ashika J/);
     assert.match(markup, /disabled=""[^>]*>Next pointer/);
   } finally { await server.close(); }
 });

@@ -43,6 +43,26 @@ export type Project = {
 
 export type Location = { name: string; kind: "City" | "State / region"; state?: string };
 
+export type ServiceExecution = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  thumbnail?: string;
+  thumbnailWidth?: number;
+  client?: string;
+  location?: string;
+  description?: string;
+};
+
+export type ShowcaseService = {
+  id: string;
+  title: string;
+  category: string;
+  formats: string[];
+  execution: ServiceExecution | null;
+};
+
 export const company = {
   name: "The Ad Company",
   wordmark: "THE AD COMPANY",
@@ -67,7 +87,7 @@ export const nav: NavItem[] = [
   { label: "Work", href: "#work" },
   { label: "Gallery", href: "gallery.html" },
   { label: "About", href: "#about" },
-  { label: "Coverage", href: "#coverage" },
+  { label: "Executions", href: "#coverage" },
   { label: "Team", href: "#team" },
 ];
 
@@ -360,6 +380,61 @@ export const about = {
   ],
 };
 
+export const serviceShowcase = {
+  heading: "What we do. Out in the world.",
+  label: "Services & executions",
+  intro: "Explore every service. See how your brand can show up.",
+  choose: "Choose a service",
+  executionLabel: "Selected execution",
+  pendingImage: "Execution photograph coming soon.",
+  unavailableImage: "Execution photograph unavailable.",
+  interactionHint: "Scroll, swipe or choose a service to explore.",
+  cta: "Plan your campaign",
+  previous: "Previous service",
+  next: "Next service",
+  skip: "Skip service executions",
+  pendingNote: "Execution photographs are being curated for this showcase.",
+  items: [
+    { id: "hoardings", title: "Hoardings", category: "ATL media", formats: ["Hoardings"], execution: null },
+    { id: "television", title: "Television", category: "ATL media", formats: ["Television"], execution: null },
+    { id: "radio", title: "Radio", category: "ATL media", formats: ["Radio"], execution: null },
+    { id: "cinema", title: "Cinema advertising", category: "ATL media", formats: ["Cinema advertising"], execution: null },
+    { id: "newspaper", title: "Newspaper advertising & inserts", category: "ATL media", formats: ["Newspaper advertising & inserts"], execution: null },
+    { id: "society", title: "Residential society advertising", category: "Residential & community", formats: ["Residential society advertising"], execution: null },
+    { id: "indoor-screens", title: "Residential & indoor digital screens", category: "Residential & community", formats: ["Residential & indoor digital screens", "Residential digital screens"], execution: null },
+    { id: "door-to-door", title: "Door-to-door campaigns", category: "Residential & community", formats: ["Door-to-door campaigns", "Door-to-door & community campaigns"], execution: null },
+    { id: "flyers", title: "Flyer distribution", category: "Residential & community", formats: ["Flyer distribution"], execution: null },
+    { id: "community", title: "Community activations", category: "Residential & community", formats: ["Community activations", "Residential & corporate activations"], execution: null },
+    { id: "office", title: "Corporate office advertising", category: "Corporate & coworking", formats: ["Corporate office advertising"], execution: null },
+    { id: "coworking", title: "Coworking space campaigns", category: "Corporate & coworking", formats: ["Coworking space campaigns"], execution: null },
+    { id: "workspace", title: "Workspace activations", category: "Corporate & coworking", formats: ["Workspace activations", "Residential & corporate activations"], execution: null },
+    { id: "sampling", title: "Sampling distribution", category: "BTL media", formats: ["Sampling distribution"], execution: null },
+    { id: "bus", title: "Bus branding", category: "OOH media", formats: ["Bus branding"], execution: null },
+    { id: "metro", title: "Metro advertising", category: "OOH media", formats: ["Metro advertising"], execution: null },
+    { id: "train", title: "Train branding", category: "OOH media", formats: ["Train branding"], execution: null },
+    { id: "auto", title: "Auto branding", category: "OOH media", formats: ["Auto branding", "Auto & cab branding"], execution: null },
+    { id: "cab", title: "Cab branding", category: "OOH media", formats: ["Cab branding", "Auto & cab branding"], execution: null },
+    { id: "airport", title: "Airport advertising", category: "OOH media", formats: ["Airport advertising", "Airport media"], execution: null },
+    { id: "pole-kiosks", title: "Pole kiosks", category: "OOH media", formats: ["Pole kiosks"], execution: null },
+    { id: "transit", title: "Transit advertising", category: "OOH media", formats: ["Transit advertising", "Transit media"], execution: null },
+    { id: "signage", title: "Signage branding", category: "OOH media", formats: ["Signage branding"], execution: null },
+    { id: "in-flight", title: "In-flight advertising", category: "Travel media", formats: ["In-flight advertising"], execution: null },
+    { id: "instamart", title: "Swiggy Instamart inserts", category: "Delivery", formats: ["Swiggy Instamart inserts"], execution: null },
+    { id: "zepto", title: "Zepto inserts", category: "Delivery", formats: ["Zepto inserts"], execution: null },
+    { id: "blinkit", title: "Blinkit inserts", category: "Delivery", formats: ["Blinkit inserts"], execution: null },
+    { id: "delivery-flyers", title: "Delivery flyer campaigns", category: "Delivery", formats: ["Delivery flyer campaigns"], execution: null },
+    { id: "podcasts", title: "Podcast integration", category: "Branded content & integration", formats: ["Podcast integration"], execution: null },
+    { id: "in-film", title: "In-film branding", category: "Branded content & integration", formats: ["In-film branding"], execution: null },
+    { id: "endorsements", title: "Brand ambassador & celebrity endorsements", category: "Branded content & integration", formats: ["Brand ambassador & celebrity endorsements"], execution: null },
+    { id: "planning", title: "Strategic media planning", category: "Media planning & buying", formats: ["Strategic media planning"], execution: null },
+    { id: "mapping", title: "Location & audience mapping", category: "Media planning & buying", formats: ["Location & audience mapping"], execution: null },
+    { id: "buying", title: "Cost-effective media buying", category: "Media planning & buying", formats: ["Cost-effective media buying"], execution: null },
+    { id: "digital-branding", title: "Digital branding & promotions", category: "Digital & indoor media", formats: ["Digital branding & promotions"], execution: null },
+    { id: "outdoor-digital", title: "Outdoor digital advertising", category: "Digital & indoor media", formats: ["Outdoor digital advertising"], execution: null },
+    { id: "in-app", title: "In-app advertising", category: "Digital & indoor media", formats: ["In-app advertising"], execution: null },
+  ] as ShowcaseService[],
+};
+
 export const coverage = {
   heading: "Where we work.",
   label: "Cities and regions",
@@ -416,7 +491,7 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     id: 'pointer-02',
     number: '02',
     stageTitle: 'THE OPPORTUNITIES.',
-    memberName: 'Akshay Daundkar',
+    memberName: 'Akshay D',
     roleTitle: 'Media Sales Manager',
     responsibility: 'The dealmaker who knows where the next opportunity is.',
     introCopy: 'Always thinking strategically, he\'s all about finding the right opportunities, creating value, and making things happen for our clients.',
@@ -430,7 +505,7 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     id: 'pointer-03',
     number: '03',
     stageTitle: 'THE PLACES.',
-    memberName: 'Dilip Janaskar',
+    memberName: 'Dilip J',
     roleTitle: 'Ad Sales Executive',
     responsibility: 'Finding the right space for brands to make some noise.',
     introCopy: 'Connect brands with the right audiences and turn advertising opportunities into real-world impact.',
@@ -444,7 +519,7 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     id: 'pointer-04',
     number: '04',
     stageTitle: 'THE OWNERSHIP.',
-    memberName: 'Mansi Jha',
+    memberName: 'Mansi J',
     roleTitle: 'Social Media Manager',
     responsibility: 'The multitasker who treats The AD Company like her own.',
     introCopy: 'Always switched on. Always taking ownership. Always making things happen.',
@@ -462,7 +537,7 @@ export const TEAM_POINTER_NODES: TeamPointerNode[] = [
     id: 'pointer-05',
     number: '05',
     stageTitle: 'THE GROUND.',
-    memberName: 'Ashika Jha',
+    memberName: 'Ashika J',
     roleTitle: 'BTL Head',
     responsibility: 'Where the plan meets the ground.',
     introCopy: 'She\'s focused on getting the details right, making every execution count, and ensuring that what we promise is what gets delivered.',

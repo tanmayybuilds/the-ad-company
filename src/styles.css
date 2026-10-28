@@ -861,62 +861,37 @@
   );
 }
 
-/* Coverage: ivory information planes over an ink 3D stage. */
+/* Service executions: photographs in the existing coverflow stage. */
 .cov-scroll-wrapper { position: relative; z-index: 10; isolation: isolate; background: var(--inverse); color: var(--on-inverse); }
 .cov-stage { position: relative; height: calc(100svh - 80px); min-height: 620px; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; isolation: isolate; overflow: clip; background: radial-gradient(ellipse at 65% 45%, var(--inverse-card) 0, var(--inverse) 55%); }
 .cov-header { position: relative; z-index: 4; display: flex; align-items: end; justify-content: space-between; gap: 24px; padding-block: 16px 8px; }
 .cov-eyebrow { color: var(--gold); font: 500 11px/1.4 var(--font-mono); margin-bottom: 6px; }
-.cov-header h2 { font: 800 clamp(28px, 3.3vw, 46px)/1 var(--font-display); letter-spacing: -.04em; }
+.cov-header h2 { max-width: 650px; padding-right: 64px; font: 800 clamp(26px, 3.3vw, 46px)/1 var(--font-display); letter-spacing: -.04em; }
 .cov-intro { font-size: 13px; line-height: 1.5; color: var(--inverse-muted); max-width: 220px; }
 .cov-scene { position: relative; min-height: 0; max-height: 70svh; touch-action: pan-y; }
-.cov-watermark { position: absolute; z-index: 1; inset: 0 3% auto; height: 38%; display: grid; place-items: center; font: 800 clamp(62px, 13vw, 200px)/.95 var(--font-display); letter-spacing: -.055em; color: var(--gold); pointer-events: none; white-space: nowrap; text-transform: uppercase; }
-.cov-watermark > span { position: absolute; will-change: transform, opacity; }
+.cov-watermark { position: absolute; z-index: 1; inset: 0 3% auto; height: 26%; display: grid; place-items: center; font: 800 clamp(28px, 5vw, 72px)/1 var(--font-display); letter-spacing: -.04em; color: var(--gold); pointer-events: none; text-align: center; text-transform: uppercase; }
+.cov-watermark > span { position: absolute; width: min(100%, 1000px); text-wrap: balance; overflow-wrap: anywhere; will-change: transform, opacity; }
 .cov-horizon { position: absolute; inset: 35% -10% -30%; background: linear-gradient(color-mix(in oklab, var(--gold) 7.84%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, var(--gold) 7.84%, transparent) 1px, transparent 1px); background-size: 48px 48px; transform: perspective(600px) rotateX(62deg); mask-image: linear-gradient(transparent, #000 45%, transparent); pointer-events: none; }
-.cov-cards-perspective { position: absolute; z-index: 2; inset: 24% 0 0; display: grid; place-items: center; perspective: 1600px; transform-style: preserve-3d; }
-.cov-card { position: absolute; width: min(38vw, 520px); height: clamp(220px, 32svh, 280px); padding: 0; border: 0; background: none; color: var(--ink); text-align: left; transform-style: preserve-3d; will-change: transform, opacity; cursor: pointer; }
-.cov-card-shell { position: relative; display: grid; grid-template-columns: 42% 58%; width: 100%; height: 100%; border: 1px solid var(--sand-deep); border-radius: 20px; background: var(--paper); box-shadow: 0 10px 0 var(--sand-deep), 0 12px 0 var(--brand), 0 40px 65px #0008; transform-style: preserve-3d; }
+.cov-cards-perspective { position: absolute; z-index: 2; inset: 25% 0 24px; display: grid; place-items: center; perspective: 1600px; transform-style: preserve-3d; }
+.cov-card { position: absolute; width: min(56vw, 680px); height: min(100%, 410px); padding: 0; border: 0; background: none; color: var(--ink); text-align: left; transform-style: preserve-3d; will-change: transform, opacity; cursor: pointer; }
+.cov-card-shell { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; width: 100%; height: 100%; border: 1px solid var(--sand-deep); border-radius: 16px; background: var(--paper); box-shadow: 0 6px 0 var(--sand-deep), 0 8px 0 var(--brand), 0 28px 50px #0008; transform-style: preserve-3d; }
 .cov-card-active .cov-card-shell { border-color: var(--gold); }
-.cov-card-copy { display: flex; flex-direction: column; align-items: start; padding: clamp(14px, 1.4vw, 22px); position: relative; z-index: 2; background: var(--paper); border-radius: 19px 0 0 19px; transform: translateZ(2px); }
-.cov-kind { padding: 5px 10px; border: 1px solid var(--sand-deep); border-radius: 20px; font: 500 11px/1.2 var(--font-mono); }
-.cov-explore { margin-top: auto; font-size: 10px; color: var(--muted-foreground); }
-.cov-city-name { font: 800 clamp(20px, 2.1vw, 30px)/1.04 var(--font-display); letter-spacing: -.04em; margin-top: 9px; overflow-wrap: anywhere; }
-.cov-state { margin-top: 8px; font-size: 12px; color: var(--muted-foreground); }
-.cov-card-index { margin-top: auto; padding-top: 20px; font: 500 19px/1 var(--font-mono); }
-.cov-card-index > span { font-size: 11px; color: var(--muted-foreground); }
-.cov-art-panel { position: relative; display: block; border-radius: 0 19px 19px 0; background: radial-gradient(circle at 50% 40%, var(--sand-deep), var(--sand-deep)); overflow: hidden; }
-.cov-visual-note { position: absolute; bottom: 12px; left: 16px; right: 16px; color: var(--ink); font-size: 10px; text-align: center; line-height: 1.4; }
-.cov-city-art { position: absolute; inset: 0; display: grid; place-items: center; perspective: 900px; }
-.cov-city-board { position: relative; display: block; width: 280px; height: 205px; scale: .7; background: var(--inverse-card); border: 2px solid var(--inverse); border-radius: 10px; transform: translateY(48px) rotateX(55deg) rotateZ(-31deg); transform-style: preserve-3d; box-shadow: -2px 3px 0 var(--inverse), -5px 7px 0 var(--inverse), -8px 11px 0 var(--inverse), -12px 18px 20px color-mix(in oklab, var(--ink) 33.33%, transparent); }
-.cov-city-road { position: absolute; left: 0; right: 0; top: 82px; height: 38px; background: var(--inverse); border-block: 2px solid var(--brand); }
-.cov-city-road::after { content: ''; position: absolute; top: 17px; left: 0; right: 0; border-top: 2px dashed var(--sand-deep); }
-.cov-city-road i { position: absolute; z-index: 1; width: 20px; height: 9px; top: 5px; left: 10px; border-radius: 3px; background: var(--brand); transform: translateZ(4px); box-shadow: 0 3px var(--brand); }
-.cov-city-road i + i { top: 23px; left: 10px; background: var(--gold); }
-.cov-stage[data-visible=true] .cov-card-active .cov-city-road i { animation: cov-car 5s linear infinite; }
-.cov-stage[data-visible=true] .cov-card-active .cov-city-road i + i { animation-direction: reverse; animation-delay: -2s; }
-@keyframes cov-car { from { translate: 0 0; } to { translate: 210px 0; } }
-.cov-tower { position: absolute; width: 40px; height: 40px; left: 22px; top: 22px; transform-style: preserve-3d; --tower-color: var(--paper); transform: scaleZ(.72); transition: transform .7s cubic-bezier(.2,.8,.2,1) var(--tower-delay); }
-.cov-card-active .cov-tower { transform: scaleZ(1); }
-.cov-tower-top { position: absolute; inset: 0; background: var(--tower-color); border: 1px solid var(--brand); transform: translateZ(var(--tower-h)); }
-.cov-tower-top::after { content: ''; position: absolute; inset: 9px; border: 2px solid color-mix(in oklab, var(--brand) 33.33%, transparent); background: color-mix(in oklab, var(--sand-deep) 33.33%, transparent); }
-.cov-tower-front { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--tower-h); background: repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in oklab, var(--brand) 26.67%, transparent) 12px 16px), var(--tower-color); border: 1px solid var(--brand); transform-origin: bottom; transform: rotateX(-90deg); }
-.cov-tower-side { position: absolute; right: 0; top: 0; height: 100%; width: var(--tower-h); background: repeating-linear-gradient(90deg, transparent 0 11px, color-mix(in oklab, var(--brand) 26.67%, transparent) 12px 16px), var(--sand-deep); border: 1px solid var(--brand); transform-origin: right; transform: rotateY(90deg); }
-.cov-tower-1 { left: 83px; top: 19px; width: 44px; --tower-color: var(--gold); }
-.cov-tower-2 { left: 149px; top: 25px; width: 34px; --tower-color: var(--brand); }
-.cov-tower-3 { left: 214px; top: 19px; width: 43px; }
-.cov-tower-4 { left: 24px; top: 143px; --tower-color: var(--gold); }
-.cov-tower-5 { left: 99px; top: 145px; width: 52px; }
-.cov-tower-6 { left: 190px; top: 143px; width: 54px; --tower-color: var(--brand); }
-.cov-city-billboard { position: absolute; left: 155px; top: 130px; width: 44px; height: 70px; transform-origin: top; transform: rotateX(90deg); border-left: 4px solid var(--inverse); }
-.cov-city-billboard > span { display: grid; place-items: center; width: 44px; height: 31px; background: var(--gold); color: var(--on-accent); border: 2px solid var(--inverse); font: 800 28px/1 var(--font-display); box-shadow: 3px 3px var(--inverse); }
-.cov-city-tree { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: var(--brand); border: 2px solid var(--inverse); transform: translateZ(22px); box-shadow: 0 0 0 4px color-mix(in oklab, var(--gold) 26.67%, transparent); }
-.cov-city-tree-one { left: 66px; top: 150px; }
-.cov-city-tree-two { left: 253px; top: 68px; }
-.cov-city-orbit { position: absolute; width: 260px; height: 260px; border: 1px dashed color-mix(in oklab, var(--brand) 33.33%, transparent); border-radius: 50%; transform: rotateX(55deg); }
+.cov-card-copy { display: grid; gap: 5px; align-content: start; padding: 12px 64px 12px 18px; position: relative; z-index: 2; background: var(--paper); border-radius: 15px 15px 0 0; transform: translateZ(2px); }
+.cov-kind { color: var(--signal); font: 500 10px/1.3 var(--font-mono); }
+.cov-service-name { font: 800 clamp(18px, 2vw, 26px)/1.08 var(--font-display); letter-spacing: -.03em; overflow-wrap: anywhere; }
+.cov-card-index { position: absolute; right: 14px; top: 16px; font: 500 14px/1 var(--font-mono); }
+.cov-card-index > span { display: block; margin-top: 4px; font-size: 9px; color: var(--muted-foreground); }
+.cov-art-panel { position: relative; display: block; min-height: 0; margin: 0 10px 10px; background: var(--sand); border: 1px solid var(--sand-deep); overflow: hidden; }
+.cov-art-panel img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.cov-art-panel img[hidden], .cov-photo-placeholder[hidden] { display: none; }
+.cov-photo-placeholder { display: grid; place-content: center; gap: 12px; width: 100%; height: 100%; min-height: 100px; padding: 20px; text-align: center; color: var(--signal); font: 500 12px/1.4 var(--font-ui); background-image: repeating-linear-gradient(-45deg, transparent 0 16px, #12546b08 16px 17px); }
+.cov-photo-placeholder > span:first-child { justify-self: center; display: grid; place-items: center; width: 54px; height: 54px; border: 1px dashed var(--brand); border-radius: 50%; font-size: 26px; }
+.cov-execution-caption { display: grid; gap: 3px; padding: 2px 18px 14px; font-size: 11px; line-height: 1.4; }
+.cov-execution-caption strong { font: 700 13px/1.2 var(--font-ui); }
 .cov-scroll-hint { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; color: var(--inverse-muted); font-size: 11px; pointer-events: none; }
 .cov-hud { position: relative; z-index: 4; padding-bottom: 12px; }
-.cov-locations { display: flex; justify-content: center; gap: 5px; overflow-x: auto; padding: 3px; scrollbar-width: thin; }
-.cov-locations button { flex-shrink: 0; min-height: 36px; padding: 6px 13px; border: 1px solid color-mix(in oklab, var(--inverse-muted) 33.33%, transparent); border-radius: 20px; color: var(--inverse-muted); background: var(--inverse-card); font-size: 12px; cursor: pointer; transition: background .2s, color .2s; }
-.cov-locations button[aria-current=true] { background: var(--gold); border-color: var(--gold); color: var(--on-accent); }
+.cov-service-picker { display: flex; align-items: center; justify-content: center; gap: 12px; font: 500 11px/1.4 var(--font-mono); color: var(--inverse-muted); }
+.cov-service-picker select { width: min(100%, 440px); min-width: 0; min-height: 40px; padding: 8px 30px 8px 12px; border: 1px solid var(--inverse-border); border-radius: 6px; background: var(--inverse-card); color: var(--on-inverse); font: 500 13px/1.4 var(--font-ui); cursor: pointer; color-scheme: dark; }
 .cov-bottom-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 10px; }
 .cov-arrows { display: flex; gap: 8px; }
 .cov-arrows button { width: 38px; height: 36px; border: 1px solid var(--inverse-muted); border-radius: 50%; background: var(--inverse-card); color: var(--on-inverse); cursor: pointer; }
@@ -928,38 +903,30 @@
 .cov-skip-btn span { font-size: 11px; line-height: 1; color: var(--inverse-muted); transition: transform .2s, color .2s; }
 .cov-skip-btn:hover { color: var(--gold); background: var(--inverse-card); border-color: color-mix(in oklab, var(--gold) 50%, transparent); transform: translateY(1px); }
 .cov-skip-btn:hover span { color: var(--gold); transform: translateY(2px); }
-.cov-stage button:focus-visible, .cov-stage a:focus-visible { outline: 3px solid var(--gold); outline-offset: 5px; }
+.cov-stage button:focus-visible, .cov-stage a:focus-visible, .cov-stage select:focus-visible { outline: 3px solid var(--gold); outline-offset: 5px; }
 @media (max-width: 1023px) {
-  .cov-card { width: 50vw; }
-  .cov-city-board { scale: .6; }
+  .cov-card { width: 70vw; }
   .cov-intro { max-width: 160px; font-size: 11px; }
 }
 @media (max-width: 767px) {
   .cov-stage { height: auto; min-height: 0; padding-block: 20px; overflow: clip; }
-  .cov-header { align-items: start; padding-block: 0; }
-  .cov-header h2 { font-size: 30px; }
-  .cov-intro { max-width: 120px; }
+  .cov-header { align-items: start; padding-block: 24px 0; }
+  .cov-header h2 { padding-right: 0; font-size: 28px; }
+  .cov-intro { display: none; }
   .cov-scene { height: 70svh; min-height: 410px; max-height: 560px; margin-block: 10px; }
-  .cov-watermark { font-size: 12.5vw; height: 28%; }
-  .cov-cards-perspective { inset: 19% 0 0; }
-  .cov-card { width: min(62vw, 300px); height: 290px; min-height: 0; }
-  .cov-card-shell { grid-template-columns: 1fr; grid-template-rows: 38% 62%; }
-  .cov-card-copy { padding: 14px; border-radius: 19px 19px 0 0; }
-  .cov-kind { position: absolute; right: 10px; top: 10px; font-size: 8px; padding: 4px 6px; }
-  .cov-explore { font-size: 10px; margin-top: 0; padding-right: 80px; }
-  .cov-city-name { font-size: clamp(22px, 6vw, 28px); margin-top: 10px; }
-  .cov-state { font-size: 10px; margin-top: 4px; }
-  .cov-card-index { position: absolute; right: 12px; bottom: 12px; font-size: 11px; }
-  .cov-art-panel { border-radius: 0 0 19px 19px; }
-  .cov-city-board { scale: .52; transform: translateY(45px) rotateX(55deg) rotateZ(-31deg); }
-  .cov-visual-note { font-size: 9px; bottom: 8px; }
-  .cov-locations { justify-content: start; }
+  .cov-watermark { font-size: clamp(25px, 6.5vw, 46px); height: 24%; }
+  .cov-cards-perspective { inset: 25% 0 28px; }
+  .cov-card { width: min(82vw, 440px); height: 100%; min-height: 0; }
+  .cov-card-copy { padding: 12px 56px 12px 14px; }
+  .cov-service-name { font-size: 19px; }
+  .cov-card-index { right: 10px; font-size: 12px; }
+  .cov-service-picker { align-items: stretch; flex-direction: column; gap: 6px; }
+  .cov-service-picker select { width: 100%; }
   .cov-bottom-row { flex-wrap: wrap; gap: 12px; }
   .cov-footnote { order: 3; max-width: none; width: 100%; }
   .cov-scroll-hint { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cov-city-road i { animation: none !important; }
   .cov-card-shell { transform: none !important; }
 }
 
