@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -28,6 +28,7 @@ test('client logos resolve to real assets when hosted under the GitHub Pages pat
       const url = new URL(source, 'https://tanmayybuilds.github.io/the-ad-company/');
       assert.ok(url.pathname.startsWith('/the-ad-company/clients/'), `Wrong logo URL: ${url.href}`);
       assert.ok(existsSync(new URL(`../public/${url.pathname.slice('/the-ad-company/'.length)}`, import.meta.url)), `Missing logo: ${source}`);
+      assert.ok(statSync(new URL(`../public/${url.pathname.slice('/the-ad-company/'.length)}`, import.meta.url)).size < 64_000, `Logo is unnecessarily heavy: ${source}`);
     }
     // A supplied campaign must bind only to its named brand and retain Pages-relative media URLs.
     work.projects.push({ id: 'test-campaign', client: clients.items[0].name, title: 'Fixture campaign', description: 'Fixture description', photos: [{ src: '/campaigns/fixture.jpg', alt: 'Fixture execution' }], deliverables: ['Fixture deliverable'] });

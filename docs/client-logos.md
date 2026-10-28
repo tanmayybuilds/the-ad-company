@@ -22,3 +22,5 @@ Downloaded 21 October 2026 from the official websites or the asset CDNs referenc
 | Decathlon Sports India | `decathlon.svg` | Vector, 188 × 28 | Inline SVG with `data-test-id="header-desktop:decathlon-logo"` on [homepage](https://www.decathlon.in/) |
 
 Raster logos retain their website-supplied resolution; no artificial upscaling or tracing was applied. The client strip uses `object-fit: scale-down` to avoid enlarging low-resolution source images, including SBI's 125 × 43 header asset. Malabar's supplied white SVG is displayed on a charcoal card for contrast. Client relationships are supplied by the business and are not inferred from these downloads.
+
+Performance update, October 28: the live strip uses optimized `jg-pednekar.webp` (35,438 bytes, quality 90) and lossless `apollo-diagnostics.webp` (45,964 bytes), both at their original dimensions. This replaces 367,304 bytes of PNG transfers with 81,402 bytes. The original downloaded PNG files are retained as sources. Every displayed logo is now below 64 KB; `scripts/optimize-site-media.mjs` reproduces the two WebP conversions.

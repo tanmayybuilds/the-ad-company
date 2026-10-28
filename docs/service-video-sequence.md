@@ -20,8 +20,20 @@ node scripts/prepare-service-sequence.mjs 'C:/Users/Tanmay/Downloads'
 
 The command verifies all five source names, frame rates and frame counts before conversion. It generates into its own temporary directory, verifies completeness, and moves the result into `public/frames/services-v2/`. It refuses to overwrite an existing output directory. Source videos stay untouched.
 
-The sequence uses 1080 × 608 WebP at quality 80 (52,491,354 bytes, about 50 MiB). At most 17 images are retained near the target frame; reduced motion requests one. Frames are released offscreen and when the tab is hidden. Loading never shows a frame ahead of the requested scroll position while moving forwards, or behind it while moving backwards. This prevents flashes when images decode out of order. A selected category's first frame is also its fallback poster.
+The WebP sequence remains the preparation source and supplies five category posters. The live animation now uses a paused native H.264 video with the same 1,269 frames and 52.875-second duration. The original rolling image loader repeatedly cancelled unfinished downloads when scrolling changed its frame window; 1,269 separate requests also added substantial latency.
+
+The replacement uses fast-start metadata and a keyframe every 12 frames (0.5 seconds). Desktop is 960 × 540, 8,725,534 bytes; mobile is 640 × 360, 4,316,824 bytes. This reduces Services transfer by 83.4% and 91.8% respectively against the 52,491,354-byte frame sequence. Files are requested only within 1,200 px of the section. A pending seek finishes before the latest scroll target is requested, so continuous input cannot repeatedly cancel decoding. Browser buffers are retained on offscreen return; hidden tabs stop seeking. Reduced motion requests no video and retains selected category posters.
+
+Work previews use 50 KB of posters with `preload="none"`; hover/click still starts playback and detail dialogs retain controls. Their three 1280 × 720 videos total 2,800,042 bytes instead of 78,605,773 bytes, with every original frame and duration retained. All five optimized videos have metadata before their media data for immediate streaming/seeking.
+
+To prepare the optimized videos, posters and two large client logos after generating the original frame sequence:
+
+```powershell
+node scripts/optimize-site-media.mjs
+```
+
+This command validates output frame counts, transfer budgets and fast-start metadata before installing prepared files. It refuses to overwrite existing optimized outputs. Original sources remain unchanged.
 
 Scroll distance is 22 viewport heights on desktop and 16 on compact layouts where the complete stage fits. Taller stages keep the existing unpinned category selection. This preserves access to every service on short screens. These distances are an implementation choice and can be tuned after real device feedback.
 
-Verification: all 69 Node tests passed; TypeScript and the production Vite build passed; FFmpeg decoded all 1,269 frames without errors. All four endpoint/midpoint/endpoint transition contact sheets were inspected. The existing local preview returned HTTP 200 for the sequence module and final frame. Automated browser inspection was not run, as required by `AGENTS.md`; actual scrolling, touch performance and cold-network playback still need visual review. No publishing was requested or performed.
+Verification: all 69 Node tests passed; TypeScript and the production Vite build passed. FFmpeg decoded all five optimized files without errors and confirmed matching source frame counts/durations. Desktop/mobile contact sheets were inspected. Tests reproduce delayed metadata and seeks, continuous updates during a pending seek, reverse navigation, buffer retention, hidden tabs, reduced motion, errors and cleanup. Asset tests enforce transfer budgets and fast-start metadata. Automated browser inspection was not run, as required by `AGENTS.md`; actual touch performance and timing on the visitor's connection still need device testing.

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { services } from "@/content/site";
 import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
-import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceWindow } from "@/lib/service-sequence.mjs";
+import { TOTAL_FRAMES, ZONE_STARTS, SEQUENCE_FPS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceVideoSource } from "@/lib/service-sequence.mjs";
 import { Eyebrow } from "./primitives";
 import { exitReversePin, observeScrollDirection, scrollPinTo } from "@/lib/reverse-pin.mjs";
 
@@ -9,7 +9,7 @@ export function Services() {
   const root = useRef<HTMLElement>(null);
   const journey = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const canvas = useRef<HTMLCanvasElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
   const progress = useRef<HTMLDivElement>(null);
   const requestedFrame = useRef(0);
   const drawnFrame = useRef(-1);
@@ -33,85 +33,61 @@ export function Services() {
   }, []);
 
   useEffect(() => {
-    const element = canvas.current!;
-    const ctx = element.getContext("2d", { alpha: false });
-    if (!ctx) { setUnavailable(true); return; }
+    const element = video.current!;
     let disposed = false;
     let nearViewport = false;
     const reduced = window.matchMedia(MQ.reduce);
     drawnFrame.current = -1;
-    const frames = new Map<number, HTMLImageElement>();
-
-    const isReady = (i: number) => {
-      const img = frames.get(i);
-      return !!img && img.complete && img.naturalWidth > 0;
-    };
-
-    const release = (index: number, image: HTMLImageElement) => {
-      image.onload = image.onerror = null;
-      image.removeAttribute('src');
-      frames.delete(index);
-    };
 
     render.current = value => {
       const target = sequenceFrame(value);
       requestedFrame.current = target;
-      if (disposed || !nearViewport || document.hidden) return;
-      const wanted = sequenceWindow(target, reduced.matches);
-      frames.forEach((image, index) => { if (!wanted.includes(index)) release(index, image); });
-      for (const index of wanted) {
-        if (!frames.has(index)) {
-          const image = new Image();
-          image.decoding = 'async';
-          image.onload = () => {
-            if (index === requestedFrame.current) setUnavailable(false);
-            render.current(requestedFrame.current);
-          };
-          image.onerror = () => {
-            if (index === requestedFrame.current) setUnavailable(true);
-            if (progress.current) progress.current.hidden = true;
-          };
-          frames.set(index, image);
-          image.src = sequenceSource(index, import.meta.env.BASE_URL);
-        }
-      }
-      const loaded = wanted.filter(isReady);
-      if (progress.current) {
-        progress.current.style.setProperty('--loaded', String(loaded.length / wanted.length));
-        progress.current.setAttribute('aria-valuemax', String(wanted.length));
-        progress.current.setAttribute('aria-valuenow', String(loaded.length));
-        progress.current.hidden = drawnFrame.current >= 0 || loaded.length > 0;
-      }
-      // A late decode must stay between the last drawn frame and the scroll target.
-      const index = loaded.find(index => drawnFrame.current < 0 || (target >= drawnFrame.current
-        ? index >= drawnFrame.current && index <= target
-        : index <= drawnFrame.current && index >= target));
-      if (index === undefined || drawnFrame.current === index) return;
-      const image = frames.get(index)!;
-      if (element.width !== image.naturalWidth || element.height !== image.naturalHeight) {
-        element.width = image.naturalWidth;
-        element.height = image.naturalHeight;
-      }
-      ctx.drawImage(image, 0, 0);
-      element.dataset.frame = String(index + 1);
-      element.dataset.ready = "true";
-      drawnFrame.current = index;
+      // Finish the in-flight seek; seeked then picks up the latest scroll target.
+      if (disposed || !nearViewport || document.hidden || reduced.matches || element.readyState < 1 || element.seeking) return;
+      const time = target / SEQUENCE_FPS;
+      if (Math.abs(element.currentTime - time) > .5 / SEQUENCE_FPS) element.currentTime = time;
     };
 
+    const showFrame = () => {
+      if (disposed || !nearViewport || document.hidden || reduced.matches || element.seeking || element.readyState < 2) return;
+      drawnFrame.current = sequenceFrame(element.currentTime * SEQUENCE_FPS);
+      element.dataset.frame = String(drawnFrame.current + 1);
+      element.dataset.ready = 'true';
+      setUnavailable(false);
+      if (progress.current) progress.current.hidden = true;
+      render.current(requestedFrame.current);
+    };
+    const metadata = () => render.current(requestedFrame.current);
+    const failure = () => {
+      setUnavailable(true);
+      element.dataset.ready = 'false';
+      if (progress.current) progress.current.hidden = true;
+    };
     function syncVisibility() {
-      if (nearViewport && !document.hidden) {
-        render.current(requestedFrame.current);
-      } else {
-        frames.forEach((image, index) => release(index, image));
-        element.width = element.height = 1;
+      if (reduced.matches) {
+        element.pause();
+        if (element.getAttribute('src')) { element.removeAttribute('src'); element.load(); }
         element.dataset.ready = 'false';
         drawnFrame.current = -1;
+        if (progress.current) progress.current.hidden = true;
+        return;
       }
+      if (!nearViewport || document.hidden) { element.pause(); return; }
+      if (!element.getAttribute('src')) {
+        element.preload = 'auto';
+        element.src = sequenceVideoSource(import.meta.env.BASE_URL, window.innerWidth < 768);
+        element.load();
+      }
+      render.current(requestedFrame.current);
     }
+    element.addEventListener('loadedmetadata', metadata);
+    element.addEventListener('loadeddata', showFrame);
+    element.addEventListener('seeked', showFrame);
+    element.addEventListener('error', failure);
     const observer = new IntersectionObserver(([entry]) => {
       nearViewport = entry.isIntersecting;
       syncVisibility();
-    }, { rootMargin: '300px' });
+    }, { rootMargin: '1200px' });
     observer.observe(stage.current!);
     document.addEventListener('visibilitychange', syncVisibility);
     reduced.addEventListener('change', syncVisibility);
@@ -122,7 +98,13 @@ export function Services() {
       observer.disconnect();
       document.removeEventListener('visibilitychange', syncVisibility);
       reduced.removeEventListener('change', syncVisibility);
-      frames.forEach((image, index) => release(index, image));
+      element.removeEventListener('loadedmetadata', metadata);
+      element.removeEventListener('loadeddata', showFrame);
+      element.removeEventListener('seeked', showFrame);
+      element.removeEventListener('error', failure);
+      element.pause();
+      element.removeAttribute('src');
+      element.load();
     };
   }, []);
 
@@ -398,8 +380,8 @@ export function Services() {
                 <span>Illustration // [{current.index}]</span>
               </div>
               <div className="service-screen">
-                <img className="service-poster" src={sequenceSource(ZONE_STARTS[active], import.meta.env.BASE_URL)} alt={`${services.previewAlt} ${current.title}.`} width="1080" height="608" />
-                <canvas ref={canvas} width="1080" height="608" role="img" aria-label={`Illustrative 3D environment: ${current.title}`} />
+                <img className="service-poster" src={sequenceSource(ZONE_STARTS[active], import.meta.env.BASE_URL)} alt={`${services.previewAlt} ${current.title}.`} width="1080" height="608" decoding="async" />
+                <video ref={video} width="1080" height="608" muted playsInline preload="none" aria-label={`Illustrative 3D environment: ${current.title}`} />
                 <span className="service-screen-label">[{current.index}] {current.title}</span>
                 <div ref={progress} className="service-loading" role="progressbar" aria-label={services.loadingLabel} aria-valuemin={0} aria-valuemax={TOTAL_FRAMES} aria-valuenow={0} />
               </div>

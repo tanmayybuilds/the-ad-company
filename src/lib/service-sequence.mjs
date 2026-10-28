@@ -6,6 +6,7 @@ export const SEQUENCE_CLIPS = [
   { id: 'delivery', source: 'Delivery and in app.mp4', frames: 239 },
 ];
 export const TRANSITION_FRAMES = 18;
+export const SEQUENCE_FPS = 24;
 export const ZONE_STARTS = SEQUENCE_CLIPS.map((_, index) =>
   SEQUENCE_CLIPS.slice(0, index).reduce((sum, clip) => sum + clip.frames + TRANSITION_FRAMES, 0));
 export const TOTAL_FRAMES = ZONE_STARTS.at(-1) + SEQUENCE_CLIPS.at(-1).frames;
@@ -19,9 +20,5 @@ export const sequenceZone = frame => {
 };
 export const sequenceSource = (frame, base = '/') => `${base}frames/services-v2/frame_${String(sequenceFrame(frame) + 1).padStart(4, '0')}.webp`;
 
-export function sequenceWindow(value, reduced = false) {
-  const frame = sequenceFrame(value);
-  return Array.from({ length: reduced ? 1 : 17 }, (_, i) => frame + (i % 2 ? -Math.ceil(i / 2) : i / 2))
-    .filter(index => index >= 0 && index < TOTAL_FRAMES);
-}
+export const sequenceVideoSource = (base = '/', mobile = false) => `${base}videos/services-v3-${mobile ? 'mobile' : 'desktop'}.mp4`;
 

@@ -73,7 +73,7 @@ function BentoCard({ index, active, reduced, onActivate, onExplore }: {
       onBlur={() => { stopHover(); if (active) onActivate(null); }}
       onClick={() => { stopHover(); onActivate(null); onExplore(); }}>
       <span className="diorama-screen">
-        <video ref={video} src={videoSource(item.video)} muted playsInline loop preload="metadata" aria-label={item.alt}
+        <video ref={video} src={videoSource(item.video)} poster={`${import.meta.env.BASE_URL}${item.poster.slice(1)}`} muted playsInline loop preload="none" aria-label={item.alt}
           onLoadedMetadata={event => { if (!active) event.currentTarget.currentTime = .001; }}
           onError={() => { setFailed(true); }} />
         {(failed || blocked) && <span className="bento-media-status" role="status">{failed ? work.mediaUnavailable : work.playbackBlocked}</span>}

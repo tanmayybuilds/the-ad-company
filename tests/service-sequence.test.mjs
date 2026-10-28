@@ -4,23 +4,21 @@ import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
-import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceWindow } from '../src/lib/service-sequence.mjs';
+import { TOTAL_FRAMES, ZONE_STARTS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceVideoSource } from '../src/lib/service-sequence.mjs';
 
 test('the complete five videos retain every source frame plus four 18-frame dissolves', () => {
   assert.equal(TOTAL_FRAMES, 1269);
   assert.deepEqual(ZONE_STARTS, [0, 258, 515, 772, 1030]);
 });
 
-test('frame loading is bounded and prioritizes the current frame in either scroll direction', () => {
-  assert.deepEqual(sequenceWindow(100), [100, 99, 101, 98, 102, 97, 103, 96, 104, 95, 105, 94, 106, 93, 107, 92, 108]);
-  assert.deepEqual(sequenceWindow(0), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
-  assert.deepEqual(sequenceWindow(TOTAL_FRAMES - 1), Array.from({ length: 9 }, (_, i) => TOTAL_FRAMES - 1 - i));
-  assert.deepEqual(sequenceWindow(99, true), [99]);
-  for (let frame = -1; frame <= TOTAL_FRAMES + 1; frame++) {
-    const window = sequenceWindow(frame);
-    assert.ok(window.length <= 17);
-    assert.equal(new Set(window).size, window.length);
-    assert.ok(window.every(index => index >= 0 && index < TOTAL_FRAMES));
+test('Services uses fast-start desktop and mobile videos within their transfer budgets', () => {
+  for (const [mobile, budget] of [[false, 12_000_000], [true, 6_000_000]]) {
+    const source = sequenceVideoSource('/the-ad-company/', mobile);
+    assert.equal(source, `/the-ad-company/videos/services-v3-${mobile ? 'mobile' : 'desktop'}.mp4`);
+    const bytes = readFileSync(new URL(`../public${sequenceVideoSource('/', mobile)}`, import.meta.url));
+    assert.equal(bytes.toString('ascii', 4, 8), 'ftyp');
+    assert.ok(bytes.length < budget, `Transfer budget exceeded: ${bytes.length}`);
+    assert.ok(bytes.indexOf(Buffer.from('moov')) < bytes.indexOf(Buffer.from('mdat')), 'Metadata must precede the video');
   }
 });
 
@@ -78,5 +76,9 @@ test('the environment index exposes all five categories and only the active desc
       assert.ok(markup.includes(`id="service-details-${service.id}"`));
     }
     assert.match(markup, /src="\/the-ad-company\/frames\/services-v2\/frame_0001.webp"/);
+    const player = markup.match(/<video\b[^>]*>/)?.[0];
+    assert.ok(player);
+    assert.match(player, /preload="none"/);
+    assert.doesNotMatch(player, /\bsrc=|autoPlay|controls/i, 'Video must not load or play before approaching the section');
   } finally { await server.close(); }
 });
