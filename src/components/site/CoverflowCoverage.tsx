@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { serviceShowcase as showcase } from "@/content/site";
+import { desktopServiceShowcase as showcase } from "@/content/site";
 import { gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/motion";
 import { coverageDistance, coverageFrame, coveragePose } from "@/lib/coverage-motion.mjs";
 import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from "@/lib/reverse-pin.mjs";
@@ -275,7 +275,7 @@ export function CoverflowCoverage() {
   }, { scope: root, dependencies: [renderPosition] });
 
   return <section id="coverage" ref={root} className="cov-scroll-wrapper" aria-labelledby="coverage-title">
-    <div ref={stage} className="cov-stage" onKeyDown={event => {
+    <div ref={stage} className="cov-stage" data-has-photo={!!showcase.items[active].execution} onKeyDown={event => {
       if (!(event.target as HTMLElement).closest('select') && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
         event.preventDefault();
         const fromCard = !!(event.target as HTMLElement).closest(".cov-card");
@@ -319,19 +319,25 @@ export function CoverflowCoverage() {
                 <span className="cov-card-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}<span> / {String(TOTAL).padStart(2, "0")}</span></span>
               </span>
               <span className="cov-art-panel">
-                {showPhoto && <img src={asset(execution.src)} alt={execution.alt} width={execution.width} height={execution.height}
+                {showPhoto && (execution.crop ? <svg className="cov-execution-photo" viewBox={execution.crop.join(' ')} role="img" aria-label={execution.alt} preserveAspectRatio="xMidYMid meet">
+                  <defs><clipPath id={`execution-crop-${service.id}`} clipPathUnits="userSpaceOnUse"><rect x={execution.crop[0]} y={execution.crop[1]} width={execution.crop[2]} height={execution.crop[3]} /></clipPath></defs>
+                  <image href={asset(execution.src)} width={execution.width} height={execution.height} clipPath={`url(#execution-crop-${service.id})`} onError={event => {
+                    const frame = event.currentTarget.ownerSVGElement;
+                    if (frame) { frame.style.display = 'none'; frame.nextElementSibling?.removeAttribute('hidden'); }
+                  }} />
+                </svg> : <img src={asset(execution.src)} alt={execution.alt} width={execution.width} height={execution.height}
                   srcSet={execution.thumbnail && execution.thumbnailWidth ? `${asset(execution.thumbnail)} ${execution.thumbnailWidth}w, ${asset(execution.src)} ${execution.width}w` : undefined}
                   sizes="(max-width: 767px) 82vw, (max-width: 1023px) 70vw, 680px"
                   loading={index === active ? 'eager' : 'lazy'} decoding="async"
-                  onError={event => { event.currentTarget.hidden = true; event.currentTarget.nextElementSibling?.removeAttribute('hidden'); }} />}
+                  onError={event => { event.currentTarget.hidden = true; event.currentTarget.nextElementSibling?.removeAttribute('hidden'); }} />)}
                 <span className="cov-photo-placeholder" hidden={!!showPhoto} role="status">
                   <span aria-hidden="true">↗</span>
-                  <span>{execution ? (showPhoto ? showcase.unavailableImage : showcase.executionLabel) : showcase.pendingImage}</span>
+                  <span id={!execution ? `execution-info-${service.id}` : undefined}>{execution ? (showPhoto ? showcase.unavailableImage : showcase.executionLabel) : showcase.pendingImage}</span>
                 </span>
               </span>
-              <span id={`execution-info-${service.id}`} className={execution ? 'cov-execution-caption' : 'sr-only'}>
-                {execution ? <><span className="sr-only">{execution.alt}</span><strong>{execution.client || showcase.executionLabel}</strong>{execution.location && <span>{execution.location}</span>}{execution.description && <span>{execution.description}</span>}</> : showcase.pendingImage}
-              </span>
+              {execution && <span id={`execution-info-${service.id}`} className="cov-execution-caption">
+                <span className="sr-only">{execution.alt}</span><strong>{execution.client || showcase.executionLabel}</strong>{execution.location && <span>{execution.location}</span>}{execution.description && <span>{execution.description}</span>}
+              </span>}
             </span>
           </button>; })}
         </div>

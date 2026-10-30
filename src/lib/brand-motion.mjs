@@ -20,3 +20,10 @@ export function brandRotation(seconds, cycleSeconds) {
     : phase < .90 ? 180 : phase < .98 ? 180 + 180 * ease((phase - .90) / .08) : 360;
   return Math.floor(turn) * 360 + angle;
 }
+
+/** Translate over two identical copies; reverse starts on the second copy. */
+export function brandTrackX(offset, width, reverse = false) {
+  if (width <= 0) return 0;
+  const phase = loopOffset(offset, width);
+  return reverse ? phase - width : phase === 0 ? 0 : -phase;
+}

@@ -16,14 +16,24 @@ test('client logos resolve to real assets when hosted under the GitHub Pages pat
     const { clients, work } = await server.ssrLoadModule('/src/content/site.ts');
     const markup = renderToStaticMarkup(createElement(ClientStrip));
     assert.match(markup, /data-brand-track/, 'The client showcase should include the shared track');
-    assert.equal([...markup.matchAll(/data-brand-card=/g)].length, clients.items.length * 2, 'Two identical groups make the loop seamless');
-    assert.equal([...markup.matchAll(/aria-label="Preview /g)].length, clients.items.length, 'Every brand has exactly one keyboard control');
+    const reverseStart = markup.indexOf('data-brand-row="reverse"');
+    assert.ok(reverseStart > 0, 'The phone layout needs a second counterflow row');
+    const primary = markup.slice(0, reverseStart), reverse = markup.slice(reverseStart);
+    const split = Math.ceil(clients.items.length / 2);
+    const secondaryCount = clients.items.length - split;
+    const renderedCards = (clients.items.length + secondaryCount) * 2;
+    assert.equal([...primary.matchAll(/data-brand-card=/g)].length, clients.items.length * 2, 'Desktop retains all clients and its identical loop copy');
+    assert.equal([...reverse.matchAll(/data-brand-card=/g)].length, secondaryCount * 2, 'The counterflow row has its own seamless loop copy');
+    const secondaryIndices = [...reverse.matchAll(/data-brand-index="(\d+)"/g)].map(match => Number(match[1])).filter(index => index < clients.items.length);
+    assert.deepEqual(secondaryIndices, clients.items.map((_, index) => index).slice(split), 'The lower row must contain different brands from the first mobile half');
+    assert.equal([...primary.matchAll(/aria-label="Preview /g)].length, clients.items.length);
+    assert.equal([...reverse.matchAll(/aria-label="Preview /g)].length, secondaryCount, 'Visual loop duplicates must not add keyboard stops');
     assert.match(markup, /aria-label="Pause brand animation"/);
-    assert.equal([...markup.matchAll(/View more/g)].length, clients.items.length * 2, 'Backs should show a clear preview action');
+    assert.equal([...markup.matchAll(/View more/g)].length, renderedCards, 'Backs should show a clear preview action');
     assert.doesNotMatch(markup, /Campaign showcase coming soon/, 'Campaign details belong in the popup, not on spinning cards');
     assert.doesNotMatch(markup, /<canvas\b|<video\b/i, 'No invented campaign media or renderer dependency');
     const sources = [...markup.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)].map(match => match[1]);
-    assert.equal(sources.length, clients.items.length * 2);
+    assert.equal(sources.length, renderedCards);
     for (const source of sources) {
       const url = new URL(source, 'https://tanmayybuilds.github.io/the-ad-company/');
       assert.ok(url.pathname.startsWith('/the-ad-company/clients/'), `Wrong logo URL: ${url.href}`);

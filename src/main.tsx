@@ -6,7 +6,7 @@ import { Hero } from '@/components/site/Hero';
 import { ClientStrip } from '@/components/site/ClientStrip';
 import { Services } from '@/components/site/Services';
 import { Work, About, Team, Footer } from '@/components/site/Sections';
-import { CoverflowCoverage } from '@/components/site/CoverflowCoverage';
+import { ServiceExecutions } from '@/components/site/ServiceExecutions';
 import { Contact } from '@/components/site/Contact';
 import { ScrollTrigger } from '@/lib/motion';
 import { ResidentialJourney } from '@/components/site/ResidentialJourney';
@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') {
 }
 
 export function App({ residentialPrototype = false }: { residentialPrototype?: boolean } = {}) {
-  return <><SectionNavigation /><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip />{residentialPrototype ? <ResidentialJourney /> : <Services />}<Work /><About /><CoverflowCoverage /><Team /><Contact /></main><Footer /></>;
+  return <><SectionNavigation /><Header /><main id="main" tabIndex={-1}><Hero /><ClientStrip />{residentialPrototype ? <ResidentialJourney /> : <Services />}<Work /><About /><ServiceExecutions /><Team /><Contact /></main><Footer /></>;
 }
 if (typeof document !== 'undefined') {
   createRoot(document.getElementById('root')!).render(<StrictMode><App residentialPrototype={new URLSearchParams(window.location.search).get('prototype') === 'residential'} /></StrictMode>);

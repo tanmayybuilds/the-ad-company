@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import { about, company, coverage, footer, nav } from '@/content/site';
+import { about, company, coverage, footer, nav, serviceShowcase } from '@/content/site';
 import { useReveal } from '@/hooks/use-reveal';
+import { useMobileLayout } from '@/hooks/use-mobile-layout';
 import { ActionLink, Eyebrow, Wordmark } from './primitives';
 export { Work } from './Work';
-export { TeamTour as Team } from './TeamTour';
+export { Team } from './Team';
 
 export function About() {
   const root = useRef<HTMLElement>(null); useReveal(root);
@@ -43,6 +44,13 @@ export function Coverage() {
 }
 
 export function Footer({ homePath = '' }: { homePath?: string } = {}) {
+  const isMobile = useMobileLayout();
   const link = (href: string) => href.startsWith('#') ? `${homePath}${href}` : `${import.meta.env.BASE_URL}${href}`;
-  return <footer className="bg-inverse py-12 text-on-inverse"><div className="container-page"><div className="grid gap-10 border-b border-on-inverse/20 pb-10 md:grid-cols-[1.4fr_1fr_1fr]"><div><Wordmark tone="ivory" /><p className="mt-5 font-display text-3xl font-bold leading-tight">Committed to<br />commitments.</p><p className="mt-4 text-sm text-on-inverse/75">{company.description}</p></div><nav aria-label="Footer"><p className="text-label-index mb-4 text-[10px] text-lime">Explore</p><ul className="grid grid-cols-2 gap-3">{nav.map(n => <li key={n.href}><a href={link(n.href)} className="text-sm text-on-inverse/80 hover:text-lime">{n.label}</a></li>)}</ul></nav><div><p className="text-label-index mb-4 text-[10px] text-lime">Make a start</p><a href={link('#contact')} className="font-display text-xl font-bold uppercase hover:text-lime">Tell us about your brand ↗</a><div className="mt-4 flex flex-col items-start gap-2 text-sm text-on-inverse/80"><a className="break-all hover:text-lime" href={`mailto:${company.contact.email}`}>{company.contact.email}</a><a className="hover:text-lime" href={`tel:+${company.contact.whatsapp}`}>{company.contact.phone}</a><a className="hover:text-lime" href={`https://wa.me/${company.contact.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div><p className="mt-4 text-xs leading-relaxed text-on-inverse/75">{footer.buildNote}</p></div></div><div className="flex flex-wrap justify-between gap-4 pt-6 text-label-index text-[10px] text-on-inverse/75"><span>{footer.copyright}</span><a href={link('#privacy')} className="hover:text-lime">Privacy & enquiry information</a><a href="#top" className="hover:text-lime">Back to top ↑</a></div></div></footer>;
+  if (isMobile) return <footer className="mobile-footer bg-inverse text-on-inverse"><div className="container-page">
+    <div className="mobile-footer-heading"><Wordmark tone="ivory" /><a href={link('#contact')}>{footer.mobileCta}<span aria-hidden="true">↗</span></a></div>
+    <nav aria-label={footer.mobileNavLabel}><ul>{nav.filter(item => item.href !== '#coverage' || serviceShowcase.items.some(service => service.execution?.src)).map(item => <li key={item.href}><a href={link(item.href)}>{item.label}</a></li>)}</ul></nav>
+    <div className="mobile-footer-contact"><a href={`mailto:${company.contact.email}`}>{company.contact.email}</a><a href={`tel:+${company.contact.whatsapp}`}>{company.contact.phone}</a><a href={`https://wa.me/${company.contact.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp<span aria-hidden="true">↗</span></a></div>
+    <div className="mobile-footer-bottom"><span>{footer.copyright}</span><a href={link('#privacy')}>{footer.mobilePrivacy}</a><a href={link('#top')}>{footer.mobileBackToTop}<span aria-hidden="true">↑</span></a></div>
+  </div></footer>;
+  return <footer className="site-footer bg-inverse py-12 text-on-inverse"><div className="container-page"><div className="grid gap-10 border-b border-on-inverse/20 pb-10 md:grid-cols-[1.4fr_1fr_1fr]"><div><Wordmark tone="ivory" /><p className="mt-5 font-display text-3xl font-bold leading-tight">Committed to<br />commitments.</p><p className="mt-4 text-sm text-on-inverse/75">{company.description}</p></div><nav aria-label="Footer"><p className="text-label-index mb-4 text-[10px] text-lime">Explore</p><ul className="footer-links grid grid-cols-2 gap-3">{nav.map(n => <li key={n.href} data-mobile-hidden={n.href === '#coverage' && !serviceShowcase.items.some(item => item.execution?.src)}><a href={link(n.href)} className="text-sm text-on-inverse/80 hover:text-lime">{n.label}</a></li>)}</ul></nav><div><p className="text-label-index mb-4 text-[10px] text-lime">Make a start</p><a href={link('#contact')} className="font-display text-xl font-bold uppercase hover:text-lime">Tell us about your brand ↗</a><div className="mt-4 flex flex-col items-start gap-2 text-sm text-on-inverse/80"><a className="break-all hover:text-lime" href={`mailto:${company.contact.email}`}>{company.contact.email}</a><a className="hover:text-lime" href={`tel:+${company.contact.whatsapp}`}>{company.contact.phone}</a><a className="hover:text-lime" href={`https://wa.me/${company.contact.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div><p className="mt-4 text-xs leading-relaxed text-on-inverse/75">{footer.buildNote}</p></div></div><div className="flex flex-wrap justify-between gap-4 pt-6 text-label-index text-[10px] text-on-inverse/75"><span>{footer.copyright}</span><a href={link('#privacy')} className="hover:text-lime">Privacy & enquiry information</a><a href="#top" className="hover:text-lime">Back to top ↑</a></div></div></footer>;
 }

@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { nav } from "@/content/site";
+import { nav, serviceShowcase } from "@/content/site";
 import { cn } from "@/lib/utils";
 import { ActionLink, Wordmark } from "./primitives";
+import { useMobileLayout } from '@/hooks/use-mobile-layout';
 
 export function Header({ homePath = '' }: { homePath?: string } = {}) {
   const link = (href: string) => href.startsWith('#') ? `${homePath}${href}` : `${import.meta.env.BASE_URL}${href}`;
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const isMobileLayout = useMobileLayout();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -37,11 +39,19 @@ export function Header({ homePath = '' }: { homePath?: string } = {}) {
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [isMobileLayout]);
 
   // Mobile menu: Escape closes, focus moves into the panel and back.
   useEffect(() => {
     if (!open) return;
+    const overflow = document.body.style.overflow;
+    const padding = document.body.style.paddingRight;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+    const background = [...document.querySelectorAll<HTMLElement>('main, #root > footer, #root > div > footer')];
+    const previousInert = background.map(element => element.inert);
+    background.forEach(element => { element.inert = true; });
     const first = panelRef.current?.querySelector<HTMLElement>("a");
     first?.focus();
     const onKey = (e: KeyboardEvent) => {
@@ -49,15 +59,29 @@ export function Header({ homePath = '' }: { homePath?: string } = {}) {
         setOpen(false);
         buttonRef.current?.focus();
       }
+      if (e.key === 'Tab') {
+        const links = [...(panelRef.current?.querySelectorAll<HTMLElement>('a[href], button') ?? [])];
+        const firstControl = buttonRef.current, lastControl = links.at(-1);
+        if (e.shiftKey && document.activeElement === firstControl) { e.preventDefault(); lastControl?.focus(); }
+        else if (!e.shiftKey && document.activeElement === lastControl) { e.preventDefault(); firstControl?.focus(); }
+      }
+    };
+    const containFocus = (event: FocusEvent) => {
+      if (event.target instanceof Node && !panelRef.current?.contains(event.target) && !buttonRef.current?.contains(event.target)) first?.focus();
     };
     const onResize = () => {
       if (window.matchMedia("(min-width: 1024px)").matches) setOpen(false);
     };
     document.addEventListener("keydown", onKey);
+    document.addEventListener('focusin', containFocus);
     window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener('focusin', containFocus);
       window.removeEventListener("resize", onResize);
+      document.body.style.overflow = overflow;
+      document.body.style.paddingRight = padding;
+      background.forEach((element, index) => { element.inert = previousInert[index]; });
     };
   }, [open]);
 
@@ -129,14 +153,14 @@ export function Header({ homePath = '' }: { homePath?: string } = {}) {
         ref={panelRef}
         inert={!open}
         className={cn(
-          "absolute inset-x-0 top-full origin-top border-b-2 border-ink bg-inverse text-on-inverse transition-[opacity,transform,visibility] duration-300 ease-out lg:hidden",
+          "mobile-menu absolute inset-x-0 top-full origin-top border-b-2 border-ink bg-inverse text-on-inverse transition-[opacity,transform,visibility] duration-300 ease-out lg:hidden",
           open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0",
         )}
       >
         <nav aria-label="Mobile" className="container-page py-6">
           <ul className="flex flex-col">
             {nav.map((item, i) => (
-              <li key={item.href} className="border-b hairline-ivory">
+              <li key={item.href} className="border-b hairline-ivory" data-mobile-hidden={item.href === '#coverage' && !serviceShowcase.items.some(item => item.execution?.src)}>
                 <a
                   href={link(item.href)}
                   aria-current={item.href === 'gallery.html' && homePath ? 'page' : undefined}

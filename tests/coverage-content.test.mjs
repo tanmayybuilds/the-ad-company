@@ -4,19 +4,20 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-test('the execution showcase covers every offered service and keeps truthful photo slots and native selection', async () => {
+test('the full catalogue stays intact while desktop shows the supplied photo executions and native selection', async () => {
   const server = await createServer({ base: '/the-ad-company/', server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom' });
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
-    const { serviceShowcase, services, nav: links } = await server.ssrLoadModule('/src/content/site.ts');
+    const { desktopServiceShowcase: serviceShowcase, serviceShowcase: catalogue, services, nav: links } = await server.ssrLoadModule('/src/content/site.ts');
     assert.ok(serviceShowcase, 'The city cards must be replaced by a service execution catalogue');
-    assert.equal(serviceShowcase.items.length, 37);
+    assert.equal(catalogue.items.length, 37);
+    assert.equal(serviceShowcase.items.length, 9);
     assert.equal(new Set(serviceShowcase.items.map(item => item.id)).size, serviceShowcase.items.length);
-    const formats = new Set(serviceShowcase.items.flatMap(item => item.formats));
+    const formats = new Set(catalogue.items.flatMap(item => item.formats));
     for (const group of [...services.catalogue, ...services.items]) {
       for (const format of group.formats) assert.ok(formats.has(format), `Missing offered service: ${format}`);
     }
-    assert.ok(serviceShowcase.items.every(item => item.execution === null), 'No unprovided execution may be presented as completed work');
+    assert.ok(serviceShowcase.items.every(item => item.execution?.src), 'Every displayed desktop service needs its supplied photograph');
     assert.ok(links.some(link => link.label === 'Executions' && link.href === '#coverage'));
     const markup = renderToStaticMarkup(createElement(CoverflowCoverage));
     const options = markup.match(/<select\b[\s\S]*?<\/select>/)?.[0];
@@ -27,7 +28,7 @@ test('the execution showcase covers every offered service and keeps truthful pho
     assert.match(markup, /for="execution-service"/);
     assert.match(markup, /id="execution-service"/);
     assert.match(markup, /href="#contact"/);
-    assert.match(markup, /Execution photograph coming soon/);
+    assert.doesNotMatch(markup, /Execution photograph coming soon/);
     for (const item of serviceShowcase.items) {
       assert.ok(markup.includes(`aria-describedby="execution-info-${item.id}"`), 'Each card must expose its execution status and details to assistive technology');
       assert.ok(markup.includes(`id="execution-info-${item.id}"`));
@@ -38,6 +39,7 @@ test('the execution showcase covers every offered service and keeps truthful pho
     }
     assert.equal([...markup.matchAll(/class="cov-photo-placeholder"/g)].length, serviceShowcase.items.length);
     const execution = { src: '/campaigns/malabar/01.webp', thumbnail: '/campaigns/malabar/01-thumb.webp', thumbnailWidth: 480, width: 1152, height: 648, alt: 'Confirmed hoarding execution', client: 'Confirmed brand', location: 'Confirmed location', description: 'Approved campaign details' };
+    const originals = serviceShowcase.items.map(item => item.execution);
     try {
       for (const item of serviceShowcase.items) item.execution = execution;
       const withPhotos = renderToStaticMarkup(createElement(CoverflowCoverage));
@@ -50,7 +52,7 @@ test('the execution showcase covers every offered service and keeps truthful pho
       assert.match(withPhotos, /Confirmed location/);
       assert.match(withPhotos, /Approved campaign details/);
       assert.match(withPhotos, /id="execution-info-hoardings"[^>]*>[\s\S]*?Confirmed hoarding execution[\s\S]*?Confirmed brand[\s\S]*?Confirmed location[\s\S]*?Approved campaign details/);
-    } finally { for (const item of serviceShowcase.items) item.execution = null; }
+    } finally { serviceShowcase.items.forEach((item, index) => { item.execution = originals[index]; }); }
   } finally { await server.close(); }
 });
 
@@ -72,10 +74,11 @@ test('the service picker reaches every stop, leaves native keys alone and recove
   }] });
   const nodes = value => !value ? [] : Array.isArray(value) ? value.flatMap(nodes) : typeof value === 'object' ? [value, ...nodes(value.props?.children)] : [];
   const render = Component => { fixture.cursor = fixture.refCursor = 0; return Component(); };
-  let items;
+  let items, originals;
   try {
     const { CoverflowCoverage } = await server.ssrLoadModule('/src/components/site/CoverflowCoverage.tsx');
-    ({ items } = (await server.ssrLoadModule('/src/content/site.ts')).serviceShowcase);
+    ({ items } = (await server.ssrLoadModule('/src/content/site.ts')).desktopServiceShowcase);
+    originals = items.map(item => item.execution);
     let tree = render(CoverflowCoverage);
     const requested = [];
     fixture.refs[5].current = index => { requested.push(index); fixture.refs[4].current = fixture.states[0] = index; };
@@ -100,7 +103,7 @@ test('the service picker reaches every stop, leaves native keys alone and recove
     images[0].props.onError({ currentTarget: failed });
     assert.ok(failed.hidden && revealed, 'A broken image must reveal the unavailable-image fallback');
   } finally {
-    if (items) for (const item of items) item.execution = null;
+    if (items) items.forEach((item, index) => { item.execution = originals[index]; });
     await server.close(); globalThis.__executionControls = original;
   }
 });

@@ -46,7 +46,7 @@
 | **6. About & Approach** | `src/components/site/Sections.tsx` (`About`) |  Implemented | Editorial quote poster ("The world is our canvas"), core mission copy, and 3-step process cards (Understand brief, Plan placements, Execute campaign). |
 | **7. Service Executions** | `src/components/site/CoverflowCoverage.tsx` | Implemented; photos pending | Existing city coverflow converted into 37 individual service stops covering the full catalogue, with direct selection, scroll/swipe/keyboard controls and honest pending-image states. Confirmed execution photos belong in `serviceShowcase.items` in `src/content/site.ts`. `#coverage` is retained and navigation now says Executions. |
 | **8. Team** | `src/components/site/TeamTour.tsx` | Implemented | Five supplied profiles in order: Yash Nile, Akshay Daundkar, Dilip Janaskar, Mansi Jha, Ashika Jha. Local optimized portraits, bidirectional pointer tour, complete biography dialogs and reduced-motion layout. |
-| **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Offline Mode) | Accessible form with validation (Name, Phone, Company, Email, Service, Brief). Currently prepares client-side brief file for download with clear disclaimer. Email, call and WhatsApp links use confirmed details from src/content/site.ts. Automatic form delivery still needs a secure destination. |
+| **9. Contact & Enquiry** | `src/components/site/Contact.tsx`<br/>`src/lib/enquiry.mjs` |  Implemented (Web3Forms key pending) | Validated email enquiry submission through Web3Forms; mobile shows name, phone and message with optional details collapsed. Download action removed. Sending stays disabled until VITE_WEB3FORMS_ACCESS_KEY is supplied. See docs/web3forms-setup.md. Email, call and WhatsApp links use confirmed details from src/content/site.ts. |
 | **10. Footer** | `src/components/site/Sections.tsx` (`Footer`) |  Implemented | Brand wordmark, tagline, navigation anchors, enquiry CTA, privacy notice modal link, and copyright notice. |
 
 ---
@@ -64,8 +64,8 @@ Before public deployment, the following assets and approvals are required:
    - Real campaign execution photography and approved case study metrics.
 4. **Team Roster:** Five names, roles, biographies and portraits supplied October 26, 2026; installed in the existing tour. See `docs/team-portraits.md`.
 5. **Enquiry Destination:**
-   - Google Sheet integration (secure webhook/proxy without exposing private credentials in frontend code).
-   - Confirmation on whether email notification triggers are required.
+   - Web3Forms email delivery selected by the user on October 30, 2026. Public form access key will be supplied later.
+   - Configure VITE_WEB3FORMS_ACCESS_KEY for the company inbox, rebuild, and manually verify receipt. No live enquiry has been sent during implementation.
 6. **Legal & Compliance:** Complete business privacy notice and cookie/data processing policy.
 
 ---

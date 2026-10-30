@@ -4,7 +4,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-async function withTour(run) {
+async function withTour(run, viewport = { width: 1440, height: 900 }) {
   const names = ['window', 'document', 'Element', 'IntersectionObserver', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame', '__teamLookahead'];
   const original = Object.fromEntries(names.map(name => [name, globalThis[name]]));
   const harness = globalThis.__teamLookahead = { refs: [], effects: [], selection: 0 };
@@ -16,9 +16,9 @@ async function withTour(run) {
     return node;
   };
   globalThis.window = Object.assign(new EventTarget(), {
-    innerWidth: 1440, innerHeight: 900, scrollY: 2000,
+    innerWidth: viewport.width, innerHeight: viewport.height, scrollY: 2000,
     scrollTo({ top }) { this.scrollY = Math.round(top); },
-    matchMedia: () => Object.assign(new EventTarget(), { matches: false }),
+    matchMedia: query => Object.assign(new EventTarget(), { matches: query.includes('max-width') && (viewport.width < 768 || (viewport.width < 1024 && viewport.height <= 500)) }),
   });
   globalThis.document = Object.assign(new EventTarget(), { hidden: false, body: { style: { overflow: '' } } });
   globalThis.Element = class {};
@@ -138,3 +138,21 @@ test('active team input steps backward and forward, then releases and skips repl
   wheel(100, 8200); window.scrollY = 2010; input('scroll'); settle();
   wheel(100, 9400); settle(); assert.equal(harness.selection, 1, 'A fresh downward visit can play again');
 }));
+
+for (const viewport of [{ width: 320, height: 568 }, { width: 844, height: 390 }]) {
+  test(`mobile team selection preserves page scroll and leaves vertical input native at ${viewport.width}x${viewport.height}`, () => withTour(({ harness, jump, input, settle }) => {
+    const before = window.scrollY;
+    jump(4);
+    assert.equal(harness.selection, 4);
+    assert.equal(window.scrollY, before, 'Choosing a person must not move the document');
+    const event = input('wheel', { deltaY: 100, deltaX: 0, ctrlKey: false });
+    assert.equal(event.defaultPrevented, false);
+    input('touchstart', { touches: [{ clientX: 150, clientY: 400 }] });
+    const touch = input('touchmove', { touches: [{ clientX: 150, clientY: 200 }] });
+    assert.equal(touch.defaultPrevented, false);
+    window.scrollY += 100; input('scroll'); settle();
+    assert.equal(harness.selection, 4, 'Page scrolling must not choose another person');
+    jump(9); assert.equal(harness.selection, 4);
+    jump(-2); assert.equal(harness.selection, 0);
+  }, viewport));
+}

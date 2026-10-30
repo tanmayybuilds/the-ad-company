@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { clients, work } from "@/content/site";
 import { gsap, MOTION, MQ, useGSAP } from "@/lib/motion";
-import { loopOffset } from "@/lib/brand-motion.mjs";
+import { loopOffset, brandTrackX } from "@/lib/brand-motion.mjs";
 import { Wordmark } from "./primitives";
+import { clientGalleryHref } from '@/lib/client-gallery';
 
 const asset = (src: string) => src.startsWith("/") ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
 
@@ -53,7 +54,7 @@ export function ClientStrip() {
 
   const active = preview ?? focused ?? hovered;
   const control = useRef({ active, paused });
-  const focusCard = useRef<(index: number) => void>(() => {});
+  const focusCard = useRef<(index: number, row: number) => void>(() => {});
 
   useEffect(() => {
     control.current = { active, paused };
@@ -65,6 +66,10 @@ export function ClientStrip() {
   };
 
   const openPreview = (id: number) => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      window.location.assign(clientGalleryHref(clients.items[id % clients.items.length].name, work.projects, import.meta.env.BASE_URL));
+      return;
+    }
     setPreview(id);
   };
 
@@ -85,16 +90,25 @@ export function ClientStrip() {
 
   useGSAP(() => {
     const section = root.current!;
-    const track = section.querySelector<HTMLElement>("[data-brand-track]")!;
-    const group = track.firstElementChild as HTMLElement;
+    const tracks = [...section.querySelectorAll<HTMLElement>("[data-brand-track]")].map(track => ({
+      track,
+      group: track.firstElementChild as HTMLElement,
+      reverse: track.dataset.brandTrack === 'reverse',
+      offset: 0,
+      width: 0,
+    }));
     const cards = [...section.querySelectorAll<HTMLElement>("[data-brand-card]")];
     const mm = gsap.matchMedia();
 
-    mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
+    mm.add({ motion: MQ.motion, reduce: MQ.reduce, mobile: "(max-width: 767px)" }, context => {
       const isMotion = !!context.conditions?.motion;
       setMotion(isMotion);
-      let offset = 0;
-      let width = group.getBoundingClientRect().width;
+      for (const row of tracks) {
+        row.offset = 0;
+        row.width = row.group.getBoundingClientRect().width;
+        if (isMotion && row.width > 0) row.track.style.transform = `translate3d(${brandTrackX(0, row.width, row.reverse)}px,0,0)`;
+      }
+      const speed = MOTION.clients.pixelsPerSecond;
       let visible = false;
       let listening = false;
       let previousSelected: number | null = null;
@@ -117,43 +131,46 @@ export function ClientStrip() {
       }
 
       const resize = new ResizeObserver(() => {
-        const next = group.getBoundingClientRect().width;
-        if (next > 0) {
-          offset = width > 0 ? (offset / width) * next : 0;
-          width = next;
+        for (const row of tracks) {
+          const next = row.group.getBoundingClientRect().width;
+          if (next > 0) {
+            row.offset = row.width > 0 ? (row.offset / row.width) * next : 0;
+            row.width = next;
+            if (isMotion) row.track.style.transform = `translate3d(${brandTrackX(row.offset, row.width, row.reverse)}px,0,0)`;
+          }
         }
       });
-      resize.observe(group);
+      tracks.forEach(row => resize.observe(row.group));
 
-      focusCard.current = index => {
+      focusCard.current = (index, rowIndex) => {
         if (!isMotion) return;
-        const currentWidth = group.offsetWidth || width;
-        const pitch = currentWidth / clients.items.length;
-        offset = index * pitch - window.innerWidth / 2 + pitch / 2;
-        track.style.transform = `translate3d(${-offset}px,0,0)`;
+        const row = tracks[rowIndex];
+        const visibleCards = [...row.group.querySelectorAll<HTMLElement>('[data-brand-card]')].filter(card => card.offsetWidth > 0);
+        const slot = visibleCards.findIndex(card => Number(card.dataset.brandIndex) === index);
+        if (slot < 0 || !row.width) return;
+        const pitch = row.width / visibleCards.length;
+        const offset = Math.max(0, slot * pitch - row.track.parentElement!.clientWidth / 2 + pitch / 2);
+        row.offset = row.reverse ? row.width - offset : offset;
+        // Align the real focusable copy; the moving loop may currently show its visual duplicate.
+        row.track.style.transform = `translate3d(${-offset}px,0,0)`;
       };
 
       const tick = (_time: number, delta: number) => {
         const { active: selected, paused: stopped } = control.current;
         const dt = Math.min(delta / 1000, 0.05);
 
-        // Keep track offset synchronized with dynamic scroll expansion
-        const currentWidth = group.offsetWidth;
-        if (currentWidth > 0 && Math.abs(currentWidth - width) > 0.5) {
-          offset = width > 0 ? (offset / width) * currentWidth : offset;
-          width = currentWidth;
-        }
-
-        // Advance marquee smoothly when not paused and no card is hovered/interacted
-        if (isMotion && !stopped && selected === null && width > 0) {
-          offset = loopOffset(offset + MOTION.clients.pixelsPerSecond * dt, width);
-          track.style.transform = `translate3d(${-offset}px,0,0)`;
+        for (const row of tracks) {
+          if (!row.width || !row.track.parentElement!.offsetWidth) continue;
+          if (isMotion && !stopped && selected === null) {
+            row.offset = loopOffset(row.offset + speed * dt, row.width);
+            row.track.style.transform = `translate3d(${brandTrackX(row.offset, row.width, row.reverse)}px,0,0)`;
+          }
         }
 
         // Toggle active states for cards
         if (previousSelected !== selected) {
-          cards.forEach((card, index) => {
-            const isCardActive = selected === index;
+          cards.forEach(card => {
+            const isCardActive = selected === Number(card.dataset.brandIndex);
             card.classList.toggle("is-active", isCardActive);
           });
           previousSelected = selected;
@@ -179,7 +196,7 @@ export function ClientStrip() {
         observer.disconnect();
         resize.disconnect();
         document.removeEventListener("visibilitychange", visibility);
-        track.style.transform = "";
+        tracks.forEach(row => { row.track.style.transform = ""; });
         cards.forEach(card => card.classList.remove("is-active"));
         focusCard.current = () => {};
       };
@@ -206,10 +223,10 @@ export function ClientStrip() {
       <div className="container-page brand-heading">
         <div className="brand-heading-left">
           <span className="text-label-index brand-index">[02 // BRANDS]</span>
-          <h2 id="clients-title" className="brand-heading-title">{clients.heading}</h2>
+          <h2 id="clients-title" className="brand-heading-title"><span className="brand-desktop-copy">{clients.heading}</span><a className="brand-mobile-copy" href={`${import.meta.env.BASE_URL}gallery.html#campaign-wall`}>{clients.heading}<span aria-hidden="true">↗</span></a></h2>
         </div>
         <div className="brand-heading-right">
-          <p className="brand-hint">{clients.interactionHint}</p>
+          <p className="brand-hint"><span className="brand-desktop-copy">{clients.interactionHint}</span><span className="brand-mobile-copy">{clients.mobileHint}</span></p>
           <button
             type="button"
             className="brand-pause"
@@ -222,11 +239,11 @@ export function ClientStrip() {
         </div>
       </div>
 
-      <div className="brand-stage">
-        <div className="brand-track" data-brand-track>
+      {[false, true].map((reverse, rowIndex) => <div className={`brand-stage${reverse ? ' brand-stage--reverse' : ''}`} data-brand-row={reverse ? 'reverse' : 'forward'} key={rowIndex}>
+        <div className="brand-track" data-brand-track={reverse ? 'reverse' : 'forward'}>
           {[0, 1].map(copy => (
             <div className="brand-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>
-              {clients.items.map((client, index) => {
+              {clients.items.map((client, index) => ({ client, index })).filter(({ index }) => !reverse || index >= Math.ceil(clients.items.length / 2)).map(({ client, index }) => {
                 const id = copy * clients.items.length + index;
                 const Tag = copy ? "div" : "button";
                 const isSelected = active === id;
@@ -235,6 +252,8 @@ export function ClientStrip() {
                     className={`brand-slot${isSelected ? " is-active" : ""}`}
                     key={client.name}
                     data-brand-card=""
+                    data-brand-index={id}
+                    data-mobile-group={index < Math.ceil(clients.items.length / 2) ? 'first' : 'second'}
                     onPointerEnter={event => {
                       if (event.pointerType === "mouse") setHovered(id);
                     }}
@@ -251,7 +270,7 @@ export function ClientStrip() {
                       onFocus={copy ? undefined : event => {
                         if (event.currentTarget.matches(":focus-visible")) {
                           setFocused(id);
-                          focusCard.current(index);
+                          focusCard.current(index, rowIndex);
                         }
                       }}
                       onBlur={copy ? undefined : () => setFocused(null)}
@@ -297,7 +316,7 @@ export function ClientStrip() {
             </div>
           ))}
         </div>
-      </div>
+      </div>)}
 
       {/* FULL-SCREEN SHOWCASE MODAL — Portaled directly to body so it is NOT limited to the brand section */}
       {mounted && selectedClient && createPortal(

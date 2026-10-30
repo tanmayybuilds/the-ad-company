@@ -84,7 +84,7 @@ function BentoCard({ index, active, reduced, onActivate, onExplore }: {
     <div className="card-footer">
       <p className="bento-category">{item.type}</p>
       <h3>{item.title}</h3>
-      {index === 0 && <p className="bento-copy">{item.copy}</p>}
+      <p className={index === 0 ? 'bento-copy' : 'bento-copy bento-copy--mobile'}>{item.copy}</p>
       <button type="button" className="bento-explore" onClick={onExplore} aria-haspopup="dialog" aria-label={`${work.exploreLabel}: ${item.type}`}>
         <span>{work.exploreLabel}</span><span aria-hidden="true">↗</span>
       </button>
@@ -132,9 +132,9 @@ export function Work() {
     </div>
     <dialog ref={dialog} onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} className="project-dialog service-dialog" aria-labelledby={project ? 'project-title' : undefined}>
       {project && <>
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-ink/20 bg-paper px-5 py-3">
+        <div className="project-dialog-bar sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-ink/20 bg-paper px-5 py-3">
           <p className="text-sm font-semibold">{work.detailsLabel}</p>
-          <button type="button" onClick={() => dialog.current?.close()} className="flex items-center gap-2 border border-ink px-3 py-2 text-xs" autoFocus>{work.closeLabel}<X size={16} aria-hidden="true" /></button>
+          <button type="button" onClick={() => dialog.current?.close()} className="flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap border border-ink px-3 py-2 text-sm" aria-label={work.closeLabel} autoFocus>{work.closeShortLabel}<X size={16} aria-hidden="true" /></button>
         </div>
         <div className="project-dialog-layout">
         <aside className="project-dialog-media">
@@ -142,7 +142,6 @@ export function Work() {
           <p>{work.detailLabel}</p>
         </aside>
         <div className="project-dialog-services">
-          <Eyebrow className="mb-3">{work.detailLabel}</Eyebrow>
           <h2 id="project-title" className="font-display text-[clamp(1.5rem,5vw,1.875rem)] font-bold uppercase">{project.title}</h2>
           <p className="my-5 leading-relaxed">{project.copy}</p>
           <ul className="mb-8 flex flex-wrap gap-2">{project.formats.map(format => <li key={format} className="border border-ink/20 px-3 py-2 text-sm">{format}</li>)}</ul>

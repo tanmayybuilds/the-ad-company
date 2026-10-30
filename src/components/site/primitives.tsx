@@ -5,7 +5,7 @@ import { company } from "@/content/site";
 import { companyLogo } from "@/lib/logo";
 
 export const actionVariants = cva(
-  "group/action inline-flex items-center justify-center gap-3 border-2 border-ink font-ui font-bold uppercase tracking-[.04em] transition-[transform,box-shadow,background-color,color] duration-200 ease-out select-none active:translate-x-[2px] active:translate-y-[2px] disabled:pointer-events-none aria-disabled:cursor-not-allowed",
+  "group/action inline-flex min-h-11 items-center justify-center gap-3 border-2 border-ink font-ui font-bold uppercase tracking-[.04em] transition-[transform,box-shadow,background-color,color] duration-200 ease-out select-none active:translate-x-[2px] active:translate-y-[2px] disabled:pointer-events-none aria-disabled:cursor-not-allowed",
   {
     variants: {
       variant: {

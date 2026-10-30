@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { services } from "@/content/site";
 import { gsap, ScrollTrigger, MQ, MOTION, useGSAP } from "@/lib/motion";
 import { TOTAL_FRAMES, ZONE_STARTS, SEQUENCE_FPS, sequenceFrame, sequenceProgressFrame, sequenceZone, sequenceSource, sequenceVideoSource } from "@/lib/service-sequence.mjs";
+import { MobileServicePlayer } from "./MobileServicePlayer";
 import { Eyebrow } from "./primitives";
 import { exitReversePin, observeScrollDirection, scrollPinTo } from "@/lib/reverse-pin.mjs";
 
@@ -19,11 +20,12 @@ export function Services() {
   const [active, setActive] = useState(0);
   const [unavailable, setUnavailable] = useState(false);
   const [fitsViewport, setFitsViewport] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const measure = () => {
       const top = parseFloat(getComputedStyle(journey.current!).getPropertyValue('--service-top')) || 88;
-      setFitsViewport(stage.current!.offsetHeight <= window.innerHeight - top - 16);
+      setFitsViewport(window.innerWidth >= 768 && stage.current!.offsetHeight <= window.innerHeight - top - 16);
     };
     let disposed = false;
     measure();
@@ -33,6 +35,7 @@ export function Services() {
   }, []);
 
   useEffect(() => {
+    if (isMobile) return;
     const element = video.current!;
     let disposed = false;
     let nearViewport = false;
@@ -106,6 +109,14 @@ export function Services() {
       element.removeAttribute('src');
       element.load();
     };
+  }, [isMobile]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
   }, []);
 
   useGSAP(() => {
@@ -113,16 +124,18 @@ export function Services() {
     const stageEl = stage.current!;
     const mm = gsap.matchMedia();
 
-    mm.add({ motion: MQ.motion, reduce: MQ.reduce }, context => {
+    mm.add({ motion: MQ.motion, reduce: MQ.reduce, mobile: "(max-width: 767px)" }, context => {
       const reduced = !!context.conditions?.reduce;
       // A stage taller than the screen must scroll naturally so every category stays reachable.
-      if (reduced || !fitsViewport) {
-        render.current(ZONE_STARTS[activeZone.current]);
+      if (isMobile || context.conditions?.mobile || reduced || !fitsViewport) {
+        requestedFrame.current = ZONE_STARTS[activeZone.current];
+        render.current(requestedFrame.current);
         navigate.current = zone => {
           const index = Math.max(0, Math.min(services.items.length - 1, zone));
           activeZone.current = index;
           setActive(index);
-          render.current(ZONE_STARTS[index]);
+          requestedFrame.current = ZONE_STARTS[index];
+          render.current(requestedFrame.current);
         };
         return () => { navigate.current = () => {}; };
       }
@@ -358,7 +371,7 @@ export function Services() {
     });
 
     return () => mm.revert();
-  }, { scope: root, dependencies: [fitsViewport], revertOnUpdate: true });
+  }, { scope: root, dependencies: [fitsViewport, isMobile], revertOnUpdate: true });
 
   const current = services.items[active];
 
@@ -370,28 +383,34 @@ export function Services() {
             <Eyebrow className="mb-3">{services.eyebrow}</Eyebrow>
             <h2 id="services-title" className="text-display-lg">{services.heading[0]}<br />{services.heading[1]}</h2>
           </div>
-          <p>{services.intro}</p>
+          <p>{isMobile ? services.mobileIntro : services.intro}</p>
         </div>
         <div ref={journey} className="service-journey">
           <div ref={stage} className="service-stage">
+            {isMobile && <div className="service-mobile-categories" role="group" aria-label={services.environmentOptionsLabel}>
+              {services.items.map((service, index) => <button type="button" key={service.id} id={`mobile-service-option-${service.id}`} aria-pressed={active === index} aria-controls="mobile-service-description" onClick={() => navigate.current(index)}><span aria-hidden="true">{service.index}</span>{service.title}</button>)}
+            </div>}
             <figure id="service-visual" className="service-viewport">
-              <div className="service-viewport-heading">
+              {!isMobile && <div className="service-viewport-heading">
                 <span>Format example // {current.visualLabel}</span>
                 <span>Illustration // [{current.index}]</span>
-              </div>
-              <div className="service-screen">
+              </div>}
+              {isMobile ? <MobileServicePlayer active={active} onZoneChange={zone => { activeZone.current = zone; setActive(zone); }} /> : <div className="service-screen">
                 <img className="service-poster" src={sequenceSource(ZONE_STARTS[active], import.meta.env.BASE_URL)} alt={`${services.previewAlt} ${current.title}.`} width="1080" height="608" decoding="async" />
                 <video ref={video} width="1080" height="608" muted playsInline preload="none" aria-label={`Illustrative 3D environment: ${current.title}`} />
                 <span className="service-screen-label">[{current.index}] {current.title}</span>
                 <div ref={progress} className="service-loading" role="progressbar" aria-label={services.loadingLabel} aria-valuemin={0} aria-valuemax={TOTAL_FRAMES} aria-valuenow={0} />
-              </div>
-              <figcaption>
+              </div>}
+              {isMobile ? <figcaption id="mobile-service-description" role="region" aria-labelledby={`mobile-service-option-${current.id}`} className="service-mobile-description">
+                <p>{current.lead}</p>
+                <ul>{current.formats.map(format => <li key={format}>{format}</li>)}</ul>
+              </figcaption> : <figcaption>
                 <div className="service-metadata"><div><span>Formats</span><strong>{current.formats.length} listed</strong></div><div><span>Focus</span><strong>{current.focusLabel}</strong></div></div>
-                <p className="service-journey-hint">{services.journeyHint}</p>
-                {unavailable && <p className="service-load-warning" role="status">{services.unavailable}</p>}
-              </figcaption>
+                <p className="service-journey-hint">{isMobile ? services.selectionHint : fitsViewport ? services.journeyHint : services.selectionHint}</p>
+                {!isMobile && unavailable && <p className="service-load-warning" role="status">{services.unavailable}</p>}
+              </figcaption>}
             </figure>
-            <ol className="service-zones" aria-label="Advertising environments">
+            {!isMobile && <ol className="service-zones" aria-label="Advertising environments">
               {services.items.map((service, index) => (
                 <li key={service.id} className="service-zone" data-active={active === index}>
                   <button type="button" className="service-zone-card" aria-expanded={active === index} aria-controls={`service-details-${service.id}`} onClick={() => navigate.current(index)}>
@@ -406,7 +425,7 @@ export function Services() {
                   </button>
                 </li>
               ))}
-            </ol>
+            </ol>}
           </div>
         </div>
       </div>

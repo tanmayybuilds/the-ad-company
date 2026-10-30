@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { installSectionNavigation } from '../src/lib/section-navigation.mjs';
+import { installSectionNavigation, isSectionNavigating } from '../src/lib/section-navigation.mjs';
 
 test('section links settle after pin layout changes and cross-page links keep native navigation', async () => {
   const previous = { window: globalThis.window, document: globalThis.document };
@@ -26,7 +26,8 @@ test('section links settle after pin layout changes and cross-page links keep na
   };
   try {
     const cleanup = installSectionNavigation(() => { if (shifts++ === 1) position = 1400; });
-    flush(); assert.equal(window.scrollY, 1304, 'The final scroll position must reflect the expanded layout and fixed header');
+    assert.equal(isSectionNavigating(), true);
+    flush(); assert.equal(isSectionNavigating(), false); assert.equal(window.scrollY, 1304, 'The final scroll position must reflect the expanded layout and fixed header');
     assert.ok(focused > 0);
     position = 2400; const work = click('#work'); assert.ok(work.defaultPrevented); flush(); assert.equal(window.scrollY, 2304); assert.equal(window.location.hash, '#work');
     assert.equal(click('./gallery.html').defaultPrevented, false);
@@ -36,10 +37,22 @@ test('section links settle after pin layout changes and cross-page links keep na
     position = 3400; click('#about'); window.dispatchEvent(new Event('wheel')); flush(); assert.equal(window.scrollY, 2304, 'User scrolling must cancel any queued alignment');
     resolveFonts(); await Promise.resolve(); flush(); assert.equal(window.scrollY, 2304, 'Late font loading must not pull the user back after manual scrolling');
     window.location.hash = '#services'; window.dispatchEvent(new Event('hashchange')); flush(); assert.equal(window.scrollY, 3304);
-    cleanup(); position = 4400; assert.equal(click('#work').defaultPrevented, false); flush(); assert.equal(window.scrollY, 3304);
+    window.location.hash = '#work'; window.dispatchEvent(new Event('popstate')); flush(); assert.equal(window.scrollY, 3304);
+    cleanup(); assert.equal(isSectionNavigating(), false); position = 4400; assert.equal(click('#work').defaultPrevented, false); flush(); assert.equal(window.scrollY, 3304);
     window.location.pathname = '/the-ad-company/gallery.html'; window.location.href = 'https://example.test/the-ad-company/gallery.html'; window.location.hash = '';
     const galleryCleanup = installSectionNavigation(() => {});
     assert.equal(click('./#services').defaultPrevented, false, 'Gallery → homepage links must load the homepage, whose initial-hash handler then aligns the section');
     galleryCleanup();
   } finally { Object.assign(globalThis, previous); }
+});
+
+test('settling section navigation ignores triggers without a scrub tween', async () => {
+  const { settleScrollTweens } = await import('../src/lib/section-navigation.mjs');
+  let settled = 0;
+  settleScrollTweens([
+    { getTween: () => false },
+    { getTween: () => undefined },
+    { getTween: () => ({ progress(value) { assert.equal(value, 1); settled++; } }) },
+  ]);
+  assert.equal(settled, 1);
 });

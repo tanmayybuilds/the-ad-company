@@ -1,0 +1,92 @@
+[
+  {
+    "cardTop": 1082,
+    "h": 568,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 1062,
+    "teamHeight": 1166,
+    "w": 320
+  },
+  {
+    "cardTop": 1026,
+    "h": 640,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 1006,
+    "teamHeight": 1142,
+    "w": 360
+  },
+  {
+    "cardTop": 890,
+    "h": 844,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 870,
+    "teamHeight": 1142,
+    "w": 390
+  },
+  {
+    "cardTop": 894,
+    "h": 932,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 874,
+    "teamHeight": 1122,
+    "w": 430
+  },
+  {
+    "cardTop": 287,
+    "h": 390,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 267,
+    "teamHeight": 1148,
+    "w": 844
+  },
+  {
+    "cardTop": 287,
+    "h": 430,
+    "mobileFlow": "relative",
+    "overflow": false,
+    "sceneBottom": 267,
+    "teamHeight": 1148,
+    "w": 932
+  },
+  {
+    "cardTop": 28635,
+    "h": 1024,
+    "mobileFlow": "absolute",
+    "overflow": false,
+    "sceneBottom": 29003,
+    "teamHeight": 4864,
+    "w": 768
+  },
+  {
+    "cardTop": 0,
+    "h": 768,
+    "mobileFlow": "static",
+    "overflow": false,
+    "sceneBottom": 11835,
+    "teamHeight": 3648,
+    "w": 1024
+  },
+  {
+    "cardTop": 0,
+    "h": 800,
+    "mobileFlow": "static",
+    "overflow": false,
+    "sceneBottom": 25782,
+    "teamHeight": 3800,
+    "w": 1280
+  },
+  {
+    "cardTop": 0,
+    "h": 900,
+    "mobileFlow": "static",
+    "overflow": false,
+    "sceneBottom": 28508,
+    "teamHeight": 4275,
+    "w": 1440
+  }
+]

@@ -31,6 +31,6 @@ test('the complete page has unique IDs, valid anchors and labels, and real local
       }
     }
     for (const section of ['services', 'work', 'about', 'coverage', 'team', 'contact', 'privacy']) assert.ok(ids.includes(section));
-    assert.match(markup, /does not submit an enquiry/);
+    assert.doesNotMatch(markup, /Download my brief|does not submit an enquiry/);
   } finally { await server.close(); }
 });

@@ -174,11 +174,47 @@
   .team-heading-controls { margin-top: 8px; }
   .team-mobile-role { bottom: 116px; }
 }
+
+.team-hint-select { display: none; }
+@media (max-width: 767px), (max-width: 1023px) and (max-height: 500px) {
+  .team-tour { height: auto; overflow-anchor: none; }
+  .team-viewport { position: relative; height: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding-block: 44px 28px; overflow: clip; }
+  .team-heading { position: relative; inset: auto; }
+  .team-heading-row { margin-top: 12px; }
+  .team-heading h2 { font-size: clamp(26px, 6.5vw, 40px); line-height: 1.08; }
+  .team-eyebrow { font-size: 12px; }
+  .team-heading-controls { margin-top: 16px; gap: 12px; }
+  .team-heading-controls .team-hint-scroll { display: none; }
+  .team-heading-controls .team-hint-select { display: block; font: 14px/1.5 var(--font-sans); }
+  .team-pills { max-width: 100%; gap: 2px; padding: 3px; }
+  .team-pills button { width: 44px; height: 44px; font-size: 12px; }
+  .team-scene { position: relative; inset: auto; height: 320px; overflow: hidden; }
+  .team-world-fit { top: calc(100% - 56px); }
+  .team-floor { inset-block-start: 20%; }
+  .team-mobile-role { position: relative; inset: auto; width: calc(100% - 40px); max-width: 440px; margin: 0 auto 4px; }
+  .team-mobile-role .team-role { box-shadow: 4px 4px 0 var(--ink); }
+  .team-mobile-role .team-role-body { padding: 16px; }
+  .team-mobile-role .team-role-bar, .team-mobile-role .team-role-badge { font-size: 12px; }
+  .team-mobile-role .team-role h3 { font-size: 20px; }
+  .team-mobile-role .team-responsibility { font-size: 12px; line-height: 1.6; }
+  .team-mobile-role .team-intro { display: block; font-size: 15px; line-height: 1.6; }
+  .team-bottom { position: relative; inset: auto; }
+  .team-bottom-row { flex-wrap: wrap; gap: 12px; }
+  .team-step { min-height: 44px; font-size: 12px; padding-inline: 12px; }
+  .team-stage-status { order: -1; width: 100%; justify-items: start; }
+  .team-current { font-size: 12px; }
+  .team-bottom-row > .team-step:last-child { margin-left: auto; }
+  .team-footnotes { flex-direction: column; gap: 12px; font-size: 12px; line-height: 1.6; }
+  .team-footnotes > p { max-width: none; }
+  .team-footnotes a { display: inline-flex; align-items: center; min-height: 44px; align-self: start; }
+  .team-read-bio { min-height: 44px; font-size: 13px; }
+}
+
 @media (prefers-reduced-motion: reduce), print {
   .team-tour { height: auto; }
   .team-viewport { display: block; position: relative; height: auto; overflow: visible; padding-block: calc(var(--header-h) + 24px) 28px; }
   .team-heading { position: relative; inset: auto; }
-  .team-scene { position: relative; perspective: none; margin-top: 36px; overflow: visible; }
+  .team-scene { position: relative; height: auto; perspective: none; margin-top: 36px; overflow: visible; }
   .team-world-fit { position: static; transform: none; }
   .team-world { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 26px; width: min(1200px, calc(100% - 40px)); height: auto; margin: auto; transform: none !important; }
   .team-node, .team-node[hidden] { --node-opacity: 1 !important; position: relative; display: flex; flex-direction: column; align-items: center; width: auto; height: auto; padding-top: 24px; transform: none !important; }

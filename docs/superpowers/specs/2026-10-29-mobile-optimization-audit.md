@@ -1,0 +1,64 @@
+# Mobile optimization audit and proposed design
+
+Date: 29 October 2026. Status: proposal for review; no product changes made.
+
+## Intent
+
+Make the current website feel deliberately composed on phones while retaining its identity and most of its visual work. Keep the Porcelain & Teal palette, transparent logo, selected fonts, section order, six hero panels, client roster, five service environments, three work previews, About content, execution catalogue, five team members, campaign photographs and brief form.
+
+The user's request is an audit and detailed fix plan, not implementation or publication. The README and AGENTS.md supply project constraints and background; their pending business deliverables are not new tasks authorized by this request.
+
+## Inspection scope and limits
+
+Inspected the local running site at `http://127.0.0.1:5173/` using the in-app browser, screenshots, DOM geometry and source reads. Portrait viewports: 390 × 844, 320 × 568 and 430 × 932. Inspected the full homepage primarily at 390 × 844; spot-checked narrow-phone hero, menu, team, contact/footer and gallery at 320 × 568; larger-phone hero at 430 × 932. Also inspected the open menu at 844 × 390 landscape. These are browser viewport checks, not physical iOS/Android device tests. Scrollbars consumed approximately 15px of layout width in this browser.
+
+Opened the residential work detail dialog and gallery photo viewer. Other client and biography dialogs were reviewed in source only. Native touch inertia, iOS keyboard/zoom, safe areas, reduced-motion rendering, slower networks, tablet and desktop regressions still need the implementation validation pass. No Lighthouse or hardware performance claims are made here. Screenshots were inspected during the session, but a persistent screenshot baseline has not been saved.
+
+## Findings and fixes
+
+Priority: P0 = navigation/reachability; P1 = substantial mobile presentation or interaction problem; P2 = polish. Evidence distinguishes visible observations from source-based risks and editorial judgments.
+
+| ID | Area / priority | Evidence and present problem | Proposed fix without a redesign |
+| --- | --- | --- | --- |
+| M01 | Header/menu / P0 | At 320 × 568 the menu ran from y=72 to about y=619, below the viewport. In landscape only the upper links were visible. `Header.tsx` gives the panel no viewport height limit or internal scrolling. | Preserve the header and menu styling. Bound the panel to the remaining dynamic viewport, enable internal vertical scrolling, add safe-area padding and prevent the page behind it from scrolling. Keep every link and CTA reachable. |
+| M02 | Section navigation / P0 | From the narrow-phone team scene, clicking menu “Let’s talk” changed the hash to `#contact` but left the view in team: scrollY=8117, Contact still about 2773px below the viewport. Observed once; root cause not yet proven. Section alignment, layout refresh and team scroll handlers all participate. | First reproduce from stable layouts at multiple sizes. Give explicit anchor navigation precedence over tour stepping and pin refresh. Test Team → Contact, reverse journeys, gallery → homepage anchors and browser Back/Forward. Do not patch with arbitrary delays. |
+| M03 | Team composition / P1 | At 320 × 568 the profile card covers nearly the whole active portrait; the scene heading/card/controls compete for the same space. CSS uses a 100vh sticky stage with absolute heading, card and footer. | Keep portraits, pedestals, movement, five profiles and bios. Use flow-based heading/scene/card/control rows on mobile. Let short screens grow naturally instead of overlapping. |
+| M04 | Team scrolling / P1 | Source sets height to 475vh for five people. At 390 × 844 the section measured 4009px. Window-level wheel/touch handlers step and prevent scrolling in the active tour. This creates a long, interaction-heavy mobile journey; actual finger behavior was not measured. | Recommended mobile adaptation: retain the animated scene but select people with numbered buttons, Prev/Next and optional horizontal swipe. Leave vertical page scrolling native and remove the mobile 475vh travel spacer. Keep desktop scroll tour behavior. |
+| M05 | Hero collage / P1 | Hero is recognizable and already stacks six cards in two columns. At 390 × 844 it measured roughly 1183px high. Card captions compute to 6px; labels are 9px. At 320px, CTAs wrap into unequal-width rows. | Retain all six tilted panels and one-time assembly. Replace brittle absolute row offsets with a mobile two-column layout, reserve room for rotations/shadows, enlarge useful captions, and make narrow CTAs consistently stacked. Do not force the full hero into one screen. |
+| M06 | Client strip / P2 | During scroll expansion the client band filled roughly half a phone screen with substantial empty teal space around a small logo row. Source interpolates minimum height up to 50svh; pause control is 38px. | Keep logos, motion, pause and previews. Cap mobile expansion to content-driven spacing; make pause at least 44px. Ensure tapping a logo has a clear, stable result without hover. |
+| M07 | Services / P1 | The stacked image and accordion work, but headers, image label, format/focus metadata and hints use 9–10px text; format chips use 10px. At 390px the complete section measured about 1142px. | Keep the five videos/posters and category list. Strengthen the category and artwork hierarchy, raise meaningful metadata/chips to 12px, simplify spacing within the frame, and use natural scrolling where the full stage cannot fit. Keep all formats available. |
+| M08 | Work cards/dialog / P1 | Three stacked previews remain attractive. The overlaid View more competes with the small scene, while the second action below is visually tiny. Residential detail dialog repeats the illustrative-format notice above and below the media; its close label wraps and the content is long. | Keep all previews and full-card entry. Use one clearly styled action per card while retaining accessible entry points. Reduce overlay bulk on narrow phones. Give dialogs a fixed reachable top bar, one content scroll region, and one readable illustrative notice. |
+| M09 | About / P2 | Source and geometry show a roughly 2835px section at 390px: long story, large portrait billboard, five benefits and three process cards. Content is usable, but its cumulative pacing is heavy. The billboard is recognizable and should stay. | Preserve all text and artwork. Reduce compounded 48/64/72px gaps on phones; make benefit/process groups more compact. Keep one-column reading order on small phones; two benefit columns only where each remains readable. Do not hide the story by default. |
+| M10 | Executions / P1 | The section measured about 873px at 390px. The large portrait placeholder dominates, and “photograph coming soon” appears twice in card content. Arrows measure 38 × 36px; picker minimum height is 40px. | Keep coverflow, selector, all 37 entries and honest pending states. Use a shorter placeholder-only stage, one pending caption, and 44px controls. Preserve larger display space when a real photo exists. Do not substitute unrelated photos. |
+| M11 | Small controls/type / P1 | Team pills measure 36 × 30px; footnotes compute to 8px. Numerous decorative indices and secondary actions are tiny. | Apply a mobile readability and target-size pass: body 15–16px, supporting text 12–14px, controls at least 44 × 44px. Decorative nonessential artwork text can remain smaller only if it conveys no unique information. Preserve the existing font families. |
+| M12 | Contact/form / P1 | At 320px the form's native select cuts off its default label. Inputs/select/textarea compute to 14px, a source-based iOS focus-zoom risk, not an observed iOS failure. Contact introduction and pre-form block delay the form; section measured about 1802px at 390px. | Use 16px form text, maintain full-width fields and fit usable selected labels. Tighten pre-form spacing while retaining direct email/phone/WhatsApp. Keep validation and file-download behavior, with the non-submission notice visible. |
+| M13 | Gallery wall / P1 | At 320px two photo columns produce roughly postcard-stamp-sized thumbnails and 10px brand captions with long names wrapping. Horizontal filters work but show few options at once. | Preserve photo-print styling and brand filters. Use one column below 360px, two columns above when readable. Raise captions to 12px and retain obvious horizontal filter overflow and selected state. |
+| M14 | Gallery viewer / P1 | At 320 × 568 the viewer leaves large empty bands around a landscape photograph; caption and navigation push below the initial visible area. Source allocates the image up to 68svh before caption/control space. | Fit image, caption and controls together using viewport-budgeted rows. Center the dialog explicitly, reserve close/previous/next space, preserve full photo with object-fit contain, and allow caption scrolling for long text. |
+| M15 | Footer / P2 | Footer measured about 851px at 390px. Useful links remain, but copyright/privacy/back-to-top use 10px text and several text links have small hit areas. | Keep all groups and contact details; reduce repeated vertical gaps, increase legal text to 12px and pad link targets. Preserve natural wrapping. |
+
+No confirmed global horizontal document overflow was found in the measured 390px state (`scrollWidth=375`, layout area excluding scrollbar). Clipped/rotated artwork still needs component-level checks: global `overflow-x: clip` is not proof that content fits.
+
+## Recommended approach and alternatives
+
+1. **Recommended: responsive refinement plus selective mobile interaction adaptation.** Preserve the visual system and every major section. Change layout sizing and touch behavior where the desktop mechanism fails on phones. Most work stays in existing components/styles; the only material interaction adaptation is mobile team selection and navigation coordination.
+2. **CSS-only correction.** Cheapest, and retains every interaction exactly, but cannot reliably solve scroll ownership, menu accessibility or the long team journey. Insufficient for M02/M04.
+3. **Separate mobile redesign.** Could reduce complexity but would discard too much existing artwork/behavior and duplicate maintenance. Outside the user's requested direction.
+
+This recommendation is the auditor's proposal, not a claim that the user approved the interaction details. Implementation awaits a separate request/review.
+
+## Proposed mobile rules
+
+- Primary phone layout: below 768px. Also use a short-landscape adaptation below 1024px when height is 500px or less. Keep established desktop behavior at 1024px and above except short-height safety fixes proven necessary.
+- Reuse existing breakpoints at 599/639/699/767/1023 where they belong; introduce only the small-phone 360px and short-height behavior needed for the fixes. Avoid a competing global breakpoint system.
+- Gutters: 16px at 320–359px; 20px at 360–767px. Section rhythm: generally 40–56px outer padding, 16–24px group gaps. These are proposed tuning ranges, subordinate to readable content.
+- Primary/secondary actions: minimum 44px height. Stack hero actions full-width below 360px; allow two beside each other only when their labels fit. Never shrink text to force them beside each other.
+- Headings: keep uppercase character and deliberate word wrapping. Do not break ordinary words or reduce body readability to preserve a particular line count.
+- Use `svh` for stable visual stages, `dvh` for bounded overlays and keyboard-sensitive space, and safe-area inset padding where appropriate. Do not apply viewport-height locks to content that may need to grow.
+- Keep animation as progressive enhancement: reduced motion must show content immediately; short screens must not lose copy; vertical touch scrolling must remain reliable. Keep offscreen pause/lazy loading.
+- No new UI/animation dependencies, no new fonts, no new business copy/claims, no replacement brand assets, no enquiry backend, no deployment.
+
+## Success criteria
+
+Every menu item, CTA, profile bio and modal close control is reachable at 320 × 568 and in phone landscape. No portrait/profile-card overlap obscures content. Mobile vertical scrolling stays natural through team. All section links land at the intended section below the header. All six hero panels and existing content remain accessible. Form text is at least 16px, useful supporting text at least 12px and interactive targets at least 44px in each dimension where applicable. Gallery photos and viewer controls are usable without page-level sideways scrolling. Desktop retains its composition and scroll-driven tour.
+
+The page should get shorter by removing unnecessary spacers and excess padding, not by deleting content or imposing a page-height target.

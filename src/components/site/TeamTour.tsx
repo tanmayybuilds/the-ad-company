@@ -3,6 +3,7 @@ import { team, type TeamPointerNode } from '@/content/site';
 import { ScrollTrigger } from '@/lib/motion';
 import { teamCamera, teamPath, teamProgress, teamScrollTop, teamWindow, teamFraming } from '@/lib/team-tour.mjs';
 import { exitReversePin, observeScrollDirection, scrollPinTo, createWheelStep } from '@/lib/reverse-pin.mjs';
+import { isSectionNavigating } from '@/lib/section-navigation.mjs';
 import './team-tour.css';
 import { TeamBiography } from './TeamBiography';
 
@@ -44,6 +45,7 @@ export function TeamTour() {
   useEffect(() => {
     const section = root.current!, stage = world.current!;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobile = window.matchMedia('(max-width: 767px), (max-width: 1023px) and (max-height: 500px)');
     let top = 0, distance = 0, raf = 0, lastTime = 0, visible = false, selected = -1;
     let firstVisible = -1, lastVisible = -1;
     let lastScrollY = window.scrollY, travelling = false, travelStarted = 0;
@@ -52,7 +54,7 @@ export function TeamTour() {
     const wheelStep = createWheelStep(positions.length, true);
     const scrollDirection = observeScrollDirection();
     const inside = () => distance > 0 && window.scrollY >= Math.floor(top) && window.scrollY <= Math.ceil(top + distance);
-    const locked = () => document.body.style.overflow === 'hidden';
+    const locked = () => document.body.style.overflow === 'hidden' || isSectionNavigating();
 
     function scrollTo(y: number) {
       scrollDirection.reset();
@@ -70,12 +72,12 @@ export function TeamTour() {
       top = section.getBoundingClientRect().top + window.scrollY;
       distance = Math.max(0, section.offsetHeight - window.innerHeight);
       if (window.scrollY >= top + section.offsetHeight) passedStage = true;
-      const framing = teamFraming(window.innerWidth, window.innerHeight);
+      const framing = teamFraming(window.innerWidth, mobile.matches ? Math.max(760, window.innerHeight) : window.innerHeight);
       section.style.setProperty('--tour-scale', String(framing.scale));
       section.style.setProperty('--active-card-scale', String(framing.cardScale));
       section.style.setProperty('--active-portrait-scale', String(framing.portraitScale));
       lastScrollY = window.scrollY;
-      if (!visible && !travelling && !reduced.matches) {
+      if (!mobile.matches && !visible && !travelling && !reduced.matches) {
         current.current = target.current = Math.round(teamProgress(window.scrollY, top, distance, positions.length));
       }
     }
@@ -83,7 +85,7 @@ export function TeamTour() {
     function onScroll() {
       const previous = lastScrollY, y = window.scrollY;
       lastScrollY = y;
-      if (reduced.matches || locked() || Math.abs(y - previous) <= 1) return;
+      if (mobile.matches || reduced.matches || locked() || Math.abs(y - previous) <= 1) return;
       if (y >= top + section.offsetHeight) passedStage = true;
       if (y < previous) {
         if (scrollDirection.direction() !== -1) return;
@@ -178,7 +180,7 @@ export function TeamTour() {
         target.current = index;
         travelling = current.current !== index;
         travelStarted = performance.now();
-        scrollTo(teamScrollTop(index, top, distance, positions.length));
+        if (!mobile.matches) scrollTo(teamScrollTop(index, top, distance, positions.length));
         wake();
       }
     };
@@ -186,7 +188,7 @@ export function TeamTour() {
     function onWheel(event: WheelEvent) {
       if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       const step = wheelStep(target.current, travelling, event.deltaY, event.timeStamp);
-      if (event.defaultPrevented || reduced.matches || locked() || !inside()) return;
+      if (mobile.matches || event.defaultPrevented || reduced.matches || locked() || !inside()) return;
       if (passedStage) { if (event.deltaY < 0) leaveBackwards(); return; }
       if (step === 'back') return;
       if (step === 'leave') return;
@@ -195,7 +197,7 @@ export function TeamTour() {
     }
 
     function onKey(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || reduced.matches || locked() || !inside()) return;
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || mobile.matches || reduced.matches || locked() || !inside()) return;
       const element = event.target instanceof Element ? event.target : null;
       if (element?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
       if (event.key === ' ' && element?.closest('button, a')) return;
@@ -215,7 +217,7 @@ export function TeamTour() {
       touch = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY, handled: false } : null;
     }
     function onTouchMove(event: TouchEvent) {
-      if (!touch || event.touches.length !== 1 || reduced.matches || locked() || !inside()) return;
+      if (!touch || event.touches.length !== 1 || mobile.matches || reduced.matches || locked() || !inside()) return;
       const delta = touch.y - event.touches[0].clientY;
       if (Math.abs(event.touches[0].clientX - touch.x) >= Math.abs(delta)) return;
       if (passedStage) { if (delta < -12) leaveBackwards(); return; }
@@ -281,6 +283,7 @@ export function TeamTour() {
     document.addEventListener('visibilitychange', visibility);
     document.addEventListener('click', onTeamLink);
     reduced.addEventListener('change', motionChange);
+    mobile.addEventListener('change', motionChange);
     ScrollTrigger.addEventListener('refresh', measure);
     measure();
     return () => {
@@ -299,6 +302,7 @@ export function TeamTour() {
       document.removeEventListener('visibilitychange', visibility);
       document.removeEventListener('click', onTeamLink);
       reduced.removeEventListener('change', motionChange);
+      mobile.removeEventListener('change', motionChange);
       ScrollTrigger.removeEventListener('refresh', measure);
       jump.current = () => {};
     };
@@ -309,7 +313,7 @@ export function TeamTour() {
       <header className="team-heading container-page">
         <p className="team-eyebrow">{team.eyebrow}</p>
         <div className="team-heading-row"><h2 id="team-title">{team.heading[0]}<br />{team.heading[1]}</h2><span className="team-tour-mark" aria-hidden="true">↳<small>01—{total}<br />Campaign pathway</small></span></div>
-        <div className="team-heading-controls"><p>{team.hint}</p><StagePills label="Jump to a campaign stage" active={active} onJump={index => jump.current(index)} /></div>
+        <div className="team-heading-controls"><p className="team-hint-scroll">{team.hint}</p><p className="team-hint-select">{team.mobileHint}</p><StagePills label="Jump to a campaign stage" active={active} onJump={index => jump.current(index)} /></div>
       </header>
 
       <div className="team-scene">

@@ -1,26 +1,36 @@
 import { scrollPinTo } from './reverse-pin.mjs';
 
+let navigating = false;
+export const isSectionNavigating = () => navigating;
+
+export function settleScrollTweens(triggers) {
+  for (const trigger of triggers) {
+    const tween = trigger.getTween();
+    if (tween && typeof tween.progress === 'function') tween.progress(1);
+  }
+}
+
 export function installSectionNavigation(settle) {
   let hash = '', frame = 0, passes = 0, disposed = false;
   const targetFor = value => {
     try { return value.startsWith('#') && document.getElementById(decodeURIComponent(value.slice(1))); }
     catch { return null; }
   };
-  const cancel = () => { hash = ''; window.cancelAnimationFrame(frame); frame = 0; };
+  const cancel = () => { hash = ''; navigating = false; window.cancelAnimationFrame(frame); frame = 0; };
   const align = () => {
     frame = 0;
     const target = targetFor(hash);
-    if (disposed || !target || document.body.style.overflow === 'hidden') return;
+    if (disposed || !target || document.body.style.overflow === 'hidden') { cancel(); return; }
     settle();
     const header = document.querySelector('header')?.getBoundingClientRect().height || 0;
     scrollPinTo(Math.max(0, window.scrollY + target.getBoundingClientRect().top - header - 16));
     // Scrubbed layout and React's pin-fit measurement can settle after the first jump.
     if (++passes < 4) frame = window.requestAnimationFrame(align);
-    else { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
+    else { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); navigating = false; }
   };
   const navigate = value => {
     if (!targetFor(value)) return false;
-    cancel(); hash = value; passes = 0; frame = window.requestAnimationFrame(align); return true;
+    cancel(); hash = value; navigating = true; passes = 0; frame = window.requestAnimationFrame(align); return true;
   };
   const click = event => {
     if (event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -36,6 +46,7 @@ export function installSectionNavigation(settle) {
   const key = event => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) cancel(); };
   document.addEventListener('click', click);
   window.addEventListener('hashchange', changed);
+  window.addEventListener('popstate', changed);
   window.addEventListener('load', initial);
   window.addEventListener('wheel', cancel, { passive: true });
   window.addEventListener('touchstart', cancel, { passive: true });
@@ -47,6 +58,7 @@ export function installSectionNavigation(settle) {
     disposed = true; cancel();
     document.removeEventListener('click', click);
     window.removeEventListener('hashchange', changed);
+    window.removeEventListener('popstate', changed);
     window.removeEventListener('load', initial);
     window.removeEventListener('wheel', cancel);
     window.removeEventListener('touchstart', cancel);

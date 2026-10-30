@@ -53,6 +53,8 @@ export type ServiceExecution = {
   client?: string;
   location?: string;
   description?: string;
+  /** Native image coordinates: crop the display without altering the photograph. */
+  crop?: [number, number, number, number];
 };
 
 export type ShowcaseService = {
@@ -127,6 +129,7 @@ export const hero = {
 export const clients = {
   heading: "Our Clientele",
   interactionHint: "Flip a card. Explore the work.",
+  mobileHint: "Tap a logo to see campaign photos.",
   viewMore: "View more",
   closePreview: "Close brand preview",
   pending: "Campaign showcase coming soon",
@@ -160,10 +163,18 @@ export const clients = {
 export const services = {
   eyebrow: "[02 // Where your brand can show up]",
   journeyHint: "Scroll to journey through five advertising environments, or select a service to explore.",
+  selectionHint: "Select a service below to explore its environment and formats.",
+  playVideo: "Play video",
+  pauseVideo: "Pause video",
+  reducedVideoHint: "Still previews are shown for reduced motion. Choose a service below to explore.",
+  videoLoadingHint: "Loading video…",
+  videoPlaybackFailed: "Playback could not start. Press Play to retry, or choose a service to view its still preview.",
   previewAlt: "Illustrative advertising environment:",
   loadingLabel: "Loading environment sequence",
   unavailable: "The animation could not load. Showing the selected environment preview.",
   heading: ["Real places.", "Real brand presence."],
+  mobileIntro: "Explore five advertising environments and find the right formats for your brand.",
+  mobilePreviewLabel: "Illustrative preview",
   intro:
     "Mass reach, local engagement and the right media mix. Explore our on-ground environments, then open a card in Out in the world to discover our full range of services.",
   catalogueHeading: "One brief. Every possibility.",
@@ -305,6 +316,7 @@ export const work = {
   playbackBlocked: "Open the details to play the illustration.",
   detailLabel: "Illustrative format — not a completed campaign",
   closeLabel: "Close format details",
+  closeShortLabel: "Close",
   detailsLabel: "Campaign services",
   catalogueHint: "Relevant services are expanded below. Open any other category to explore the full offering.",
   contactLabel: "Plan a campaign",
@@ -435,6 +447,24 @@ export const serviceShowcase = {
   ] as ShowcaseService[],
 };
 
+/** Supplied October 30. These photos are approved for the desktop showcase only. */
+export const desktopServiceShowcase = {
+  ...serviceShowcase,
+  intro: "Real placements. On-ground execution. Explore our work across outdoor, transit and communities.",
+  pendingNote: "Selected campaign executions.",
+  items: [
+    { id: 'auto', title: 'Auto branding', category: 'OOH media', formats: ['Auto branding'], execution: { src: '/executions/auto-branding.webp', alt: 'Nova IVF advertising across the rear canopy of an auto rickshaw.', width: 960, height: 1280, crop: [90, 300, 760, 810], client: 'Nova IVF Fertility' } },
+    { id: 'cab', title: 'Cab branding', category: 'OOH media', formats: ['Cab branding'], execution: { src: '/executions/cab-branding.webp', alt: 'Nova IVF advertising on the side panels of a white cab.', width: 1200, height: 673, crop: [30, 0, 1080, 500], client: 'Nova IVF Fertility' } },
+    { id: 'outdoor-digital', title: 'Digital hoarding', category: 'Digital & outdoor media', formats: ['Outdoor digital advertising'], execution: { src: '/executions/digital-hoarding.webp', alt: 'A TDF jewellery advertisement on an elevated digital screen beside a city street.', width: 1296, height: 972, crop: [645, 60, 440, 520], client: 'TDF Diamonds & Gold' } },
+    { id: 'hoardings', title: 'Hoardings', category: 'ATL media', formats: ['Hoardings'], execution: { src: '/executions/hoarding.webp', alt: 'A TDF jewellery advertisement displayed on a roadside hoarding.', width: 1280, height: 960, crop: [490, 370, 500, 400], client: 'TDF Diamonds & Gold' } },
+    { id: 'lift-posters', title: 'Lift posters', category: 'Residential & community', formats: ['Lift posters'], execution: { src: '/executions/lift-poster.webp', alt: 'A framed jewellery campaign beside the lift doors in a building lobby.', width: 960, height: 1280, crop: [300, 270, 440, 760] } },
+    { id: 'pole-kiosks', title: 'Pole kiosks', category: 'OOH media', formats: ['Pole kiosks'], execution: { src: '/executions/pole-kiosk.webp', alt: 'Nova IVF campaign posters mounted on a series of poles along a road.', width: 1280, height: 960, crop: [450, 80, 790, 460], client: 'Nova IVF Fertility' } },
+    { id: 'society-btl', title: 'Society BTL activity', category: 'Residential & community', formats: ['Community activations'], execution: { src: '/executions/society-btl-activity.webp', alt: 'The Truemeds health-check campaign team in front of a branded canopy and banners at a residential society.', width: 960, height: 1280, crop: [10, 285, 870, 700], client: 'Truemeds' } },
+    { id: 'tagging', title: 'Tagging activity', category: 'BTL media', formats: ['Tagging activity'], execution: { src: '/executions/tagging-activity.webp', alt: 'A campaign flyer placed on the windshield of a parked car.', width: 720, height: 1280, crop: [30, 350, 640, 650] } },
+    { id: 'van', title: 'Van branding', category: 'OOH media', formats: ['Van branding'], execution: { src: '/executions/van-branding.webp', alt: 'A TDF Diamonds and Gold jewellery campaign covering the side of a branded advertising van.', width: 1600, height: 1200, crop: [285, 140, 1060, 740], client: 'TDF Diamonds & Gold' } },
+  ] as ShowcaseService[],
+};
+
 export const coverage = {
   heading: "Where we work.",
   label: "Cities and regions",
@@ -553,6 +583,7 @@ export const team = {
   eyebrow: "[06 // People make it happen]",
   heading: ["The people behind", "the placements."],
   hint: "Scroll back and forth: one pointer at a time.",
+  mobileHint: "Choose a person to meet the team.",
   note: "Big ideas. Honest execution. Meet The AD Company.",
   readBio: "Read full bio",
   closeBio: "Close biography",
@@ -562,18 +593,44 @@ export const team = {
   members: TEAM_POINTER_NODES,
 };
 export const contact = {
+  eyebrow: "[07 // Let’s make a mark]",
   heading: ["Got a brand", "to put out there?"],
   copy: "Planning a local activation or a campaign across India? Tell us your audience, goals, budget and timeline. We’ll help you explore the right media, locations and execution plan.",
-  submitLabel: "Request a callback",
+  submitLabel: "Submit enquiry",
+  sendingLabel: "Sending…",
+  formLabel: "Campaign enquiry",
+  formHeading: "Start a conversation",
+  optionalLabel: "Add details (optional)",
+  messageLabel: "What are you planning?",
+  messagePlaceholder: "Your campaign, city and timeline…",
+  requiredNote: "* Required fields. We’ll use your details to respond to your enquiry.",
+  mobileRequiredNote: "* Required",
+  mobilePrivacyLabel: "Privacy",
+  emailSubject: "New campaign enquiry — The Ad Company",
+  successStatus: "Thank you. Your enquiry has been submitted. Our team will get in touch.",
+  errorStatus: "Your enquiry could not be sent. Please try again, call us or use WhatsApp.",
+  unconfiguredStatus: "Email delivery is being connected. Please call or WhatsApp us for now.",
+  fields: [
+    { name: 'name', label: 'Full name', required: true, type: 'text', auto: 'name', max: 100 },
+    { name: 'phone', label: 'Phone number', required: true, type: 'tel', auto: 'tel', max: 30 },
+    { name: 'company', label: 'Company', required: false, type: 'text', auto: 'organization', max: 160 },
+    { name: 'email', label: 'Email', required: false, type: 'email', auto: 'email', max: 254 },
+  ],
   whatsappLabel: "Chat on WhatsApp",
-  briefNote: "Prepare your campaign brief here, then share it by email or WhatsApp. You can also call us directly.",
-  downloadStatus: "Your brief is ready to download. Nothing has been sent yet. Share the file using the email or WhatsApp links on this page.",
-  privacyNote: "Your form details remain in this browser tab until you leave or refresh. Downloading creates a text file on your device; no form data is sent to a server or saved in browser storage. Email, phone and WhatsApp links open their respective apps, where you choose what to send. This site loads its typefaces from Google Fonts. Automatic enquiry delivery and a full business privacy notice are pending.",
+  briefHeading: ["Big plans start", "with a small brief."],
+  briefNote: "Tell us about your campaign. Our team will follow up to discuss your goals, locations and the right media plan. You can also reach us by email, WhatsApp or phone.",
+  servicePlaceholder: "Help me choose",
+  privacyLabel: "Privacy & enquiry information",
+  privacyNote: "When you submit, your name, phone number, campaign message and any optional details you include are sent through Web3Forms to our team so we can respond. This page does not save form details in browser storage. Email, phone and WhatsApp links open their respective apps. A full business privacy notice is pending.",
   privacy:
     "Development version: this form is not connected to a destination yet. Details you submit are checked and then discarded — they are not stored, forwarded or shared. A full privacy notice will be added before launch.",
 };
 
 export const footer = {
+  mobileCta: "Let’s talk",
+  mobileNavLabel: "Footer",
+  mobilePrivacy: "Privacy",
+  mobileBackToTop: "Back to top",
   copyright: "© 2026 The Ad Company.",
-  buildNote: "First website build. Campaign portfolio awaiting confirmation.",
+  buildNote: company.concept,
 };

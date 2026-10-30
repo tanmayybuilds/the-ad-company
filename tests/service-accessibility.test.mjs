@@ -26,12 +26,12 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
       globalThis.__serviceTest.travel = travel;
       return travel;
     }, matchMedia: () => ({
-      add: (_, callback) => globalThis.__serviceTest.cleanups.push(callback({ conditions: { reduce: globalThis.__serviceTest.reduced } })),
+      add: (_, callback) => globalThis.__serviceTest.cleanups.push(callback({ conditions: { reduce: globalThis.__serviceTest.reduced, mobile: globalThis.__serviceTest.mobile } })),
       revert: () => globalThis.__serviceTest.cleanups.forEach(cleanup => cleanup?.())
     }) };
     export const ScrollTrigger = {
       create: options => {
-        if (!globalThis.__serviceTest.fits || globalThis.__serviceTest.reduced) throw new Error('Static services must never create a pin');
+        if (!globalThis.__serviceTest.fits || globalThis.__serviceTest.reduced || globalThis.__serviceTest.mobile) throw new Error('Static services must never create a pin');
         return globalThis.__serviceTest.trigger = { start: 1000.4, end: 5000.6, progress: 0, direction: 1, vars: options, kill() {} };
       },
       refresh: () => { const trigger = globalThis.__serviceTest.trigger; trigger.vars.onRefreshInit(); trigger.vars.onRefresh(trigger); },
@@ -57,8 +57,8 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
   const originalGlobals = Object.fromEntries(['window', 'document', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame'].map(key => [key, globalThis[key]]));
   try {
     const { Services } = await server.ssrLoadModule('/src/components/site/Services.tsx');
-    for (const [reduced, fits] of [[true, true], [false, false]]) {
-      const harness = globalThis.__serviceTest = { refs: [], effects: [], cleanups: [], states: 0, reduced, fits };
+    for (const [reduced, fits, mobile] of [[true, true, false], [false, false, false], [false, true, true]]) {
+      const harness = globalThis.__serviceTest = { refs: [], effects: [], cleanups: [], states: 0, reduced, fits, mobile };
       renderToStaticMarkup(createElement(Services));
       const frames = [];
       harness.refs[9].current = frame => frames.push(frame);
@@ -67,6 +67,7 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
       navigate(4);
       assert.equal(harness.selection, 4);
       assert.equal(frames.at(-1), ZONE_STARTS[4]);
+      assert.equal(harness.refs[5].current, ZONE_STARTS[4], 'The requested chapter must survive media-effect reinstallation on a responsive layout change');
       navigate(0);
       assert.equal(harness.selection, 0);
       assert.equal(frames.at(-1), 0);
@@ -220,4 +221,36 @@ test('Services scrubs both ways during a visit, skips upward re-entry after leav
     globalThis.__serviceTest = previous;
     await server.close();
   }
+});
+
+test('mobile Services mounts the separate player while desktop retains its original renderer', async () => {
+  const server = await createServer({
+    server: { middlewareMode: true, watch: null, hmr: false, ws: false }, appType: 'custom',
+    plugins: [{ name: 'mobile-service-render', enforce: 'pre',
+      transform(code, id) {
+        if (id.replaceAll('\\', '/').endsWith('/site/Services.tsx')) return code.replace(
+          'const [isMobile, setIsMobile] = useState(false);',
+          'const [isMobile, setIsMobile] = useState(globalThis.__renderMobile === true);',
+        );
+      },
+    }],
+  });
+  const previous = globalThis.__renderMobile;
+  try {
+    const { Services } = await server.ssrLoadModule('/src/components/site/Services.tsx');
+    globalThis.__renderMobile = true;
+    const mobile = renderToStaticMarkup(createElement(Services));
+    assert.match(mobile, /class="service-mobile-categories"/);
+    assert.equal([...mobile.matchAll(/aria-controls="mobile-service-description"/g)].length, 5);
+    assert.match(mobile, /id="mobile-service-description"[^>]*role="region"/);
+    assert.doesNotMatch(mobile, /class="service-metadata"|class="service-zones"|class="service-journey-hint"/);
+    assert.match(mobile, /id="mobile-service-video"/);
+    assert.match(mobile, /aria-controls="mobile-service-video"/);
+    assert.match(mobile, /Play video/);
+    assert.doesNotMatch(mobile, /src="[^\"]+\.mp4"|autoplay=/, 'Mobile must not start a video request during static rendering');
+    globalThis.__renderMobile = false;
+    const desktop = renderToStaticMarkup(createElement(Services));
+    assert.doesNotMatch(desktop, /mobile-service-video|service-player-toggle/);
+    assert.match(desktop, /service-loading/);
+  } finally { globalThis.__renderMobile = previous; await server.close(); }
 });

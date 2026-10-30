@@ -61,3 +61,16 @@ test('the shared flip cycle spends most of its time on fully readable faces', ()
   assert.equal(brandRotation(5.2, 5.2), 360);
   assert.equal(brandRotation(10.4, 5.2), 720);
 });
+
+test('opposing brand tracks move in opposite directions and wrap over identical copies', async () => {
+  const { brandTrackX } = await import('../src/lib/brand-motion.mjs');
+  const width = 800;
+  assert.equal(brandTrackX(0, width, false), 0);
+  assert.equal(brandTrackX(0, width, true), -width);
+  assert.ok(brandTrackX(10, width, false) < brandTrackX(0, width, false));
+  assert.ok(brandTrackX(10, width, true) > brandTrackX(0, width, true));
+  for (const reverse of [false, true]) {
+    assert.equal(brandTrackX(width + 50, width, reverse), brandTrackX(50, width, reverse));
+    assert.equal(brandTrackX(0, 0, reverse), 0);
+  }
+});
