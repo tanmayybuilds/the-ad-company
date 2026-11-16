@@ -379,6 +379,20 @@
   max-height: 100%;
   object-fit: contain;
 }
+.brand-logo-crop {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+.brand-logo .brand-logo-crop img,
+.brand-preview-logo .brand-logo-crop img {
+  position: absolute;
+  display: block;
+  height: auto;
+  max-width: none;
+  max-height: none;
+}
 .brand-modal-meta {
   display: flex;
   flex-direction: column;

@@ -140,7 +140,7 @@ export const clients = {
   nextPhoto: "Next campaign photo",
   viewGallery: "View brand gallery",
   items: [
-    { name: "Malabar Gold and Diamonds", logo: "/clients/malabar-gold-diamonds.svg", width: 255, height: 52, background: "#20201E" },
+    { name: "Malabar Gold and Diamonds", logo: "/clients/malabar-gold-diamonds-maroon.png", width: 270, height: 148, background: "#790045", logoCrop: { x: 6, y: 38, width: 231, height: 72 } },
     { name: "TDF Diamonds & Gold", logo: "/clients/tdf-diamonds-gold.webp", width: 152, height: 152 },
     { name: "Vihan Modular", logo: "/clients/vihan-modular.png", width: 200, height: 48 },
     { name: "Jagannath Gangaram Pednekar Jewellers", logo: "/clients/jg-pednekar.webp", width: 632, height: 395 },
@@ -154,7 +154,7 @@ export const clients = {
     { name: "Truemeds", logo: "/clients/truemeds.svg", width: 202, height: 48 },
     { name: "Apollo Diagnostics", logo: "/clients/apollo-diagnostics.webp", width: 1920, height: 1080 },
     { name: "Suburban Diagnostics", logo: "/clients/suburban-diagnostics.webp", width: 226, height: 63 },
-    { name: "Nova IVF Fertility", logo: "/clients/nova-ivf.webp", width: 350, height: 54 },
+    { name: "Nova IVF Fertility", logo: "/clients/nova-ivf-maroon.png", width: 233, height: 148, background: "#78073f", logoCrop: { x: 42, y: 55, width: 134, height: 36 } },
     { name: "Decathlon Sports India", logo: "/clients/decathlon.svg", width: 188, height: 28 },
   ],
 };

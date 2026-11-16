@@ -8,6 +8,27 @@ import { clientGalleryHref } from '@/lib/client-gallery';
 
 const asset = (src: string) => src.startsWith("/") ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
 
+function ClientLogo({ client, alt, lazy = false }: { client: (typeof clients.items)[number]; alt: string; lazy?: boolean }) {
+  const crop = client.logoCrop;
+  const image = <img
+    src={asset(client.logo)}
+    alt={alt}
+    width={client.width}
+    height={client.height}
+    loading={lazy ? "lazy" : undefined}
+    decoding="async"
+    style={crop ? {
+      width: `${client.width / crop.width * 100}%`,
+      left: `${-crop.x / crop.width * 100}%`,
+      top: `${-crop.y / crop.height * 100}%`,
+    } : undefined}
+  />;
+
+  return crop
+    ? <span className="brand-logo-crop" style={{ aspectRatio: `${crop.width} / ${crop.height}` }}>{image}</span>
+    : image;
+}
+
 export function CampaignPreview({ clientName, active, motion }: { clientName: string; active: boolean; motion: boolean }) {
   const projects = work.projects.filter(project => project.client === clientName);
   const [slide, setSlide] = useState(0);
@@ -283,14 +304,7 @@ export function ClientStrip() {
                         {/* FRONT FACE: Official Logo */}
                         <span className="brand-face brand-front">
                           <span className="brand-logo" style={{ backgroundColor: client.background || "#f5f1e8" }}>
-                            <img
-                              src={asset(client.logo)}
-                              alt={client.name}
-                              width={client.width}
-                              height={client.height}
-                              loading="lazy"
-                              decoding="async"
-                            />
+                            <ClientLogo client={client} alt={client.name} lazy />
                           </span>
                         </span>
                         {/* BACK FACE: Brand Name & Clickable View More Button */}
@@ -335,12 +349,7 @@ export function ClientStrip() {
             <div className="brand-modal-header">
               <div className="brand-modal-brand">
                 <div className="brand-preview-logo" style={{ backgroundColor: selectedClient.background || "#f5f1e8" }}>
-                  <img
-                    src={asset(selectedClient.logo)}
-                    alt=""
-                    width={selectedClient.width}
-                    height={selectedClient.height}
-                  />
+                  <ClientLogo client={selectedClient} alt="" />
                 </div>
                 <div className="brand-modal-meta">
                   <span className="brand-modal-kicker">OFFLINE CAMPAIGN SHOWCASE</span>
